@@ -13,15 +13,19 @@ def publishCurrentFile(vray=False, send=False):
     now = datetime.datetime.now()
 
     dir, filename = os.path.split(file_path)
-    top_dir = os.path.dirname(dir)
+    rig_dir = os.path.dirname(dir)
+    asset_dir = os.path.dirname(rig_dir)
+    dev_dir = os.path.dirname(asset_dir)
+    characters_dir = os.path.dirname(dev_dir)
 
+    # rig, character, dev, "Characters"
     basename, ver, ext = filename.split(".")
 
     non_ver = ".".join((basename, ext))
 
-    version_dir = os.path.join(top_dir, "versions", filename)
-    nonvray_dir = os.path.join(top_dir, "nonvray", non_ver)
-    vray_dir = os.path.join(top_dir, "vray", non_ver)
+    version_dir = os.path.join(rig_dir, "publish", filename)
+    nonvray_dir = os.path.join(characters_dir, "noVray", non_ver)
+    vray_dir = os.path.join(characters_dir, "vray", non_ver)
 
 
     sel = pm.ls(sl=True)
@@ -30,7 +34,7 @@ def publishCurrentFile(vray=False, send=False):
         return
 
     pm.exportSelected(version_dir)
-    pm.exportSelected(nonvray_dir)
+    shutil.copy2(version_dir, os.path.join(version_dir, nonvray_dir))
     if vray:
         pm.exportSelected(vray_dir)
 

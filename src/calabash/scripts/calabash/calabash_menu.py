@@ -18,7 +18,7 @@ def calabash_menu():
     ###############################################################################
 
     vray_tools_submenu = cmds.menuItem('vray_tools_sub', p=calabash_menu, subMenu=True, label='Vray Tools', tearOff=True)
-    #general_submenu = cmds.menuItem('general_sub', p=calabash_menu, subMenu=True, label='General', tearOff=True)
+    general_submenu = cmds.menuItem('general_sub', p=calabash_menu, subMenu=True, label='General', tearOff=True)
     ani_submenu = cmds.menuItem('ani_sub', p=calabash_menu, subMenu=True, label='Animation', tearOff=True)
 
     ###############################################################################
@@ -49,8 +49,8 @@ def calabash_menu():
 
     # General Submenu
 
-    #cmds.menuItem(p=general_submenu, label='Rename New Hatch Rigs', c='from calabash import fileUtils;reload(fileUtils);fileUtils.rename_hatch_rigs()')
-    #cmds.menuItem(p=general_submenu, label='Publish Current File', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile()')
+    cmds.menuItem(p=general_submenu, label='Rename New Hatch Rigs', c='from calabash import fileUtils;reload(fileUtils);fileUtils.rename_hatch_rigs()')
+    cmds.menuItem(p=general_submenu, label='Publish Selected Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile()')
     #cmds.menuItem(p=general_submenu, label='Publish and Package', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile(send=True)')
 
 
