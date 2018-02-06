@@ -1,0 +1,1 @@
+cmds.evalDeferred('from calabash import calabash_menu')
