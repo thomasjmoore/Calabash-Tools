@@ -47,6 +47,10 @@ install() {
     uninstall
     clean
     build
+	if [ ! -d $MAYA_MODULES_INSTALL_PATH ]; then
+		mkdir $MAYA_MODULES_INSTALL_PATH
+	fi
+
     cp -v build/$PACKAGE_NAME.mod $MAYA_MODULES_INSTALL_PATH/$PACKAGE_NAME.mod
     cp -Rv build/$PACKAGE_NAME $MAYA_MODULES_INSTALL_PATH/$PACKAGE_NAME
 }
