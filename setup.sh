@@ -41,7 +41,7 @@ dev() {
     clean
     link `pwd`/src/$PACKAGE_NAME.mod $MAYA_MODULES_INSTALL_PATH/$PACKAGE_NAME.mod
     link `pwd`/src/$PACKAGE_NAME $MAYA_MODULES_INSTALL_PATH/$PACKAGE_NAME
-}
+	}
 
 install() {
     uninstall
@@ -93,4 +93,3 @@ else
     echo -e "usage: setup.sh [COMMAND]\n  $ALL_COMMANDS"
 fi
 
-install
