@@ -6,7 +6,10 @@ import zipfile
 
 import datetime
 
-
+__all__ = [
+    'publishCurrentFile',
+    'rename_hatch_rigs'
+]
 
 def publishCurrentFile(vray=False, send=False):
     file_path = cmds.file(sceneName=True, q=True)

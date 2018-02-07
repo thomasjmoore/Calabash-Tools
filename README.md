@@ -1,4 +1,5 @@
 # calabash
-Download, run install.bat.
+copy contents of src to the modules folder your user Maya directory. (You may need to create a modules folder)
 
-If it works correctly, it will copy scripts into the Maya modules folder
+Windows Example: /User/Documents/maya/modules
+

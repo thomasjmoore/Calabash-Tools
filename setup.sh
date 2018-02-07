@@ -93,3 +93,4 @@ else
     echo -e "usage: setup.sh [COMMAND]\n  $ALL_COMMANDS"
 fi
 
+# read -p "Press any key"

@@ -49,8 +49,9 @@ def calabash_menu():
 
     # General Submenu
 
-    cmds.menuItem(p=general_submenu, label='Rename New Hatch Rigs', c='from calabash import fileUtils;reload(fileUtils);fileUtils.rename_hatch_rigs()')
-    cmds.menuItem(p=general_submenu, label='Publish Selected Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile()')
+    cmds.menuItem(p=general_submenu, label='Increase File Version', c='from calabash import general;reload(general);general.versionUp()')
+    cmds.menuItem(p=general_submenu, label='Rename New Hatch Rigs', c='from calabash import general;reload(general);general.rename_hatch_rigs()')
+    cmds.menuItem(p=general_submenu, label='Publish Selected Rig', c='from calabash import general;reload(general);general.publishCurrentFile()')
     #cmds.menuItem(p=general_submenu, label='Publish and Package', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile(send=True)')
 
 
