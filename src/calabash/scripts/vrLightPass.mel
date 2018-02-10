@@ -1,0 +1,72 @@
+////////////////////////////////////////////////////
+//Create Vray LightPass Render Elements//
+//Dec 2011 v 1.0
+//Brian Freisinger
+//faust@disopolis.com
+//www.disopolis.com
+//Feel free to steal, edit, modify.
+///////////////////////////////////////////////////
+
+global proc vrLightPass () {
+
+//Call selection list
+////////////////////////////////////////////////////
+//Create Vray LightPass Render Elements//
+//Dec 2011
+//Brian Freisinger
+//faust@disopolis.com
+//www.disopolis.com
+//Feel free to steal, edit, modify.
+///////////////////////////////////////////////////
+//Call selection list
+string $vRE_Light[] = `ls -sl`;
+for ($selection in $vRE_Light)
+{
+string $vrayLS = $selection;
+
+string $raw = "Raw_";
+string $diff = "Diff_";
+string $spec = "Spec_";
+
+string $normName = "vrayRE_LS_" + $selection;
+string $rawName = "vrayRE_LS_" + $raw + $selection;
+string $diffName = "vrayRE_LS_" + $diff + $selection;
+string $specName = "vrayRE_LS_" + $spec + $selection;
+
+//create normal pass
+string $vRE_norm = `vrayAddRenderElement LightSelectElement`;
+//Set render output name for normal
+setAttr -type "string" vrayRE_Light_Select.vray_name_lightselect ("LS_" + $selection);
+rename $vRE_norm ("vrayRE_LS_" + $selection);
+
+//create raw pass
+string $vRE_raw = `vrayAddRenderElement LightSelectElement`;
+//set rawFLAG
+setAttr "vrayRE_Light_Select.vray_type_lightselect" 1;
+//Set render output name for raw
+setAttr -type "string" vrayRE_Light_Select.vray_name_lightselect ("LS_" + $raw + $selection);
+rename $vRE_raw ("vrayRE_LS_" + $raw + $selection);
+
+//create diffuse pass
+string $vRE_diff = `vrayAddRenderElement LightSelectElement`;
+//set diffuseFLAG
+setAttr "vrayRE_Light_Select.vray_type_lightselect" 2;
+//Set render output name for diffuse
+setAttr -type "string" vrayRE_Light_Select.vray_name_lightselect ("LS_" + $diff + $selection);
+rename $vRE_diff ("vrayRE_LS_" + $diff + $selection);
+
+//create spec pass
+string $vRE_spec = `vrayAddRenderElement LightSelectElement`;
+//set specFLAG
+setAttr "vrayRE_Light_Select.vray_type_lightselect" 3;
+//Set render output name for spec
+setAttr -type "string" vrayRE_Light_Select.vray_name_lightselect ("LS_" + $spec + $selection);
+rename $vRE_spec ("vrayRE_LS_" + $spec + $selection);
+
+//Set relationships
+connectAttr ($vrayLS + ".instObjGroups[0]") ($normName + ".dagSetMembers[0]");
+connectAttr ($vrayLS + ".instObjGroups[0]") ($rawName + ".dagSetMembers[0]");
+connectAttr ($vrayLS + ".instObjGroups[0]") ($diffName + ".dagSetMembers[0]");
+connectAttr ($vrayLS + ".instObjGroups[0]") ($specName + ".dagSetMembers[0]");
+}
+}

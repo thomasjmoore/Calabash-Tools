@@ -25,19 +25,25 @@ def publishCurrentFile(vray=False, send=False):
     basename, ver, ext = filename.split(".")
 
     non_ver = ".".join((basename, ext))
+    non_ver_mb = ".".join((basename, "mb"))
 
-    version_dir = os.path.join(rig_dir, "publish", filename)
-    nonvray_dir = os.path.join(characters_dir, "noVray", non_ver)
-    vray_dir = os.path.join(characters_dir, "vray", non_ver)
+    version_dir = os.path.join(rig_dir, "publish")
 
+    nonvray_dir = os.path.join(characters_dir, "noVray")
+    vray_dir = os.path.join(characters_dir, "vray")
 
     sel = pm.ls(sl=True)
 
     if not sel:
         return
 
-    pm.exportSelected(version_dir)
-    shutil.copy2(version_dir, os.path.join(version_dir, nonvray_dir))
+    exp_ma = pm.exportSelected(os.path.join(version_dir, filename))
+    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary")
+
+    print ("Exported: %s, %s" % (exp_ma, exp_mb))
+
+    shutil.copy2(exp_ma, os.path.join(nonvray_dir,non_ver))
+    shutil.copy2(exp_mb, os.path.join(nonvray_dir,non_ver_mb))
     if vray:
         pm.exportSelected(vray_dir)
 
@@ -83,3 +89,6 @@ def rename_hatch_rigs():
 
     if cmds.objExists("|Group"):
         cmds.rename("|Group", "World")
+
+def publish_vray_rig():
+    pass
