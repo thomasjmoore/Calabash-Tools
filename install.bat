@@ -1,1 +1,0 @@
-PowerShell.exe -Command "& `%~dp0setup.sh install
