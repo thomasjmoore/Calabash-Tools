@@ -56,9 +56,10 @@ def calabash_menu():
     ###############################################################################
 
     # Rigging Submenu
-    cmds.menuItem(p=rigging_submenu, label='Publish Selected Rig', c='from calabash import rigging;reload(rigging);rigging.publishCurrentFile()')
+    cmds.menuItem(p=rigging_submenu, label='Publish Selected Rig', c='from calabash import rigging.fileUtils;reload(rigging.fileUtils);rigging.publishCurrentFile()')
+    cmds.menuItem(p=rigging_submenu, label='Publish Vray Rig', c='from calabash import rigging;reload(rigging);rigging.publish_vray_rig()')
     cmds.menuItem(p=rigging_submenu, label='Rename New Hatch Rigs', c='from calabash import rigging;reload(rigging);rigging.rename_hatch_rigs()')
-    cmds.menuItem(p=rigging_submenu, label='MoveCtrl', c='from calabash import rigging;reload(rigging);rigging.moveCtrlUI()')
+    #cmds.menuItem(p=rigging_submenu, label='MoveCtrl', c='from calabash import rigging;reload(rigging);rigging.moveCtrlUI()')
     cmds.menuItem(p=rigging_submenu, label='Hide Joints', c='from calabash import rigging;reload(rigging);rigging.jointDisplay()')
     cmds.menuItem(p=rigging_submenu, label='Show Joints', c='from calabash import rigging;reload(rigging);rigging.jointDisplay(show=True)')
 

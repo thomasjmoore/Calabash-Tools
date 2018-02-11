@@ -8,10 +8,11 @@ import datetime
 
 __all__ = [
     'publishCurrentFile',
-    'rename_hatch_rigs'
+    'rename_hatch_rigs',
+    'publish_vray_rig'
 ]
 
-def publishCurrentFile(vray=False, send=False):
+def publishCurrentFile():
     file_path = cmds.file(sceneName=True, q=True)
     now = datetime.datetime.now()
 
@@ -44,43 +45,6 @@ def publishCurrentFile(vray=False, send=False):
 
     shutil.copy2(exp_ma, os.path.join(nonvray_dir,non_ver))
     shutil.copy2(exp_mb, os.path.join(nonvray_dir,non_ver_mb))
-    if vray:
-        pm.exportSelected(vray_dir)
-
-    if send:
-        date = now.strftime("%Y_%m_%d")
-
-        cur_proj = cmds.workspace(fullName = True, q=True)
-
-        clientPath = os.path.join(cur_proj, "TOCLIENT")
-        dateFolder = os.path.join(clientPath, date)
-        assetFolder = os.path.join(dateFolder, basename)
-
-        if not os.path.exists(clientPath):
-            os.mkdir(clientPath)
-
-        if not os.path.exists(dateFolder):
-           os.mkdir(dateFolder)
-
-        if not os.path.exists(assetFolder):
-            os.mkdir(assetFolder)
-
-        if not os.path.exists(os.path.join(assetFolder, "versions")):
-            os.mkdir(os.path.join(assetFolder, "versions"))
-
-        if not os.path.exists(os.path.join(assetFolder, "nonvray")):
-            os.mkdir(os.path.join(assetFolder, "nonvray"))
-
-        if not os.path.exists(os.path.join(assetFolder, "vray")):
-            os.mkdir(os.path.join(assetFolder, "vray"))
-
-        shutil.copy2(version_dir, os.path.join(assetFolder, "versions"))
-        shutil.copy2(nonvray_dir, os.path.join(assetFolder, "nonvray"))
-        if vray:
-            shutil.copy2(vray_dir, os.path.join(assetFolder, "vray"))
-
-
-        shutil.make_archive(assetFolder + "_" + ver, 'zip', assetFolder)
 
 
 def rename_hatch_rigs():
@@ -90,5 +54,69 @@ def rename_hatch_rigs():
     if cmds.objExists("|Group"):
         cmds.rename("|Group", "World")
 
+
 def publish_vray_rig():
-    pass
+    file_path = cmds.file(sceneName=True, q=True)
+    now = datetime.datetime.now()
+
+    if cmds.file(modified=True, q=True):
+        save = cmds.confirmDialog(title="Scene Unsaved",
+                                  message="Save scene before publishing",
+                                  button=["Save", "Cancel"],
+                                  defaultButton="Save",
+                                  cancelButton="Cancel",
+                                  dismissString="Cancel")
+        if save == "Save":
+            saved_file = pm.saveFile()
+            print("Scene saved")
+        else:
+            cmds.warning("Action canceled")
+            return
+    
+    fdir, filename = os.path.split(file_path)
+    rig_dir = os.path.dirname(fdir)
+    asset_dir = os.path.dirname(rig_dir)
+    dev_dir = os.path.dirname(asset_dir)
+    characters_dir = os.path.dirname(dev_dir)
+    # rig, character, dev, "Characters"
+    basename, ver, ext = filename.split(".")
+
+    non_ver = ".".join((basename, ext))
+    non_ver_mb = ".".join((basename, "mb"))
+
+    version_dir = os.path.join(rig_dir, "publish")
+
+    vray_dir = os.path.join(characters_dir, "vray")
+
+    sel = pm.ls(sl=True)
+
+    if not sel:
+        cmds.warning("Nothing selected")
+        return
+    reference = False
+    for s in sel:
+        try:
+            ref_node = pm.referenceQuery(s, referenceNode=True)
+            ref_scene = pm.referenceQuery(s, filename=True, shortName=True)
+            pm.FileReference(ref_node).importContents(removeNamespace=True)
+
+            reference = True
+            break
+        except:
+            continue
+
+    if not reference:
+        cmds.error("Reference not found")
+        return
+
+    pm.select(sel)
+
+    exp_ma = pm.exportSelected(os.path.join(version_dir, ref_scene), type="mayaAscii")
+    exp_mb = pm.exportSelected(os.path.join(version_dir, ref_scene), type="mayaBinary")
+
+    print ("Exported: %s, %s" % (exp_ma, exp_mb))
+
+    shutil.copy2(exp_ma, os.path.join(vray_dir,non_ver))
+    shutil.copy2(exp_mb, os.path.join(vray_dir,non_ver_mb))
+
+    pm.newFile(f=True)
