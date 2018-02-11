@@ -102,7 +102,6 @@ def make_playblast(green=False):
     reset_viewports()
 
     if green:
-        print "triggered"
         cmds.displayRGBColor("background", r, g, b)
         cmds.displayRGBColor("backgroundTop", rt, gt, bt)
         cmds.displayRGBColor("backgroundBottom", rb, gb, bb)

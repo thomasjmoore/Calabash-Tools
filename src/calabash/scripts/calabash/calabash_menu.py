@@ -19,6 +19,7 @@ def calabash_menu():
 
     vray_tools_submenu = cmds.menuItem('vray_tools_sub', p=calabash_menu, subMenu=True, label='Vray Tools', tearOff=True)
     general_submenu = cmds.menuItem('general_sub', p=calabash_menu, subMenu=True, label='General', tearOff=True)
+    rigging_submenu = cmds.menuItem('rigging_sub', p=calabash_menu, subMenu=True, label='Rigging', tearOff=True)
     ani_submenu = cmds.menuItem('ani_sub', p=calabash_menu, subMenu=True, label='Animation', tearOff=True)
 
     ###############################################################################
@@ -41,6 +42,7 @@ def calabash_menu():
 
     cmds.menuItem(p=vray_tools_submenu, label='Apply Final Render Settings', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.renderSettings()')
     cmds.menuItem(p=vray_tools_submenu, label='Apply Final Render GI Settings', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.giSettings()')
+    cmds.menuItem(p=vray_tools_submenu, label='Render Elements for Selected Lights', c='from maya import mel;mel.eval("vrLightPass;")')
 
 
 
@@ -48,14 +50,24 @@ def calabash_menu():
 
 
     # General Submenu
-
     cmds.menuItem(p=general_submenu, label='Increase File Version', c='from calabash import general;reload(general);general.versionUp()')
-    cmds.menuItem(p=general_submenu, label='Rename New Hatch Rigs', c='from calabash import general;reload(general);general.rename_hatch_rigs()')
-    cmds.menuItem(p=general_submenu, label='Publish Selected Rig', c='from calabash import general;reload(general);general.publishCurrentFile()')
+
+
+    ###############################################################################
+
+    # Rigging Submenu
+    cmds.menuItem(p=rigging_submenu, label='Publish Selected Rig', c='from calabash import rigging;reload(rigging);rigging.publishCurrentFile()')
+    cmds.menuItem(p=rigging_submenu, label='Rename New Hatch Rigs', c='from calabash import rigging;reload(rigging);rigging.rename_hatch_rigs()')
+    cmds.menuItem(p=rigging_submenu, label='MoveCtrl', c='from calabash import rigging;reload(rigging);rigging.moveCtrlUI()')
+    cmds.menuItem(p=rigging_submenu, label='Hide Joints', c='from calabash import rigging;reload(rigging);rigging.jointDisplay()')
+    cmds.menuItem(p=rigging_submenu, label='Show Joints', c='from calabash import rigging;reload(rigging);rigging.jointDisplay(show=True)')
+
     #cmds.menuItem(p=general_submenu, label='Publish and Package', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile(send=True)')
 
 
     ###############################################################################
+
+    # Animation Submenu
 
     cmds.menuItem(p=ani_submenu, label='Playblast', c='from calabash import playblast_utils;reload(playblast_utils);playblast_utils.make_playblast()')
     cmds.menuItem(p=ani_submenu, label='Playblast Green Screen', c='from calabash import playblast_utils;reload(playblast_utils);playblast_utils.make_playblast(green=True)')
