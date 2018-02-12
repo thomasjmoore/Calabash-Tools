@@ -50,17 +50,18 @@ def calabash_menu():
 
 
     # General Submenu
-    cmds.menuItem(p=general_submenu, label='Increase File Version', c='from calabash import general;reload(general);general.versionUp()')
+    cmds.menuItem(p=general_submenu, label='Increase File Version', c='from calabash import increaseVersion;reload(increaseVersion);increaseVersion.versionUp()')
 
 
     ###############################################################################
 
     # Rigging Submenu
-    cmds.menuItem(p=rigging_submenu, label='Publish Selected Rig', c='from calabash import rigging;reload(rigging);rigging.publishCurrentFile()')
-    cmds.menuItem(p=rigging_submenu, label='Rename New Hatch Rigs', c='from calabash import rigging;reload(rigging);rigging.rename_hatch_rigs()')
-    cmds.menuItem(p=rigging_submenu, label='MoveCtrl', c='from calabash import rigging;reload(rigging);rigging.moveCtrlUI()')
-    cmds.menuItem(p=rigging_submenu, label='Hide Joints', c='from calabash import rigging;reload(rigging);rigging.jointDisplay()')
-    cmds.menuItem(p=rigging_submenu, label='Show Joints', c='from calabash import rigging;reload(rigging);rigging.jointDisplay(show=True)')
+    cmds.menuItem(p=rigging_submenu, label='Publish Selected Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile()')
+    cmds.menuItem(p=rigging_submenu, label='Publish Vray Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_vray_rig()',version="2017")
+    cmds.menuItem(p=rigging_submenu, label='Rename New Hatch Rigs', c='from calabash import fileUtils;reload(fileUtils);fileUtils.rename_hatch_rigs()')
+    cmds.menuItem(p=rigging_submenu, label='MoveCtrl', c='from calabash import moveControl;reload(moveControl);moveControl.moveCtrlUI()')
+    cmds.menuItem(p=rigging_submenu, label='Hide Joints', c='from calabash import rigUtils;reload(rigUtils);rigUtils.jointDisplay()')
+    cmds.menuItem(p=rigging_submenu, label='Show Joints', c='from calabash import rigUtils  ;reload(rigUtils);rigUtils.jointDisplay(show=True)')
 
     #cmds.menuItem(p=general_submenu, label='Publish and Package', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile(send=True)')
 
