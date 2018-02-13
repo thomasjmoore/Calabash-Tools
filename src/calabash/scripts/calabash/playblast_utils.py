@@ -68,10 +68,18 @@ def remove_hud():
 
 
 def make_playblast(green=False):
+    #
+    # Things to improve:
+    # -restore settings after playblast
+    # -turn off action/title safe
+    # -turn on AA
+    # -better file name detection/stop if no name is detected
+    #
+
     mayafile = cmds.file(q=True, sn=True, shn=True)
     splitname = os.path.splitext(mayafile)
     set_cameras()
-    set_viewports()
+    set_viewports(green)
     add_hud()
 
     if green:
@@ -85,6 +93,8 @@ def make_playblast(green=False):
         greenname = splitname[0]+ ".green"
         splitname = (greenname, splitname[1])
 
+        remove_hud()
+
     filename = "movies/%s.mov"%splitname[0]
     cmds.playblast(format = "qt",
                    filename=filename,
@@ -95,7 +105,7 @@ def make_playblast(green=False):
                    offScreen=False,
                    compression = "H.264",
                    quality=100,
-                   widthHeight=[960,540],
+                   widthHeight=[1920,1080],
                    percent=100,
                    fo=True
                    )
@@ -113,8 +123,13 @@ def set_cameras():
     cams = pm.ls(type="camera")
     for cam in cams:
         cam.displayFilmGate.set(0)
+        cam.displaySafeAction.set(0)
+        cam.displaySafeTitle.set(0)
 
-def set_viewports():
+
+def set_viewports(green=False):
+    hrg = pm.PyNode("hardwareRenderingGlobals")
+    hrg.multiSampleEnable.set(1)
 
     modelPanelList = []
     modelEditorList = pm.lsUI(editors=True)
@@ -129,6 +144,9 @@ def set_viewports():
         pmui.ModelEditor(modelPanel).setControlVertices(False)
         pmui.ModelEditor(modelPanel).setGrid(False)
         pmui.ModelEditor(modelPanel).setSelectionHiliteDisplay(False)
+
+        if green:
+            pmui.ModelEditor(modelPanel).setHeadsUpDisplay(False)
 
 
 def reset_viewports():
