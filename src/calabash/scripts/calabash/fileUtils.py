@@ -110,13 +110,13 @@ def publish_vray_rig():
         return
 
     pm.select(sel)
-
     exp_ma = pm.exportSelected(os.path.join(version_dir, ref_scene), type="mayaAscii")
     exp_mb = pm.exportSelected(os.path.join(version_dir, ref_scene), type="mayaBinary")
 
     print ("Exported: %s, %s" % (exp_ma, exp_mb))
-
-    shutil.copy2(exp_ma, os.path.join(vray_dir,non_ver))
-    shutil.copy2(exp_mb, os.path.join(vray_dir,non_ver_mb))
+    path, file = os.path.split(exp_ma)
+    file, ext = os.path.splitext(file)
+    shutil.copy2(exp_ma, os.path.join(vray_dir,file+".ma"))
+    shutil.copy2(exp_mb, os.path.join(vray_dir,file+".mb"))
 
     pm.newFile(f=True)
