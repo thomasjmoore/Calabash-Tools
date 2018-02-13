@@ -68,6 +68,14 @@ def remove_hud():
 
 
 def make_playblast(green=False):
+    #
+    # Things to improve:
+    # -restore settings after playblast
+    # -turn off action/title safe
+    # -turn on AA
+    # -better file name detection/stop if no name is detected
+    #
+
     mayafile = cmds.file(q=True, sn=True, shn=True)
     splitname = os.path.splitext(mayafile)
     set_cameras()
@@ -95,7 +103,7 @@ def make_playblast(green=False):
                    offScreen=False,
                    compression = "H.264",
                    quality=100,
-                   widthHeight=[960,540],
+                   widthHeight=[1920,1080],
                    percent=100,
                    fo=True
                    )
