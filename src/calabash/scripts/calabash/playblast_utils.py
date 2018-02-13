@@ -79,7 +79,7 @@ def make_playblast(green=False):
     mayafile = cmds.file(q=True, sn=True, shn=True)
     splitname = os.path.splitext(mayafile)
     set_cameras()
-    set_viewports()
+    set_viewports(green)
     add_hud()
 
     if green:
@@ -92,6 +92,8 @@ def make_playblast(green=False):
         cmds.displayRGBColor("backgroundBottom", 0, 1, 0)
         greenname = splitname[0]+ ".green"
         splitname = (greenname, splitname[1])
+
+        remove_hud()
 
     filename = "movies/%s.mov"%splitname[0]
     cmds.playblast(format = "qt",
@@ -121,8 +123,13 @@ def set_cameras():
     cams = pm.ls(type="camera")
     for cam in cams:
         cam.displayFilmGate.set(0)
+        cam.displaySafeAction.set(0)
+        cam.displaySafeTitle.set(0)
 
-def set_viewports():
+
+def set_viewports(green=False):
+    hrg = pm.PyNode("hardwareRenderingGlobals")
+    hrg.multiSampleEnable.set(1)
 
     modelPanelList = []
     modelEditorList = pm.lsUI(editors=True)
@@ -137,6 +144,9 @@ def set_viewports():
         pmui.ModelEditor(modelPanel).setControlVertices(False)
         pmui.ModelEditor(modelPanel).setGrid(False)
         pmui.ModelEditor(modelPanel).setSelectionHiliteDisplay(False)
+
+        if green:
+            pmui.ModelEditor(modelPanel).setHeadsUpDisplay(False)
 
 
 def reset_viewports():
