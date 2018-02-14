@@ -2,9 +2,8 @@ from maya import cmds
 import pymel.core as pm
 import os
 import shutil
-import zipfile
-
-import datetime
+#import zipfile
+#import datetime
 
 __all__ = [
     'publishCurrentFile',
@@ -14,7 +13,7 @@ __all__ = [
 
 def publishCurrentFile():
     file_path = cmds.file(sceneName=True, q=True)
-    now = datetime.datetime.now()
+    #now = datetime.datetime.now()
 
     dir, filename = os.path.split(file_path)
     rig_dir = os.path.dirname(dir)
@@ -57,7 +56,6 @@ def rename_hatch_rigs():
 
 def publish_vray_rig():
     file_path = cmds.file(sceneName=True, q=True)
-    now = datetime.datetime.now()
 
     if cmds.file(modified=True, q=True):
         save = cmds.confirmDialog(title="Scene Unsaved",
@@ -99,7 +97,7 @@ def publish_vray_rig():
             ref_node = pm.referenceQuery(s, referenceNode=True)
             ref_scene = pm.referenceQuery(s, filename=True, shortName=True)
             pm.FileReference(ref_node).importContents(removeNamespace=True)
-
+            rbasename = ref_scene.split(".")[0]
             reference = True
             break
         except:
@@ -110,13 +108,13 @@ def publish_vray_rig():
         return
 
     pm.select(sel)
-    exp_ma = pm.exportSelected(os.path.join(version_dir, ref_scene), type="mayaAscii")
-    exp_mb = pm.exportSelected(os.path.join(version_dir, ref_scene), type="mayaBinary")
+    exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii")
+    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary")
 
     print ("Exported: %s, %s" % (exp_ma, exp_mb))
     path, file = os.path.split(exp_ma)
     file, ext = os.path.splitext(file)
-    shutil.copy2(exp_ma, os.path.join(vray_dir,file+".ma"))
-    shutil.copy2(exp_mb, os.path.join(vray_dir,file+".mb"))
+    shutil.copy2(exp_ma, os.path.join(vray_dir,rbasename + ".ma"))
+    shutil.copy2(exp_mb, os.path.join(vray_dir,rbasename + ".mb"))
 
     pm.newFile(f=True)
