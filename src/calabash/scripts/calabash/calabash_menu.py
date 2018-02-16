@@ -21,6 +21,7 @@ def calabash_menu():
     general_submenu = cmds.menuItem('general_sub', p=calabash_menu, subMenu=True, label='General', tearOff=True)
     rigging_submenu = cmds.menuItem('rigging_sub', p=calabash_menu, subMenu=True, label='Rigging', tearOff=True)
     ani_submenu = cmds.menuItem('ani_sub', p=calabash_menu, subMenu=True, label='Animation', tearOff=True)
+    hatch_submenu = cmds.menuItem('hatch_sub', p=calabash_menu, subMenu=True, label='Hatchimals', tearOff=True)
 
     ###############################################################################
 
@@ -58,7 +59,6 @@ def calabash_menu():
     # Rigging Submenu
     cmds.menuItem(p=rigging_submenu, label='Publish Selected Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile()')
     cmds.menuItem(p=rigging_submenu, label='Publish Vray Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_vray_rig()',version="2017")
-    cmds.menuItem(p=rigging_submenu, label='Rename New Hatch Rigs', c='from calabash import fileUtils;reload(fileUtils);fileUtils.rename_hatch_rigs()')
     cmds.menuItem(p=rigging_submenu, label='MoveCtrl', c='from calabash import moveControl;reload(moveControl);moveControl.moveCtrlUI()')
     cmds.menuItem(p=rigging_submenu, label='Hide Joints', c='from calabash import rigUtils;reload(rigUtils);rigUtils.jointDisplay()')
     cmds.menuItem(p=rigging_submenu, label='Show Joints', c='from calabash import rigUtils  ;reload(rigUtils);rigUtils.jointDisplay(show=True)')
@@ -72,6 +72,15 @@ def calabash_menu():
 
     cmds.menuItem(p=ani_submenu, label='Playblast', c='from calabash import playblast_utils;reload(playblast_utils);playblast_utils.make_playblast()')
     cmds.menuItem(p=ani_submenu, label='Playblast Green Screen', c='from calabash import playblast_utils;reload(playblast_utils);playblast_utils.make_playblast(green=True)')
+    cmds.menuItem(p=ani_submenu, label='Playblast GUI Testing', c='from calabash.views import playblast_view;reload(playblast_view);playblast_view.launch()')
 
+
+    ###############################################################################
+
+    # Hatchimal Submenu
+
+    cmds.menuItem(p=hatch_submenu, label='Publish Season2 Rig', c='from calabash import oldHatchUtils;reload(oldHatchUtils);oldHatchUtils.ohPublishCurrentFile()')
+    cmds.menuItem(p=hatch_submenu, label='Publish Season2 No Vray Rig', c='from calabash import oldHatchUtils;reload(oldHatchUtils);oldHatchUtils.ohPublish_mayaMat_rig()')
+    cmds.menuItem(p=hatch_submenu, label='Rename New Hatch Rigs', c='from calabash import fileUtils;reload(fileUtils);fileUtils.rename_hatch_rigs()')
 
 calabash_menu()
