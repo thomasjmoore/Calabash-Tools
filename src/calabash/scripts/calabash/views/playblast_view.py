@@ -43,8 +43,23 @@ class ControlMainWindow(QtWidgets.QDialog):
         w = int(self.ui.width_le.text())
         start = int(self.ui.start_le.text())
         end = int(self.ui.end_le.text())
+        hud = self.ui.hud_chk.checkState()
+        clean_vp = self.ui.clearViewport_chk.checkState()
+        if self.ui.cstmHud_chk.checkState():
+            custom_hud_text = self.ui.cstmHud_le.text()
+        else:
+            custom_hud_text = ""
 
-        playblast_utils.playblast(filename=filename, green=green,h=h, w=w, start=start, end=end)
+        playblast_utils.playblast(filename=filename,
+                                  green=green,
+                                  h=h,
+                                  w=w,
+                                  start=start,
+                                  end=end,
+                                  hud=hud,
+                                  clean_vp=clean_vp,
+                                  custom_hud_text=custom_hud_text
+                                  )
 
 #############################################################################################################
 

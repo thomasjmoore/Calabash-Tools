@@ -24,12 +24,12 @@ def framecount_hud():
     cmds.headsUpDisplay("HUDFrameCount", section=5, block=2, blockSize="small", dfs="large", l="frame", command="cmds.currentTime(q=True)", atr=True)
 
 
-def custom_hud():
+def custom_hud(text=""):
     if cmds.headsUpDisplay("HUDCustom", exists=True):
         cmds.headsUpDisplay("HUDCustom", remove=True)
-    cmds.headsUpDisplay("HUDCustom", section=5, block=3, blockSize="small", dfs="large", command=custom_hud_input)
+    cmds.headsUpDisplay("HUDCustom", section=5, block=3, blockSize="small", dfs="large", label=text)
 
-
+'''
 def custom_hud_input():
     result = cmds.promptDialog(
         title='HUD Label',
@@ -44,7 +44,7 @@ def custom_hud_input():
     else:
         text = ""
     return text
-
+'''
 
 def get_project():
     projpath = cmds.workspace(q=True, sn=True)
@@ -147,6 +147,13 @@ def set_viewports(green=False):
             pmui.ModelEditor(modelPanel).setHeadsUpDisplay(False)
 
 
+
+def clean_hud():
+    hud_menu = pm.melGlobals['gHeadsUpDisplayMenu']
+    menuitems = cmds.menu(hud_menu, q=True, itemArray=True)
+    print menuitems
+
+
 def reset_viewports():
     modelPanelList = []
     modelEditorList = pm.lsUI(editors=True)
@@ -175,7 +182,7 @@ def start_end():
     return start, end
 
 
-def playblast(filename="", green=False, h=960, w=540, start="", end=""):
+def playblast(filename="", green=False, h=960, w=540, start="", end="", clean_vp=True, hud=True, custom_hud_text=""):
     #
     # Things to improve:
     # -restore settings after playblast
@@ -185,9 +192,15 @@ def playblast(filename="", green=False, h=960, w=540, start="", end=""):
     if not filename:
         raise Exception("Filename not provided")
 
-    set_cameras()
-    set_viewports(green)
-    add_hud()
+    if clean_vp:
+        set_cameras()
+        set_viewports(green)
+
+    if hud:
+        add_hud()
+    print custom_hud_text
+    if custom_hud_text:
+        custom_hud(custom_hud_text)
 
     if green:
         r, g, b = cmds.displayRGBColor("background", q=True)
@@ -217,7 +230,9 @@ def playblast(filename="", green=False, h=960, w=540, start="", end=""):
                    percent=100,
                    fo=True
                    )
-    reset_viewports()
+
+    if clean_vp:
+        reset_viewports()
 
     if green:
         cmds.displayRGBColor("background", r, g, b)
