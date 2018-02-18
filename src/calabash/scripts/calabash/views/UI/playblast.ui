@@ -109,7 +109,7 @@
        <item>
         <widget class="QLineEdit" name="filename_le">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="readOnly">
           <bool>false</bool>
@@ -170,7 +170,7 @@
           </size>
          </property>
          <property name="text">
-          <string>960</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -189,7 +189,7 @@
           </size>
          </property>
          <property name="text">
-          <string>540</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -298,7 +298,7 @@
         <string>HUD: Add Project, Scene, Frame Number</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -317,7 +317,7 @@
        <item>
         <widget class="QLineEdit" name="cstmHud_le">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
           <string/>
@@ -342,7 +342,7 @@
         <string>Clear Viewport</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>

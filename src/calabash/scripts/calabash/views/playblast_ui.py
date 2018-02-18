@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:\Users\Thomas\Documents\GitHub\Calabash-Tools\src\calabash\scripts\calabash\views\UI\playblast.ui'
 #
-# Created: Sat Feb 17 00:21:50 2018
+# Created: Sat Feb 17 23:10:17 2018
 #      by: pyside2-uic  running on PySide2 2.0.0~alpha0
 #
 # WARNING! All changes made in this file will be lost!
@@ -56,7 +56,7 @@ class Ui_playblast_dlg(object):
         self.filename_lbl.setObjectName("filename_lbl")
         self.filename_hlt.addWidget(self.filename_lbl)
         self.filename_le = QtWidgets.QLineEdit(playblast_dlg)
-        self.filename_le.setEnabled(False)
+        self.filename_le.setEnabled(True)
         self.filename_le.setReadOnly(False)
         self.filename_le.setObjectName("filename_le")
         self.filename_hlt.addWidget(self.filename_le)
@@ -86,6 +86,7 @@ class Ui_playblast_dlg(object):
         sizePolicy.setHeightForWidth(self.width_le.sizePolicy().hasHeightForWidth())
         self.width_le.setSizePolicy(sizePolicy)
         self.width_le.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.width_le.setText("")
         self.width_le.setObjectName("width_le")
         self.widthHeight_hlt.addWidget(self.width_le)
         self.height_le = QtWidgets.QLineEdit(playblast_dlg)
@@ -95,6 +96,7 @@ class Ui_playblast_dlg(object):
         sizePolicy.setHeightForWidth(self.height_le.sizePolicy().hasHeightForWidth())
         self.height_le.setSizePolicy(sizePolicy)
         self.height_le.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.height_le.setText("")
         self.height_le.setObjectName("height_le")
         self.widthHeight_hlt.addWidget(self.height_le)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -140,7 +142,7 @@ class Ui_playblast_dlg(object):
         self.line_3.setObjectName("line_3")
         self.playblast_vlt.addWidget(self.line_3)
         self.hud_chk = QtWidgets.QCheckBox(playblast_dlg)
-        self.hud_chk.setChecked(True)
+        self.hud_chk.setChecked(False)
         self.hud_chk.setObjectName("hud_chk")
         self.playblast_vlt.addWidget(self.hud_chk)
         self.cstmHud_hlt = QtWidgets.QHBoxLayout()
@@ -150,7 +152,7 @@ class Ui_playblast_dlg(object):
         self.cstmHud_chk.setObjectName("cstmHud_chk")
         self.cstmHud_hlt.addWidget(self.cstmHud_chk)
         self.cstmHud_le = QtWidgets.QLineEdit(playblast_dlg)
-        self.cstmHud_le.setEnabled(False)
+        self.cstmHud_le.setEnabled(True)
         self.cstmHud_le.setText("")
         self.cstmHud_le.setObjectName("cstmHud_le")
         self.cstmHud_hlt.addWidget(self.cstmHud_le)
@@ -161,7 +163,7 @@ class Ui_playblast_dlg(object):
         self.line_4.setObjectName("line_4")
         self.playblast_vlt.addWidget(self.line_4)
         self.clearViewport_chk = QtWidgets.QCheckBox(playblast_dlg)
-        self.clearViewport_chk.setChecked(True)
+        self.clearViewport_chk.setChecked(False)
         self.clearViewport_chk.setObjectName("clearViewport_chk")
         self.playblast_vlt.addWidget(self.clearViewport_chk)
         self.green_chk = QtWidgets.QCheckBox(playblast_dlg)
@@ -185,8 +187,6 @@ class Ui_playblast_dlg(object):
         self.title_lbl.setText(QtWidgets.QApplication.translate("playblast_dlg", "Playblast", None, -1))
         self.filename_lbl.setText(QtWidgets.QApplication.translate("playblast_dlg", "Filename:", None, -1))
         self.widthHeight_lbl.setText(QtWidgets.QApplication.translate("playblast_dlg", "Width/Height", None, -1))
-        self.width_le.setText(QtWidgets.QApplication.translate("playblast_dlg", "960", None, -1))
-        self.height_le.setText(QtWidgets.QApplication.translate("playblast_dlg", "540", None, -1))
         self.startEnd_lbl.setText(QtWidgets.QApplication.translate("playblast_dlg", "Start/End Frame", None, -1))
         self.hud_chk.setText(QtWidgets.QApplication.translate("playblast_dlg", "HUD: Add Project, Scene, Frame Number", None, -1))
         self.cstmHud_chk.setText(QtWidgets.QApplication.translate("playblast_dlg", "HUD: Custom/Name", None, -1))
