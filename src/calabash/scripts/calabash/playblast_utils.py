@@ -83,6 +83,7 @@ class Playblaster(object):
             pmui.ModelEditor(modelPanel).setAllObjects(True)
             # pmui.ModelEditor(modelPanel).setGrid(True)
             pmui.ModelEditor(modelPanel).setSelectionHiliteDisplay(True)
+            pmui.ModelEditor(modelPanel).setHeadsUpDisplay(True)
 
     def set_cameras(self):
         cams = pm.ls(type="camera")
@@ -157,7 +158,7 @@ class Playblaster(object):
             cmds.displayRGBColor("background", 0, 1, 0)
             cmds.displayRGBColor("backgroundTop", 0, 1, 0)
             cmds.displayRGBColor("backgroundBottom", 0, 1, 0)
-
+            print "green triggered"
             self.remove_hud()
 
         cmds.playblast(format="qt",
@@ -176,7 +177,7 @@ class Playblaster(object):
                        fo=True
                        )
 
-        if self.clean_vp:
+        if self.clean_vp or self.green:
             self.reset_viewports()
 
         if self.green:
