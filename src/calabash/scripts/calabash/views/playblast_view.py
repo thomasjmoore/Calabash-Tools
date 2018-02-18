@@ -25,9 +25,12 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.ui = customUI.Ui_playblast_dlg()
         self.ui.setupUi(self)
         self.setup()
+        self.custom_hud_chk()
+        self.green_chk()
 
         self.ui.playblast_btn.clicked.connect(self.playblast)
-
+        self.ui.hud_chk.clicked.connect(self.custom_hud_chk)
+        self.ui.green_chk.clicked.connect(self.green_chk)
 
     def setup(self):
         filename = playblast_utils.pb_filename()
@@ -60,6 +63,36 @@ class ControlMainWindow(QtWidgets.QDialog):
                                   clean_vp=clean_vp,
                                   custom_hud_text=custom_hud_text
                                   )
+
+    def green_chk(self):
+        is_checked = self.ui.green_chk.checkState()
+        if not is_checked:
+            self.ui.cstmHud_chk.setDisabled(False)
+            self.ui.cstmHud_le.setDisabled(False)
+            self.ui.hud_chk.setDisabled(False)
+            self.ui.clearViewport_chk.setDisabled(False)
+            filename = playblast_utils.pb_filename(green=False)
+            self.ui.filename_le.setText(filename)
+
+        else:
+            self.ui.cstmHud_chk.setDisabled(True)
+            self.ui.cstmHud_le.setDisabled(True)
+            self.ui.hud_chk.setDisabled(True)
+            self.ui.clearViewport_chk.setDisabled(True)
+            filename = playblast_utils.pb_filename(green=True)
+            self.ui.filename_le.setText(filename)
+
+
+    def custom_hud_chk(self):
+        is_checked = self.ui.hud_chk.checkState()
+        if is_checked:
+            self.ui.cstmHud_chk.setDisabled(False)
+            self.ui.cstmHud_le.setDisabled(False)
+
+        else:
+            self.ui.cstmHud_chk.setDisabled(True)
+            self.ui.cstmHud_le.setDisabled(True)
+
 
 #############################################################################################################
 

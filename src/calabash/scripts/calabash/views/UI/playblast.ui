@@ -101,12 +101,18 @@
          <property name="alignment">
           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
          </property>
+         <property name="buddy">
+          <cstring>filename_le</cstring>
+         </property>
         </widget>
        </item>
        <item>
         <widget class="QLineEdit" name="filename_le">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="readOnly">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -143,6 +149,9 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         </property>
+         <property name="buddy">
+          <cstring>width_le</cstring>
          </property>
         </widget>
        </item>
@@ -224,6 +233,9 @@
          <property name="alignment">
           <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
          </property>
+         <property name="buddy">
+          <cstring>start_le</cstring>
+         </property>
         </widget>
        </item>
        <item>
@@ -281,30 +293,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="clearViewport_chk">
-       <property name="text">
-        <string>Clear Viewport</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="green_chk">
-       <property name="text">
-        <string>Green Background</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="Line" name="line_4">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QCheckBox" name="hud_chk">
        <property name="text">
         <string>HUD: Add Project, Scene, Frame Number</string>
@@ -328,12 +316,42 @@
        </item>
        <item>
         <widget class="QLineEdit" name="cstmHud_le">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string/>
+         </property>
+         <property name="placeholderText">
+          <string>Enter Name...</string>
          </property>
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="Line" name="line_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="clearViewport_chk">
+       <property name="text">
+        <string>Clear Viewport</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="green_chk">
+       <property name="text">
+        <string>Green Background</string>
+       </property>
+      </widget>
      </item>
      <item>
       <spacer name="playblast_vspc">

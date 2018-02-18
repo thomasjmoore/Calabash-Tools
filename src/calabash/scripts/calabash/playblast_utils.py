@@ -145,7 +145,8 @@ def set_viewports(green=False):
 
         if green:
             pmui.ModelEditor(modelPanel).setHeadsUpDisplay(False)
-
+        else:
+            pmui.ModelEditor(modelPanel).setHeadsUpDisplay(True)
 
 
 def clean_hud():
@@ -167,13 +168,17 @@ def reset_viewports():
         pmui.ModelEditor(modelPanel).setSelectionHiliteDisplay(True)
 
 
-def pb_filename():
+def pb_filename(green=False):
     mayafile = cmds.file(q=True, sn=True, shn=True)
     if not mayafile:
         mayafile = "untitled"
     splitname = os.path.splitext(mayafile)
     filename = "movies/%s" % splitname[0]
+    if green:
+        filename = filename + ".green"
+    filename = filename + ".mov"
     return filename
+
 
 def start_end():
     start = oma.MAnimControl.minTime().value()
@@ -210,8 +215,7 @@ def playblast(filename="", green=False, h=960, w=540, start="", end="", clean_vp
         cmds.displayRGBColor("background", 0, 1, 0)
         cmds.displayRGBColor("backgroundTop", 0, 1, 0)
         cmds.displayRGBColor("backgroundBottom", 0, 1, 0)
-        filename = filename + ".green"
-        #splitname = (greenname, splitname[1])
+
 
         remove_hud()
 
@@ -222,11 +226,11 @@ def playblast(filename="", green=False, h=960, w=540, start="", end="", clean_vp
                    viewer=True,
                    showOrnaments=True,
                    offScreen=False,
-                   compression = "H.264",
+                   compression="H.264",
                    quality=100,
                    widthHeight=[w,h],
-                   st = start,
-                   et = end,
+                   st=start,
+                   et=end,
                    percent=100,
                    fo=True
                    )
