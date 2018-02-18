@@ -41,9 +41,7 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.custom_hud_chk()
         self.green_chk()
 
-        self.ui.playblast_btn.clicked.connect(self.playblast)
-        self.ui.hud_chk.clicked.connect(self.custom_hud_chk)
-        self.ui.green_chk.clicked.connect(self.green_chk)
+        self.ui.filename_le.textChanged.connect(self.filename)
         self.ui.width_le.textChanged.connect(self.width)
         self.ui.height_le.textChanged.connect(self.height)
         self.ui.start_le.textChanged.connect(self.start)
@@ -54,6 +52,9 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.ui.clearViewport_chk.clicked.connect(self.clean_vp)
         self.ui.green_chk.clicked.connect(self.green)
 
+        self.ui.playblast_btn.clicked.connect(self.playblast)
+        self.ui.hud_chk.clicked.connect(self.custom_hud_chk)
+        self.ui.green_chk.clicked.connect(self.green_chk)
 
     def playblast(self):
         self.playblaster.playblast()
@@ -61,20 +62,22 @@ class ControlMainWindow(QtWidgets.QDialog):
     def green_chk(self):
         is_checked = self.ui.green_chk.checkState()
         if not is_checked:
+            filename = self.playblaster.pb_filename()
+            self.ui.filename_le.setText(filename)
             self.ui.cstmHud_chk.setDisabled(False)
             self.ui.cstmHud_le.setDisabled(False)
             self.ui.hud_chk.setDisabled(False)
             self.ui.clearViewport_chk.setDisabled(False)
-            filename = playblast_utils.pb_filename(green=False)
-            self.ui.filename_le.setText(filename)
+
 
         else:
+            filename = self.playblaster.pb_filename()
+            self.ui.filename_le.setText(filename)
             self.ui.cstmHud_chk.setDisabled(True)
             self.ui.cstmHud_le.setDisabled(True)
             self.ui.hud_chk.setDisabled(True)
             self.ui.clearViewport_chk.setDisabled(True)
-            filename = playblast_utils.pb_filename(green=True)
-            self.ui.filename_le.setText(filename)
+
 
 
     def custom_hud_chk(self):

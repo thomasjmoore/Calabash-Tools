@@ -16,66 +16,6 @@ def clean_hud():
     print menuitems
 
 
-
-def playblast(filename="", green=False, h=960, w=540, start="", end="", clean_vp=True, hud=True, custom_hud_text=""):
-    #
-    # Things to improve:
-    # -restore settings after playblast
-    # -turn off action/title safe
-    # -better file name detection/stop if no name is detected
-    #
-    if not filename:
-        raise Exception("Filename not provided")
-
-    if clean_vp:
-        set_cameras()
-        set_viewports(green)
-
-    if hud:
-        add_hud()
-    print custom_hud_text
-    if custom_hud_text:
-        custom_hud(custom_hud_text)
-
-    if green:
-        r, g, b = cmds.displayRGBColor("background", q=True)
-        rt, gt, bt = cmds.displayRGBColor("backgroundTop", q=True)
-        rb, gb, bb = cmds.displayRGBColor("backgroundBottom", q=True)
-
-        cmds.displayRGBColor("background", 0, 1, 0)
-        cmds.displayRGBColor("backgroundTop", 0, 1, 0)
-        cmds.displayRGBColor("backgroundBottom", 0, 1, 0)
-
-        remove_hud()
-
-    cmds.playblast(format = "qt",
-                   filename=filename,
-                   sequenceTime=False,
-                   clearCache=True,
-                   viewer=True,
-                   showOrnaments=True,
-                   offScreen=False,
-                   compression="H.264",
-                   quality=100,
-                   widthHeight=[w,h],
-                   st=start,
-                   et=end,
-                   percent=100,
-                   fo=True
-                   )
-
-    if clean_vp:
-        reset_viewports()
-
-    if green:
-        cmds.displayRGBColor("background", r, g, b)
-        cmds.displayRGBColor("backgroundTop", rt, gt, bt)
-        cmds.displayRGBColor("backgroundBottom", rb, gb, bb)
-
-    remove_hud()
-    return filename
-
-
 class Playblaster(object):
     green = False
     clean_vp = True
@@ -86,7 +26,7 @@ class Playblaster(object):
     h = 540
 
     def __init__(self):
-        self.proj = get_project()
+        self.proj = self.get_project()
         self.start, self.end = self.start_end()
         self.filename = self.pb_filename()
         # get viewport settings
@@ -102,7 +42,6 @@ class Playblaster(object):
         cmds.headsUpDisplay("HUDSceneName", section=5, block=1, blockSize="small", dfs="small", l=self.proj,
                             command="cmds.file(q=True, sn=True, shn=True)")
 
-    @staticmethod
     def framecount_hud(self):
         if cmds.headsUpDisplay("HUDFrameCount", exists=True):
             cmds.headsUpDisplay("HUDFrameCount", remove=True)
@@ -114,15 +53,14 @@ class Playblaster(object):
             cmds.headsUpDisplay("HUDCustom", remove=True)
         cmds.headsUpDisplay("HUDCustom", section=5, block=3, blockSize="small", dfs="large", label=text)
 
-    @staticmethod
     def get_project(self):
         projpath = cmds.workspace(q=True, sn=True)
         proj = os.path.basename(projpath)
         return proj
 
     def add_hud(self):
-        scene_name_hud()
-        framecount_hud()
+        self.scene_name_hud()
+        self.framecount_hud()
 
     def remove_hud(self):
         if cmds.headsUpDisplay("HUDSceneName", exists=True):
@@ -181,11 +119,11 @@ class Playblaster(object):
         if not mayafile:
             mayafile = "untitled"
         splitname = os.path.splitext(mayafile)
-        filename = "movies/%s" % splitname[0]
+        self.filename = "movies/%s" % splitname[0]
         if self.green:
-            filename = filename + ".green"
-        filename = filename + ".mov"
-        return filename
+            self.filename = self.filename + ".green"
+        self.filename = self.filename + ".mov"
+        return self.filename
 
     def start_end(self):
         self.start = int(oma.MAnimControl.minTime().value())
@@ -200,7 +138,6 @@ class Playblaster(object):
         # -make green alter current filename, not overwrite
         # -save name to option var
         # -add resolution presets dropdown, 960, HD, render globals, custom
-
 
         if self.clean_vp or self.green:
             self.set_cameras()
@@ -247,5 +184,5 @@ class Playblaster(object):
             cmds.displayRGBColor("backgroundTop", rt, gt, bt)
             cmds.displayRGBColor("backgroundBottom", rb, gb, bb)
 
-        remove_hud()
+        self.remove_hud()
         return self.filename
