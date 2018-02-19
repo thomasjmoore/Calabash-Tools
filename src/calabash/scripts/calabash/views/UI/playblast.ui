@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Playblast</string>
+   <string>Playblast-O-Scope</string>
   </property>
   <layout class="QVBoxLayout" name="main_vlt">
    <property name="spacing">
@@ -54,7 +54,7 @@
        <item>
         <widget class="QLabel" name="title_lbl">
          <property name="text">
-          <string>Playblast</string>
+          <string>-- Playblast-O-Scope --</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

@@ -99,10 +99,10 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.playblaster.w = int(self.ui.width_le.text())
 
     def start(self):
-        self.playblaster.start = self.ui.start_le.text()
+        self.playblaster.start = int(self.ui.start_le.text())
 
     def end(self):
-        self.playblaster.end = self.ui.end_le.text()
+        self.playblaster.end = int(self.ui.end_le.text())
 
     def hud(self):
         self.playblaster.hud = self.ui.hud_chk.checkState()

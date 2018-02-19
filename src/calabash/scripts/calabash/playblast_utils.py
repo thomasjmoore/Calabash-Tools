@@ -24,6 +24,10 @@ class Playblaster(object):
     custom_hud_text = ""
     w = 960
     h = 540
+    modelPanel = ""
+
+    # viewportSettings
+
 
     def __init__(self):
         self.proj = self.get_project()
@@ -72,18 +76,63 @@ class Playblaster(object):
         if cmds.headsUpDisplay("HUDCustom", exists=True):
             cmds.headsUpDisplay("HUDCustom", remove=True)
 
-    def reset_viewports(self):
-        modelPanelList = []
-        modelEditorList = pm.lsUI(editors=True)
-        for myModelPanel in modelEditorList:
-            if myModelPanel.find('modelPanel') != -1:
-                modelPanelList.append(myModelPanel)
+    def get_active_viewport(self):
+        active_panel = pmui.ModelEditor(pm.getPanel(withFocus=True))
+        model_editor_list = pm.lsUI(editors=True)
 
-        for modelPanel in modelPanelList:
-            pmui.ModelEditor(modelPanel).setAllObjects(True)
-            # pmui.ModelEditor(modelPanel).setGrid(True)
-            pmui.ModelEditor(modelPanel).setSelectionHiliteDisplay(True)
-            pmui.ModelEditor(modelPanel).setHeadsUpDisplay(True)
+        for myModelPanel in model_editor_list:
+            if myModelPanel.find(active_panel) != -1:
+                model_editor = myModelPanel
+
+        if pm.getPanel(to=active_panel) == "modelPanel":
+            self.modelPanel = model_editor
+            return model_editor
+        else:
+            self.modelPanel = ""
+            pm.displayWarning("No viewport active.")
+            return None
+
+    def reset_viewports(self):
+        pmui.ModelEditor(self.modelPanel).setNurbsCurves(self.vp_curves)
+        pmui.ModelEditor(self.modelPanel).setNurbsSurfaces(self.vp_nurbs)
+        pmui.ModelEditor(self.modelPanel).setControlVertices(self.vp_cvs)
+        pmui.ModelEditor(self.modelPanel).setHulls(self.vp_hulls)
+        pmui.ModelEditor(self.modelPanel).setPolymeshes(self.vp_polys)
+        pmui.ModelEditor(self.modelPanel).setSubdivSurfaces(self.vp_subdivs)
+        pmui.ModelEditor(self.modelPanel).setPlanes(self.vp_planes)
+        pmui.ModelEditor(self.modelPanel).setLights(self.vp_lights)
+        pmui.ModelEditor(self.modelPanel).setCameras(self.vp_cameras)
+        pmui.ModelEditor(self.modelPanel).setImagePlane(self.vp_imageplanes)
+        pmui.ModelEditor(self.modelPanel).setJoints(self.vp_joints)
+        pmui.ModelEditor(self.modelPanel).setIkHandles(self.vp_iks)
+        pmui.ModelEditor(self.modelPanel).setDeformers(self.vp_deformers)
+        pmui.ModelEditor(self.modelPanel).setDynamics(self.vp_dynamics)
+        cmds.modelEditor(self.modelPanel, particleInstancers=self.vp_instancers, e=True)
+        pmui.ModelEditor(self.modelPanel).setFluids(self.vp_fluids)
+        pmui.ModelEditor(self.modelPanel).setHairSystems(self.vp_hair)
+        pmui.ModelEditor(self.modelPanel).setFollicles(self.vp_follicles)
+        pmui.ModelEditor(self.modelPanel).setNCloths(self.vp_nCloths)
+        pmui.ModelEditor(self.modelPanel).setNParticles(self.vp_nParticles)
+        pmui.ModelEditor(self.modelPanel).setNRigids(self.vp_nRigids)
+        pmui.ModelEditor(self.modelPanel).setDynamicConstraints(self.vp_dynconstraints)
+        pmui.ModelEditor(self.modelPanel).setLocators(self.vp_locators)
+        pmui.ModelEditor(self.modelPanel).setDimensions(self.vp_dimensions)
+        pmui.ModelEditor(self.modelPanel).setPivots(self.vp_pivots)
+        pmui.ModelEditor(self.modelPanel).setHandles(self.vp_handles)
+        pmui.ModelEditor(self.modelPanel).setTextures(self.vp_textureplacements)
+        pmui.ModelEditor(self.modelPanel).setStrokes(self.vp_strokes)
+        pmui.ModelEditor(self.modelPanel).setMotionTrails(self.vp_motiontrails)
+        #pmui.ModelEditor(self.modelPanel).pluginShapes(self.vp_pluginshapes)
+        cmds.modelEditor(self.modelPanel, clipGhosts=self.vp_clipghosts, e=True)
+        cmds.modelEditor(self.modelPanel, greasePencils=self.vp_greasepencil, e=True)
+        #self.vp_gpucache = cmds.modelEditor(self.modelPanel, queryPluginObjects="gpuCacheDisplayFilter", q=True)
+
+        pmui.ModelEditor(self.modelPanel).setManipulators(self.vp_manipulators)
+        pmui.ModelEditor(self.modelPanel).setGrid(self.vp_grid)
+        pmui.ModelEditor(self.modelPanel).setHeadsUpDisplay(self.vp_hud)
+        cmds.modelEditor(self.modelPanel, hos=self.vp_holdouts, e=True)
+        pmui.ModelEditor(self.modelPanel).setSelectionHiliteDisplay(self.vp_selectionhighlighting)
+
 
     def set_cameras(self):
         cams = pm.ls(type="camera")
@@ -93,27 +142,97 @@ class Playblaster(object):
             cam.displaySafeTitle.set(0)
 
     def set_viewports(self):
+
         hrg = pm.PyNode("hardwareRenderingGlobals")
         hrg.multiSampleEnable.set(1)
 
-        modelPanelList = []
-        modelEditorList = pm.lsUI(editors=True)
-        for myModelPanel in modelEditorList:
-            if myModelPanel.find('modelPanel') != -1:
-                modelPanelList.append(myModelPanel)
+        pmui.ModelEditor(self.modelPanel).setNurbsCurves(False)
+        pmui.ModelEditor(self.modelPanel).setNurbsSurfaces(False)
+        pmui.ModelEditor(self.modelPanel).setControlVertices(False)
+        pmui.ModelEditor(self.modelPanel).setHulls(False)
+        pmui.ModelEditor(self.modelPanel).setPolymeshes(True)
+        pmui.ModelEditor(self.modelPanel).setSubdivSurfaces(False)
+        pmui.ModelEditor(self.modelPanel).setPlanes(False)
+        pmui.ModelEditor(self.modelPanel).setLights(False)
+        pmui.ModelEditor(self.modelPanel).setCameras(False)
+        pmui.ModelEditor(self.modelPanel).setImagePlane(False)
+        pmui.ModelEditor(self.modelPanel).setJoints(False)
+        pmui.ModelEditor(self.modelPanel).setIkHandles(False)
+        pmui.ModelEditor(self.modelPanel).setDeformers(False)
+        pmui.ModelEditor(self.modelPanel).setDynamics(False)
+        cmds.modelEditor(self.modelPanel, particleInstancers=False, e=True)
+        pmui.ModelEditor(self.modelPanel).setFluids(False)
+        pmui.ModelEditor(self.modelPanel).setHairSystems(False)
+        pmui.ModelEditor(self.modelPanel).setFollicles(False)
+        pmui.ModelEditor(self.modelPanel).setNCloths(False)
+        pmui.ModelEditor(self.modelPanel).setNParticles(False)
+        pmui.ModelEditor(self.modelPanel).setNRigids(False)
+        pmui.ModelEditor(self.modelPanel).setDynamicConstraints(False)
+        pmui.ModelEditor(self.modelPanel).setLocators(False)
+        pmui.ModelEditor(self.modelPanel).setDimensions(False)
+        pmui.ModelEditor(self.modelPanel).setPivots(False)
+        pmui.ModelEditor(self.modelPanel).setHandles(False)
+        pmui.ModelEditor(self.modelPanel).setTextures(False)
+        pmui.ModelEditor(self.modelPanel).setStrokes(False)
+        pmui.ModelEditor(self.modelPanel).setMotionTrails(False)
+        #pmui.ModelEditor(self.modelPanel).pluginShapes(False)
+        cmds.modelEditor(self.modelPanel, clipGhosts=False, e=True)
+        cmds.modelEditor(self.modelPanel, greasePencils=False, e=True)
+        #self.vp_gpucache = cmds.modelEditor(self.modelPanel, queryPluginObjects="gpuCacheDisplayFilter", q=True)
 
-        for modelPanel in modelPanelList:
-            pmui.ModelEditor(modelPanel).setAllObjects(False)
-            pmui.ModelEditor(modelPanel).setNurbsSurfaces(True)
-            pmui.ModelEditor(modelPanel).setPolymeshes(True)
-            pmui.ModelEditor(modelPanel).setControlVertices(False)
-            pmui.ModelEditor(modelPanel).setGrid(False)
-            pmui.ModelEditor(modelPanel).setSelectionHiliteDisplay(False)
+        pmui.ModelEditor(self.modelPanel).setManipulators(False)
+        pmui.ModelEditor(self.modelPanel).setGrid(False)
+        pmui.ModelEditor(self.modelPanel).setHeadsUpDisplay(not self.green)
+        cmds.modelEditor(self.modelPanel, hos=False, e=True)
+        pmui.ModelEditor(self.modelPanel).setSelectionHiliteDisplay(False)
 
-            if self.green:
-                pmui.ModelEditor(modelPanel).setHeadsUpDisplay(False)
-            else:
-                pmui.ModelEditor(modelPanel).setHeadsUpDisplay(True)
+        #if self.green:
+        #    pmui.ModelEditor(self.modelPanel).setHeadsUpDisplay(False)
+        #else:
+        #    pmui.ModelEditor(self.modelPanel).setHeadsUpDisplay(True)
+
+    def get_veiwport_settings(self):
+        self.vp_curves = pmui.ModelEditor(self.modelPanel).getNurbsCurves()
+        self.vp_nurbs = pmui.ModelEditor(self.modelPanel).getNurbsSurfaces()
+        self.vp_cvs = pmui.ModelEditor(self.modelPanel).getControlVertices()
+        self.vp_hulls = pmui.ModelEditor(self.modelPanel).getHulls()
+        self.vp_polys = pmui.ModelEditor(self.modelPanel).getPolymeshes()
+        self.vp_subdivs = pmui.ModelEditor(self.modelPanel).getSubdivSurfaces()
+        self.vp_planes = pmui.ModelEditor(self.modelPanel).getPlanes()
+        self.vp_lights = pmui.ModelEditor(self.modelPanel).getLights()
+        self.vp_cameras = pmui.ModelEditor(self.modelPanel).getCameras()
+        self.vp_imageplanes = pmui.ModelEditor(self.modelPanel).getImagePlane()
+        self.vp_joints = pmui.ModelEditor(self.modelPanel).getJoints()
+        self.vp_iks = pmui.ModelEditor(self.modelPanel).getIkHandles()
+        self.vp_deformers = pmui.ModelEditor(self.modelPanel).getDeformers()
+        self.vp_dynamics = pmui.ModelEditor(self.modelPanel).getDynamics()
+        self.vp_instancers = cmds.modelEditor(self.modelPanel, particleInstancers=True, q=True)
+        self.vp_fluids = pmui.ModelEditor(self.modelPanel).getFluids()
+        self.vp_hair = pmui.ModelEditor(self.modelPanel).getHairSystems()
+        self.vp_follicles = pmui.ModelEditor(self.modelPanel).getFollicles()
+        self.vp_nCloths = pmui.ModelEditor(self.modelPanel).getNCloths()
+        self.vp_nParticles = pmui.ModelEditor(self.modelPanel).getNParticles()
+        self.vp_nRigids = pmui.ModelEditor(self.modelPanel).getNRigids()
+        self.vp_dynconstraints = pmui.ModelEditor(self.modelPanel).getDynamicConstraints()
+        self.vp_locators = pmui.ModelEditor(self.modelPanel).getLocators()
+        self.vp_dimensions = pmui.ModelEditor(self.modelPanel).getDimensions()
+        self.vp_pivots = pmui.ModelEditor(self.modelPanel).getPivots()
+        self.vp_handles = pmui.ModelEditor(self.modelPanel).getHandles()
+        self.vp_textureplacements = pmui.ModelEditor(self.modelPanel).getTextures()
+        self.vp_strokes = pmui.ModelEditor(self.modelPanel).getStrokes()
+        self.vp_motiontrails = pmui.ModelEditor(self.modelPanel).getMotionTrails()
+        self.vp_pluginshapes = pmui.ModelEditor(self.modelPanel).pluginShapes()
+        self.vp_clipghosts = cmds.modelEditor(self.modelPanel, clipGhosts=True, q=True)
+        self.vp_greasepencil = cmds.modelEditor(self.modelPanel, greasePencils=True, q=True)
+        self.vp_gpucache = cmds.modelEditor(self.modelPanel, queryPluginObjects="gpuCacheDisplayFilter", q=True)
+
+        self.vp_manipulators = pmui.ModelEditor(self.modelPanel).getManipulators()
+        self.vp_grid = pmui.ModelEditor(self.modelPanel).getGrid()
+        self.vp_hud = pmui.ModelEditor(self.modelPanel).getHeadsUpDisplay()
+        self.vp_holdouts = cmds.modelEditor(self.modelPanel, hos=True, q=True)
+        self.vp_selectionhighlighting = pmui.ModelEditor(self.modelPanel).getSelectionHiliteDisplay()
+
+
 
     def pb_filename(self):
         mayafile = cmds.file(q=True, sn=True, shn=True)
@@ -139,7 +258,12 @@ class Playblaster(object):
         # -make green alter current filename, not overwrite
         # -save name to option var
         # -add resolution presets dropdown, 960, HD, render globals, custom
+        self.get_active_viewport()
+        if not self.modelPanel:
+            return
 
+        self.get_veiwport_settings()
+        #return
         if self.clean_vp or self.green:
             self.set_cameras()
             self.set_viewports()
