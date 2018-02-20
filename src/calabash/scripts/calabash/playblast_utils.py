@@ -25,6 +25,10 @@ class Playblaster(object):
     w = 960
     h = 540
     modelPanel = ""
+    default_color = [0,1,0]
+    overwrite = True
+    editname = False
+
 
     # viewportSettings
 
@@ -232,14 +236,18 @@ class Playblaster(object):
         self.vp_holdouts = cmds.modelEditor(self.modelPanel, hos=True, q=True)
         self.vp_selectionhighlighting = pmui.ModelEditor(self.modelPanel).getSelectionHiliteDisplay()
 
+    def render_resolution(self):
 
+        w = str(cmds.getAttr("defaultResolution.width"))
+        h = str(cmds.getAttr("defaultResolution.height"))
+        return w, h
 
     def pb_filename(self):
         mayafile = cmds.file(q=True, sn=True, shn=True)
         if not mayafile:
             mayafile = "untitled"
         splitname = os.path.splitext(mayafile)
-        self.filename = "movies/%s" % splitname[0]
+        self.filename = os.path.join("movies", splitname[0])
         if self.green:
             self.filename = self.filename + ".green"
         self.filename = self.filename + ".mov"
@@ -249,6 +257,7 @@ class Playblaster(object):
         self.start = int(oma.MAnimControl.minTime().value())
         self.end = int(oma.MAnimControl.maxTime().value())
         return self.start, self.end
+
 
     def playblast(self):
         #
@@ -262,8 +271,22 @@ class Playblaster(object):
         if not self.modelPanel:
             return
 
+        if not self.overwrite:
+            proj = cmds.workspace(q=True, fullName=True)
+            if os.path.exists(os.path.join(proj, self.filename)):
+                if cmds.file(modified=True, q=True):
+                    overwrite = cmds.confirmDialog(title="Playblasts Exists",
+                                              message="Overwrite Existing Playblast?",
+                                              button=["Overwrite", "Cancel"],
+                                              defaultButton="Overwrite",
+                                              cancelButton="Cancel",
+                                              dismissString="Cancel")
+                    if not overwrite == "Overwrite":
+                        cmds.warning("Action canceled")
+                        return
+
         self.get_veiwport_settings()
-        #return
+
         if self.clean_vp or self.green:
             self.set_cameras()
             self.set_viewports()
@@ -279,9 +302,9 @@ class Playblaster(object):
             rt, gt, bt = cmds.displayRGBColor("backgroundTop", q=True)
             rb, gb, bb = cmds.displayRGBColor("backgroundBottom", q=True)
 
-            cmds.displayRGBColor("background", 0, 1, 0)
-            cmds.displayRGBColor("backgroundTop", 0, 1, 0)
-            cmds.displayRGBColor("backgroundBottom", 0, 1, 0)
+            cmds.displayRGBColor("background", *self.default_color)
+            cmds.displayRGBColor("backgroundTop", *self.default_color)
+            cmds.displayRGBColor("backgroundBottom", *self.default_color)
             print "green triggered"
             self.remove_hud()
 
