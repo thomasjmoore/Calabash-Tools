@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>350</height>
+    <height>421</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -79,6 +79,9 @@
        <property name="topMargin">
         <number>0</number>
        </property>
+       <property name="rightMargin">
+        <number>20</number>
+       </property>
        <item row="0" column="0">
         <widget class="QLabel" name="filename_lbl">
          <property name="sizePolicy">
@@ -103,24 +106,44 @@
           <string>Filename:</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="buddy">
           <cstring>filename_le</cstring>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="filename_le">
-         <property name="enabled">
-          <bool>true</bool>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
          </property>
-         <property name="readOnly">
-          <bool>false</bool>
+         <property name="text">
+          <string>Overwrite:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="overwrite_chk">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="Line" name="line_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
         <widget class="QLabel" name="widthHeight_lbl">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -138,14 +161,14 @@
           <string>Width/Height:</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="buddy">
           <cstring>width_le</cstring>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="3" column="1">
         <layout class="QHBoxLayout" name="widthHeight_hlt">
          <property name="spacing">
           <number>4</number>
@@ -189,7 +212,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="loadRender_btn">
            <property name="sizePolicy">
             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -225,7 +248,7 @@
          </item>
         </layout>
        </item>
-       <item row="2" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="startEnd_lbl">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -243,14 +266,14 @@
           <string>Start/End Frame:</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
          <property name="buddy">
           <cstring>start_le</cstring>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="4" column="1">
         <layout class="QHBoxLayout" name="startEnd_hlt">
          <property name="spacing">
           <number>4</number>
@@ -302,24 +325,14 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="1">
+       <item row="5" column="1">
         <widget class="Line" name="line">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="QCheckBox" name="hud_chk">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -337,11 +350,37 @@
           <string>Scene Info Hud:</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
+        <widget class="QCheckBox" name="hud_chk">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="minimumSize">
+          <size>
+           <width>120</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Custom HUD:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
         <layout class="QHBoxLayout" name="cstmHud_hlt">
          <property name="spacing">
           <number>4</number>
@@ -368,47 +407,14 @@
          </item>
         </layout>
        </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="minimumSize">
-          <size>
-           <width>120</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Custom HUD:</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="1">
+       <item row="9" column="1">
         <widget class="Line" name="line_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
-        <widget class="QCheckBox" name="clearViewport_chk">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QCheckBox" name="green_chk">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0">
+       <item row="10" column="0">
         <widget class="QLabel" name="label_3">
          <property name="minimumSize">
           <size>
@@ -420,11 +426,21 @@
           <string>Only Show Polygons:</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
+       <item row="10" column="1">
+        <widget class="QCheckBox" name="clearViewport_chk">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0">
         <widget class="QLabel" name="label_4">
          <property name="minimumSize">
           <size>
@@ -433,12 +449,79 @@
           </size>
          </property>
          <property name="text">
-          <string>Green Background:</string>
+          <string>Set BG Color:</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="spacing">
+          <number>10</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="filename_le">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>250</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="readOnly">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="editName_chk">
+           <property name="text">
+            <string>Edit</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="11" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <property name="spacing">
+          <number>10</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QCheckBox" name="green_chk">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="color_btn">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>
@@ -456,11 +539,31 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="playblast_btn">
-       <property name="text">
-        <string>Playblast!</string>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <property name="topMargin">
+        <number>0</number>
        </property>
-      </widget>
+       <item>
+        <widget class="QPushButton" name="playblast_btn">
+         <property name="text">
+          <string>Playblast!</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="reset_btn">
+         <property name="maximumSize">
+          <size>
+           <width>150</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Reset</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
