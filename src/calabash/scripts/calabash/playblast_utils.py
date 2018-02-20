@@ -308,6 +308,12 @@ class Playblaster(object):
             print "green triggered"
             self.remove_hud()
 
+        audio_list = cmds.ls(type="audio")
+        if audio_list:
+            audio = audio_list[0]
+        else:
+            audio =""
+
         cmds.playblast(format="qt",
                        filename=self.filename,
                        sequenceTime=False,
@@ -321,7 +327,8 @@ class Playblaster(object):
                        st=self.start,
                        et=self.end,
                        percent=100,
-                       fo=True
+                       fo=True,
+                       sound=audio
                        )
 
         if self.clean_vp or self.green:
