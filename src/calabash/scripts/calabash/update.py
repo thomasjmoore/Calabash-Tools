@@ -48,18 +48,14 @@ def download():
 
 
 def install(zip_file=""):
-    print zip_file
-    print script_path
     calabash_path = os.path.dirname(script_path)
     module_path = os.path.dirname(calabash_path)
-
 
     if os.path.exists("%s.mod"%(calabash_path)):
         os.remove("%s.mod"%(calabash_path))
 
     if os.path.exists(calabash_path):
         shutil.rmtree(calabash_path)
-
 
     zipname = os.path.splitext(zip_file)
     unzipped_files = os.path.join(zipname[0], "Calabash-Tools-master", "src")
@@ -69,25 +65,22 @@ def install(zip_file=""):
     zip = zipfile.ZipFile(zip_file)
     zip.extractall(zipname[0])
 
-    print unzipped_files
-    print os.path.exists("%s%s%s.mod"%(unzipped_files, os.path.sep,"calabash"))
-    print ("%s%s%s.mod"%(calabash_path, os.path.sep,"calabash"))
-    print os.path.exists("%s%s%s"%(unzipped_files, os.path.sep,"calabash"))
-    print ("%s%s%s"%(calabash_path, os.path.sep,"calabash"))
     shutil.copy2("%s%s%s.mod"%(unzipped_files, os.path.sep,"calabash"), "%s%s%s.mod"%(module_path, os.path.sep,"calabash"))
     shutil.copytree("%s%s%s"%(unzipped_files, os.path.sep,"calabash"), "%s%s%s"%(module_path, os.path.sep,"calabash"))
+
+    print("Calabash Tools Update Installed")
 
 def check():
     update = check_version()
     if not update:
-        print("Tool up to date")
+        print("Calabash Tools are up to date")
         return
 
     print("Update found")
     zip_file = download()
 
     if not zip_file:
-        cmds.warning("Download unsuccesful")
+        cmds.warning("Download unsuccesful.")
         return
 
     install(zip_file)
