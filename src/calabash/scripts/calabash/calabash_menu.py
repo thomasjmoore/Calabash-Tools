@@ -52,6 +52,7 @@ def calabash_menu():
 
     # General Submenu
     cmds.menuItem(p=general_submenu, label='Increase File Version', c='from calabash import increaseVersion;reload(increaseVersion);increaseVersion.versionUp()')
+    cmds.menuItem(p=general_submenu, label='Check For Updates...', c='from calabash import update;reload(update);update.check()')
 
 
     ###############################################################################
