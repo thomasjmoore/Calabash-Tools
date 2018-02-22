@@ -74,7 +74,7 @@ def calabash_menu():
 
     #cmds.menuItem(p=ani_submenu, label='Playblast', c='from calabash import playblast_utils;reload(playblast_utils);playblast_utils.make_playblast()')
     #cmds.menuItem(p=ani_submenu, label='Playblast Green Screen', c='from calabash import playblast_utils;reload(playblast_utils);playblast_utils.make_playblast(green=True)')
-    cmds.menuItem(p=ani_submenu, label='Playblast-O-Scope', c='from calabash.views import playblast_view;reload(playblast_view);playblast_view.launch()')
+    cmds.menuItem(p=ani_submenu, label='Playblast-O-Scope', c='from calabash import playblast;reload(playblast);playblast.launch()')
 
 
     ###############################################################################
