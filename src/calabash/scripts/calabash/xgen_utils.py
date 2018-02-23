@@ -15,7 +15,7 @@ def cache_groomableSplines(desc = []):
 
     fileName, num, ext = file.split(".")
 
-    curProj = cmds.workspace(sn=True, q=True)
+    curProj = cmds.workspace(fn=True, q=True)
     print fileName
     if not os.path.exists(os.path.join(curProj, "cache", "alembic", fileName)):
         os.mkdir(os.path.join(curProj, "cache", "alembic", fileName))
