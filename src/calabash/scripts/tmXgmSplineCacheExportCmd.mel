@@ -3,7 +3,7 @@ global proc tmXgmSplineCacheExportCmd(string $flag, string $file, int $start, in
 
     float $startFrame = $start;
     float $endFrame = $end;
-    /*
+/*
     float $step = `optionVar -q xgmSplieCacheExportStep`;
 
     int   $relativeSample = `optionVar -q xgmSplieCacheExportEnableFrameRelativeSamples`;
@@ -16,8 +16,8 @@ global proc tmXgmSplineCacheExportCmd(string $flag, string $file, int $start, in
 
     int   $multiXForm = `optionVar -q xgmSplieCacheExportMultipleTransforms`;
     int   $finalWidth = `optionVar -q xgmSplieCacheExportWriteFinalWidth`;
-    */
 
+*/
     string $format = "hdf5";
     int   $dataFormat = `optionVar -q xgmSplieCacheExportDataFormat`;
     if($dataFormat)
@@ -29,7 +29,9 @@ global proc tmXgmSplineCacheExportCmd(string $flag, string $file, int $start, in
     string $jobCommand = " -file " + "\"" +  $files + "\"";
     $jobCommand += " -df " + $format;
     $jobCommand += " -fr " + $startFrame + " " + $endFrame;
+    /*
     $jobCommand += " -step " + $step;
+
 
     if($relativeSample)
     {
@@ -53,7 +55,7 @@ global proc tmXgmSplineCacheExportCmd(string $flag, string $file, int $start, in
     {
         $jobCommand += " -wfw";
     }
-
+*/
     string $objs[] = `ls -sl`;
     for($obj in $objs)
     {
