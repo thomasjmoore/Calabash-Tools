@@ -21,6 +21,7 @@ def calabash_menu():
     general_submenu = cmds.menuItem('general_sub', p=calabash_menu, subMenu=True, label='General', tearOff=True)
     rigging_submenu = cmds.menuItem('rigging_sub', p=calabash_menu, subMenu=True, label='Rigging', tearOff=True)
     ani_submenu = cmds.menuItem('ani_sub', p=calabash_menu, subMenu=True, label='Animation', tearOff=True)
+    xgen_submenu = cmds.menuItem('xgen_sub', p=calabash_menu, subMenu=True, label='XGen', tearOff=True)
     hatch_submenu = cmds.menuItem('hatch_sub', p=calabash_menu, subMenu=True, label='Hatchimals', tearOff=True)
 
     ###############################################################################
@@ -74,7 +75,16 @@ def calabash_menu():
 
     #cmds.menuItem(p=ani_submenu, label='Playblast', c='from calabash import playblast_utils;reload(playblast_utils);playblast_utils.make_playblast()')
     #cmds.menuItem(p=ani_submenu, label='Playblast Green Screen', c='from calabash import playblast_utils;reload(playblast_utils);playblast_utils.make_playblast(green=True)')
-    cmds.menuItem(p=ani_submenu, label='Playblast-O-Scope', c='from calabash.views import playblast_view;reload(playblast_view);playblast_view.launch()')
+    cmds.menuItem(p=ani_submenu, label='Playblast-O-Scope', c='from calabash import playblast;reload(playblast);playblast.launch()')
+
+
+    ###############################################################################
+
+    # XGen Submenu
+
+
+    cmds.menuItem(p=xgen_submenu, label='Cache Descriptions', c='from calabash import xgen_utils;reload(xgen_utils);xgen_utils.cache_groomableSplines()')
+    cmds.menuItem(p=xgen_submenu, label='Repath Caches', c='from calabash import xgen_utils;reload(xgen_utils);xgen_utils.repath_caches()')
 
 
     ###############################################################################

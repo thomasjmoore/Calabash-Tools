@@ -1,6 +1,6 @@
 from ..lib.Qt import QtCore, QtGui, QtWidgets
 import playblast_ui as customUI
-from .. import playblast_utils
+from . import playblast_utils
 from maya import cmds
 import pymel.core as pm
 
@@ -13,6 +13,10 @@ import maya.OpenMayaUI as omui
 
 reload(playblast_utils)
 reload(customUI)
+
+__all__ = [
+    'launch',
+    ]
 
 def maya_main_window():
     main_window_ptr = omui.MQtUtil.mainWindow()

@@ -1,0 +1,65 @@
+global proc tmXgmSplineCacheExportCmd(string $flag, string $file, int $start, int $end)
+{
+
+    float $startFrame = $start;
+    float $endFrame = $end;
+    /*
+    float $step = `optionVar -q xgmSplieCacheExportStep`;
+
+    int   $relativeSample = `optionVar -q xgmSplieCacheExportEnableFrameRelativeSamples`;
+    float $sampleLow = `optionVar -q xgmSplieCacheExportLowFrameRelativeSamples`;
+    float $sampleHight = `optionVar -q xgmSplieCacheExportHighFrameRelativeSamples`;
+
+    int   $preRoll = `optionVar -q xgmSplieCacheExportEnablePreRoll`;
+    int   $preRollStart = `optionVar -q xgmSplieCacheExportPreRollStartFrame`;
+    int   $preRollStep = `optionVar -q xgmSplieCacheExportPreRollStep`;
+
+    int   $multiXForm = `optionVar -q xgmSplieCacheExportMultipleTransforms`;
+    int   $finalWidth = `optionVar -q xgmSplieCacheExportWriteFinalWidth`;
+    */
+
+    string $format = "hdf5";
+    int   $dataFormat = `optionVar -q xgmSplieCacheExportDataFormat`;
+    if($dataFormat)
+        $format = "ogawa";
+
+    //$files[0] = "Z:/raid/3Dprojects/maya/projects/Pikmi_Pops/data/testCache02.abc";
+    string $files = $file;
+
+    string $jobCommand = " -file " + "\"" +  $files + "\"";
+    $jobCommand += " -df " + $format;
+    $jobCommand += " -fr " + $startFrame + " " + $endFrame;
+    $jobCommand += " -step " + $step;
+
+    if($relativeSample)
+    {
+        $jobCommand += " -frs " + $sampleLow;
+        $jobCommand += " -frs " + $sampleHight;
+    }
+
+    if($preRoll)
+    {
+        $jobCommand += " -pr";
+        $jobCommand += " -pfs " + $preRollStart;
+        $jobCommand += " -ps " + $preRollStep;
+    }
+
+    if($multiXForm)
+    {
+        $jobCommand += " -mxf";
+    }
+
+    if($finalWidth)
+    {
+        $jobCommand += " -wfw";
+    }
+
+    string $objs[] = `ls -sl`;
+    for($obj in $objs)
+    {
+        $jobCommand += " -obj " + $obj;
+    }
+
+    xgmSplineCache $flag -j $jobCommand;
+}
+
