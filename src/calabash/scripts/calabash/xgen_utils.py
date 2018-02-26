@@ -75,7 +75,7 @@ def repath_caches():
         #new_path = "FRANCIS\\Users\\tom4p\\Desktop\%s"% valSplit[-1]
         #print new_path
 
-        cmds.setAttr("%s.fileName"%cache, "\\\\%s"%new_path, type="string")
+        cmds.setAttr("%s.fileName"%cache, "\\%s"%new_path, type="string")
         #cmds.setAttr("%s.fileName"%cache, "\\\\FRANCIS\\Users\\tom4p\\Desktop\%s"% valSplit[-1], type="string")
         #cmds.setAttr("%s.fileName"%cache, val, type="string")
         cmds.setAttr("%s.activeDescription"%cache, loaded_data, type="string")
