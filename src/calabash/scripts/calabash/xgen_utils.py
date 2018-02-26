@@ -66,16 +66,19 @@ def repath_caches():
         loaded_data = cmds.getAttr("%s.activeDescription"%cache)
         print loaded_data
 
-
+        curProj = os.path.basename(cmds.workspace(sn=True, q=True))
         val = cmds.getAttr("%s.fileName"%cache)
         valSplit = splitpath(val)
-        del valSplit[0]
+        del valSplit[0:-4]
         print valSplit
-        new_path = "\\".join(valSplit)
+        network_path = r"\raid\3Dprojects\maya\projects"
+        combined_path = [network_path] + [curProj] + valSplit
+        print combined_path
+        new_path = "\\".join(combined_path)
         #new_path = "FRANCIS\\Users\\tom4p\\Desktop\%s"% valSplit[-1]
         #print new_path
 
-        cmds.setAttr("%s.fileName"%cache, "\\%s"%new_path, type="string")
+        cmds.setAttr("%s.fileName"%cache, new_path, type="string")
         #cmds.setAttr("%s.fileName"%cache, "\\\\FRANCIS\\Users\\tom4p\\Desktop\%s"% valSplit[-1], type="string")
         #cmds.setAttr("%s.fileName"%cache, val, type="string")
         cmds.setAttr("%s.activeDescription"%cache, loaded_data, type="string")
