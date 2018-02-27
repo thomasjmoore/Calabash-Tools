@@ -10,6 +10,9 @@ def cache_groomableSplines(desc = []):
     mel.eval('ogs -pause;')
     start = int(oma.MAnimControl.minTime().value())
     end = int(oma.MAnimControl.maxTime().value())
+    relative_sample = 0
+    sample_low = 0
+    sample_high = 1
     currentFile = cmds.file(location=True, query=True)
     path, file = os.path.split(currentFile)
 
@@ -47,7 +50,7 @@ def cache_groomableSplines(desc = []):
 
         #mel.eval('xgmSplineCache -create -j -file "Z:/raid/3Dprojects/maya/projects/Pikmi_Pops/data/testCache52.abc" -df ogawa -fr 1 62 -step 1 -obj ANIM:EBB:ebby_feet;')
         #mel.eval('tmXgmSplineCacheExportCmd -create "Z:/raid/3Dprojects/maya/projects/Pikmi_Pops/data/testCache02.abc" 1  10 {"pichiTail"}')
-        melCmd = ('tmXgmSplineCacheExportCmd -create "%s" %s %s' % (cache_path, start, end))
+        melCmd = ('tmXgmSplineCacheExportCmd -create "%s" %s %s %s %s %s' % (cache_path, start, end, relative_sample, sample_low, sample_high))
         #print melCmd
 
         mel.eval(melCmd)

@@ -1,0 +1,1291 @@
+/*	smedgeRender.mel
+ *
+ *	Smedge integration with Maya
+ *
+ *	Smedge
+ *	Copyright (c) 2004 - 2016 Uberware. All Rights Reserved
+ */
+
+
+ 
+/**********************************************************************************\
+|                                                                                  |
+|                               Instructions                                       |
+|                               ============                                       |
+|                                                                                  |
+|  This script provides a Smedge submit interface directly inside of Maya.         |
+|  It also integrates with the Render menu making it easy to set up your system    |
+|  to send renders to Smedge.                                                      |
+|                                                                                  |
+|  The first time you run it, it will ask you to specify the path to the "Submit"  |
+|  shell executable. This is the Smedge component application that actually does   |
+|  the work of submitting jobs to the system. You can browse for the executable    |
+|  on your system. Common installation locations may be:                           |
+|                                                                                  |
+|       Windows:    C:\Program Files (x86)\Smedge\Submit.exe                       |
+|       Mac:        /Applications/Smedge.app/Contents/MacOS/Submit                 |
+|                                                                                  |
+|  Most of the settings correspond directly to the same settings on the SmedgeGui  |
+|  Submit Job window. It will always use the currently open scene file and         |
+|  project and can optionally use the defaults or current scene values for other   |
+|  Maya settings.                                                                  |
+|                                                                                  |
+|  It can be set to remember the last settings you used for a file, so you can     |
+|  quickly resubmit a scene with the same settings, say if you update it, without  |
+|  opening the submit window and pressing the button.                              |
+|                                                                                  |
+|  If you have any questions about this script, find any bugs, or have ideas       |
+|  to make it better, please contact Uberware support: support@uberware.net        |
+|                                                                                  |
+\**********************************************************************************/
+
+
+
+// Gets the filename for the settings file based on the "Remember" setting
+// Passing 1 for the parameter gets a temp filename when the user is in "Always Use Defaults" mode
+// Passing 0 will not return a filename in this mode
+// Returns the path of the file, or an empty string
+proc string smedge_GetSettingsFile( int $getDefaultFile )
+{
+	string $path;
+	int $remember = `optionVar -ex "smedge_SubmitRemember"` ? `optionVar -q "smedge_SubmitRemember"` : 1;
+	switch( $remember )
+	{
+	case 1:
+		// options saved with the scene
+		string $file = `file -q -sn`;
+		$path = dirname( $file ) + "/" + basename( basename( $file, ".mb" ), ".ma" ) + "_Smedge.ini";
+		break;
+	case 2:
+		// options are saved per user
+		$path = `internalVar -userPrefDir` + "Smedge.ini";
+		break;
+	case 3:
+		// no options are saved
+		if( $getDefaultFile )
+			// use a temp file if asked to get a default file
+			$path = `internalVar -userPrefDir` + "Smedge.tmp";
+		break;
+	}
+	return $path;
+}
+
+
+// Loads a text file
+// Pass the name of the file to load
+// Returns a string array with one line per entry
+proc string[] smedge_LoadFile( string $file )
+{
+	string $result[];
+	if( `filetest -r $file` )
+	{
+		int $fd = `fopen $file "r"`;
+		string $line = `fgetline $fd`;
+		while( size( $line ) )
+		{
+			$result[ size( $result ) ] = strip( $line );
+			$line = `fgetline $fd`;
+		}
+		fclose $fd;
+	}
+	return $result;
+}
+
+
+// Loads the last settings file (ignores temp file)
+// Used to create the interface
+// Returns each line in the settings file in an array of strings
+proc string[] smedge_LoadLastSettings()
+{
+	// try to load the last settings file
+	return smedge_LoadFile( smedge_GetSettingsFile( false ) );
+}
+
+
+// Finds the requested setting from the array of settings
+// It will search for a string with the given name in the array of strings
+// If a line is found with the requested name, it will return the rest of that line
+// Otherwise, it will return the default you pass it.
+proc string smedge_GetLastSetting( string $settings[], string $name, string $default )
+{
+	string $result = $default;
+	string $start  = $name + "=";
+	for( $i = 0; $i < size( $settings ); $i++ )
+	{
+		if( startsWith( $settings[ $i ], $start ) )
+		{
+			string $line = $settings[ $i ];
+			$result = `substitute $start $line ""`;
+			break;
+		}
+	}
+	return $result;
+}
+
+
+// Loads the current known list of pools
+// Returns an array with one pool name in each element of the array
+// Note that it never includes the "Whole System" pool
+proc string[] smedge_GetPoolList()
+{
+	return smedge_LoadFile( `internalVar -userPrefDir` + "Smedge_pools.txt" );
+}
+
+
+// Callback to get the list of pools from the Master
+global proc smedge_GetPoolsFromMaster()
+{
+	print( "// Getting the list of pools from the Master\n" );
+	
+	// make sure the user is aware that this can hang Maya
+	string $confirm = `confirmDialog -title "Download Pools" 
+			-message "Are you sure you want to download the Pools from the Master?\n\nMaya will be unresponsive until the operation completes. If the Master is not running or the client can't connect, this can hang indefinitely."
+			-button "Yes" -button "No" -defaultButton "Yes" -cancelButton "No" -dismissString "No"`;
+	if( $confirm == "No" )
+	{
+		print( "// ... Canceled by user\n" );
+		print "\n";
+		return;
+	}
+    
+	// turn on the wait cursor
+	waitCursor -state on;
+	// get the settings
+	string $settings = `internalVar -userPrefDir` + "Smedge_pools.txt";
+	string $cmd = "\"" + dirname( `optionVar -q "smedge_SubmitPath"` ) + "/PoolManager\" List Name";
+	
+		// To keep from blocking Maya if it cannot connect, un-comment this line to add a 60 second timeout
+		// $cmd += " -ConnectTimeout 60";
+	
+	// request pools using PoolManager
+	print( "system " + $cmd + "\n" );
+	string $result = `system $cmd`;
+	string $lines[] = stringToStringArray( $result, "\n" );
+	// write out the settings file
+	int $fd = `fopen $settings "w"`;
+	if( !$fd )
+	{
+		waitCursor -state off;
+		error "Could not open Smedge Submitter options file";
+	}
+	for( $line in $lines )
+	{
+		$line = strip( $line );
+		if( $line == "" )
+			continue;
+		print( "// ... Found Pool: " + $line + "\n" );
+		fprint $fd ($line + "\n");
+	}
+	fclose $fd;
+	// turn off the wait cursor now
+	waitCursor -state off;
+	// reopen the window to refresh the pools
+	print( "// Done downloading Pools. Refreshing the Submitter UI\n" );
+	print "\n";
+	smedgeRender;
+}
+
+
+// Checks if there is a renderable camera in the scene file
+// Returns an empty string if there is one renderable camera, or if there are multiple
+// renderable cameras and the user has confirmed that this is OK. Otherwise, it returns
+// a message to dispaly as an error from the submit process
+proc string smedge_CheckRenderableCamera()
+{
+	int $count = 0;
+	// count every renderable camera
+	string $cams[] = `ls -type "camera"`;
+	for( $each in $cams )
+		if( `getAttr ($each + ".renderable")` )
+			$count++;
+	// now respond appropriately
+	if( $count == 0 )
+	{
+		// no cameras, always fails
+		confirmDialog -title "Smedge Render" -button "OK" -defaultButton "OK" -cancelButton "OK"
+				-message "There is no renderable camera in the scene";
+		return "There is no renderable camera in the scene";
+	}
+	else if( $count > 1 )
+	{
+		// otherwise, confirm with the user
+		string $result = `confirmDialog -title "Smedge Render" -button "Yes" -button "No" -defaultButton "Yes" -cancelButton "No" -dismissString "No"
+				-message "There are multiple renderable cameras in the scene\nAre you sure you want to render multiple cameras?"`;
+		if( $result == "No" )
+			return "User canceled submit because of multiple renderable cameras";
+	}
+	return "";
+}
+
+
+// main submit proc
+// Pass the name of a render layer (or blank string for the default layer)
+// and the current settings for this render
+// Returns the ID of the job if successful, or an empty string if it failed
+// Note that any failure message will be displayed in the script editor.
+proc string smedge_DoSubmitLayer( string $scene, string $layer, string $settings[] )
+{
+    // Change to the requested layer, if there is one, so that the layer overrides are correct
+    
+    if( $layer != "" )
+    {
+        print( "// smedgeRender is changing to render layer: " + $layer + "\n" );
+        editRenderLayerGlobals -crl $layer;
+    }
+
+    // hack to workaround broken quote handling on Windows
+    string $cwd  = `pwd`;
+    string $path = `getenv "PATH"`;
+	// Get the path to the exectuable
+	string $submit = `optionVar -q smedge_SubmitPath`;
+	string $dir    = `dirname $submit`;
+	// set the working dir and PATH to the directory
+	chdir $dir;
+	putenv "PATH" $dir;
+	// now set submit to just the basename of the executable
+	$submit = `basename $submit ""`;
+	
+	// start building command
+	int $enable;
+	string $default;
+	string $cmd = $submit + " Script -Type Maya";
+	string $extra = smedge_GetLastSetting( $settings, "ExtraSubit", "" );
+	if( size( $extra ) )
+		$cmd += " " + $extra;
+	// scene
+	$cmd += " -Scene " + $scene;
+    // project
+	string $proj = `workspace -q -sn`;
+    if( size( $proj ) )
+    	$cmd += " -Project " + $proj;
+	// Name
+	$enable = (int) smedge_GetLastSetting( $settings, "EnableName", "0" );
+	$default = basename( $proj, "" );
+	if( size( $default ) )
+		$default += ": ";
+	$default += basename( basename( $scene, ".ma" ), ".mb" );
+	string $name = $enable ? smedge_GetLastSetting( $settings, "Name", $default ) : $default;
+	if( size( $layer ) )
+        $name += " \"(" + $layer + ")\"";
+    $cmd += " -Name " + $name;
+   	// Render Dir
+   	$enable = (int) smedge_GetLastSetting( $settings, "EnableRenderDir", "0" );
+   	$default = smedge_GetLastSetting( $settings, "RenderDir", "" );
+   	if( $enable && size( $default ) )
+   		$cmd += " -RenderDir " + $default;
+    // Range
+	int $start    = `getAttr defaultRenderGlobals.startFrame`;
+	int $end      = `getAttr defaultRenderGlobals.endFrame`;
+	$enable = (int) smedge_GetLastSetting( $settings, "EnableRange", "0" );
+	$default = $start + "-" + $end;
+	string $range = $enable ? smedge_GetLastSetting( $settings, "Range", $default ) : $default;
+	$cmd += " -Range " + $range;
+	// packet size
+	$cmd += " -PacketSize " + smedge_GetLastSetting( $settings, "PacketSize", "1" );
+	// priority
+	$cmd += " -Priority " + smedge_GetLastSetting( $settings, "Priority", "50" );
+	// paused
+	$enable = (int) smedge_GetLastSetting( $settings, "Paused", "0" );
+	if( $enable )
+		$cmd += " -Paused";
+	// Pool
+	$enable = (int) smedge_GetLastSetting( $settings, "Pool", "1" );
+	string $pool;
+	switch( $enable )
+	{
+	case 1:
+		$pool = "Whole System";
+		break;
+	case 2:
+		$pool = "My Computer";
+		break;
+	default:
+		string $pools[] = smedge_GetPoolList();
+		$pool = $pools[ $enable - 2 ];
+		break;
+	}
+	$cmd += " -Pool " + $pool;
+	// cores
+	$cmd += " -CPUs " + smedge_GetLastSetting( $settings, "Cores", "0" );
+	// ram
+	$cmd += " -RAM " + smedge_GetLastSetting( $settings, "RAM", "0" );
+	// note
+	$default = smedge_GetLastSetting( $settings, "Note", "" );
+	if( size( $default ) )
+		$cmd += " -Note \"" + $default + "\"";
+	// extra maya
+	$cmd += " -Extra \"";
+	if( size( $layer ) )
+		$cmd += "-rl " + $layer;
+	else if( (int)smedge_GetLastSetting( $settings, "OverrideRenderLayers", "0" ) )
+	{
+		$overrideLayers = smedge_GetLastSetting( $settings, "RenderLayers", "" );
+		if( size( $overrideLayers ) )
+			$cmd += "-rl " + $overrideLayers;
+	}
+	$default = smedge_GetLastSetting( $settings, "ExtraMaya", "" );
+	if( size( $default ) )
+		$cmd += " " + $default;
+	$cmd += "\"";
+	// distribution mode
+	$enable = (int) smedge_GetLastSetting( $settings, "DistributionMode", "1" );
+	$cmd += " -DistributeMode " + ($enable - 1);
+	// MR verbosity
+	$enable = (int) smedge_GetLastSetting( $settings, "MRVerbosity", "1" );
+	if( $enable > 1 )
+	{
+		if( $enable == 2 )
+			$cmd += " -mrVerbosity 0";
+		else if( $enable == 3 )
+			$cmd += " -mrVerbosity 1";
+		else if( $enable == 4 )
+			$cmd += " -mrVerbosity 3";
+		else
+			$cmd += " -mrVerbosity 5";
+	}
+	// ignore errors
+	$default = smedge_GetLastSetting( $settings, "IgnoreErrors", "" );
+	if( size( $default ) )
+		$cmd += " -ErrorIgnores " + $default;
+	// error options
+	$enable = (int) smedge_GetLastSetting( $settings, "EnableErrorOptions", "0" );
+	if( $enable )
+	{
+		$cmd += " -DetectErrors " + smedge_GetLastSetting( $settings, "DetectErrors", "1" );
+		$cmd += " -CheckReturnValue " + smedge_GetLastSetting( $settings, "CheckExitCode", "1" );
+	}
+	// stagger start
+	$enable = (int) smedge_GetLastSetting( $settings, "EnableStagger", "0" );
+	if( $enable )
+	{
+		$cmd += " -StaggerCount " + smedge_GetLastSetting( $settings, "StaggerStart", "1" );
+		$cmd += " -StaggerStart " + smedge_GetLastSetting( $settings, "StaggerDelay", "0" );
+	}
+	// work limit
+	$enable = (int) smedge_GetLastSetting( $settings, "EnableLimit", "0" );
+	if( $enable )
+		$cmd += " -UsageLimit " + smedge_GetLastSetting( $settings, "Limit", "0" );
+
+	// Do it!
+	print( "// smedgeRender is executing system command:\n// " + $cmd + "\n" );
+	string $result = `system $cmd`;
+
+    // restore the original working dir and PATH
+    chdir $cwd;
+    putenv "PATH" $path;
+	
+	// process the result
+	string $lines[] = stringToStringArray( $result, "\n" );
+	int $lastLine = size( $lines ) - 1;
+	string $ret;
+	if( $lastLine >= 0 && startsWith( $lines[ $lastLine ], "Successfully sent new Job ID: " ) )
+	{
+		$ret = `substring $lines[ $lastLine ] 31 66`;
+		print( "// Result Job ID: " + $ret + "\n" );
+	}
+	else
+    	print( "// Failed to send job: " + $result + "\n" );
+
+	return $ret;
+}
+
+
+// Callback/entry point for submitting a render
+// This entry point does not need the window to exist. It will use the
+// last available settings file, and will clean up temp settings file
+// if needed (submit from window in "Always use defaults" remember mode).
+global proc smedge_DoSubmit() 
+{
+	// verify that the path to Submit has been set
+	if( !`optionVar -ex smedge_SubmitPath`)
+	{
+		smedgeRender;
+		return;
+	}
+	
+	// validate the renderable camera
+	string $validCam = smedge_CheckRenderableCamera();
+	if( $validCam != "" )
+		error $validCam;
+	
+	// show the wait cursor
+	waitCursor -state on;
+
+	// load last settings
+	string $settingsFile = smedge_GetSettingsFile( true );
+	string $settings[] = smedge_LoadFile( $settingsFile );
+	print( "// smedgeRender is using Smedge submit settings from file: " + $settingsFile + "\n" );
+
+	int $option = (int) smedge_GetLastSetting( $settings, "SaveBeforeSubmit", "1" );
+	if( $option )
+	{
+		print "// smedgeRender is saving your file...\n";
+		file -save;
+	}
+	
+	// get the actual scene
+	string $scene = `file -q -sn`;
+	if( !size( $scene ) )
+	{
+		waitCursor -state off;
+		error "smedgeRender cannot submit an unsaved scene";
+	}
+	// do we need to copy it to the renderScenes folder?
+	$option = `optionVar -ex smedge_SubmitCopy` ? `optionVar -q smedge_SubmitCopy` : 1;
+	if( $option == 1 )
+	{
+		// get the workspace scene and renderScenes folders
+		string $scenes  = `workspace -q -fre "scene"`;
+		string $renders = `workspace -q -fre "renderScenes"`;
+		// if both are set and they are not the same folder
+		if( size( $scenes ) && size( $renders ) && $scenes != $renders )
+		{
+			// generate the target filename
+			string $newpath = `substitute $scenes $scene $renders`;
+			// copy the file
+			print( "// smedgeRender is about to copy the scene to: " + $newpath + "\n" );
+			sysFile -copy $newpath $scene;
+			// use the copy
+			$scene = $newpath;
+		}
+	}
+
+	// now create a job for each renderable render layer
+	string $settingsLayers[] = `ls -type renderLayer`;
+	$option = (int) smedge_GetLastSetting( $settings, "SubmitLayersSeparately", "0" );
+	if( size( $settingsLayers ) <= 1 || !$option )
+	{
+		// either this scene only has the defaultRenderLayer
+		// or the submit settings force submission as a single job
+		print( "// smedgeRender is about to submit one job for the whole scene\n" );
+		smedge_DoSubmitLayer( $scene, "", $settings );
+	}
+	else
+	{
+		// remember which layer is current, because the submit process will change layers
+		string $currentLayer = `editRenderLayerGlobals -q -crl`;
+		print( "// smedgeRender is about to submit one job for each render layer\n" );
+		
+		string $submitLayers[];
+		// get the override layers, if needed
+		if( (int)smedge_GetLastSetting( $settings, "OverrideRenderLayers", "0" ) )
+			$submitLayers = stringToStringArray( smedge_GetLastSetting( $settings, "RenderLayers", "" ), "," );
+		else
+			// find the layers that are renderable
+			for( $layer in $settingsLayers )
+				if( `getAttr ($layer + ".renderable")` )
+					$submitLayers[ size( $submitLayers ) ] = $layer;
+		
+		// submit one job for each render layer
+		for( $layer in $submitLayers )
+			if( smedge_DoSubmitLayer( $scene, $layer, $settings ) == "" )
+			{
+				waitCursor -state off;
+				error ("Stopping sending layer Jobs");
+			}
+		
+		// restore the current render layer
+		editRenderLayerGlobals -crl $currentLayer;
+	}
+
+	// remove the temp file if needed
+	if( endsWith( $settingsFile, "tmp" ) && `filetest -r $settingsFile` )
+		sysFile -delete $settingsFile;
+
+	// remove current UI, if any
+	if( `window -exists smedge_RenderUI` )
+		deleteUI smedge_RenderUI;
+		
+	// turn off the wait cursor
+	waitCursor -state off;
+}
+
+
+// callback that saves the current window settings to the correct file
+// for use by the main submit entry point smedge_DoSubmit();
+global proc smedge_SaveLastSettings()
+{
+	// get the correct filename to save to
+	string $file = smedge_GetSettingsFile( true );
+
+	// save the file
+	int $fd = `fopen $file "w"`;
+	fprint $fd ("EnableName=" + (`checkBox -q -v smedgeUI_EnableName` ? "1" : "0") + "\n");
+	fprint $fd ("Name=" + `textField -q -text smedgeUI_Name` + "\n");
+	fprint $fd ("EnableRenderDir=" + (`checkBox -q -v smedgeUI_EnableRenderDir` ? "1" : "0") + "\n");
+	fprint $fd ("RenderDir=" + `textFieldButtonGrp -q -text smedgeUI_RenderDir` + "\n");
+	fprint $fd ("EnableRange=" + (`checkBox -q -v smedgeUI_EnableRange` ? "1" : "0") + "\n");
+	fprint $fd ("Range=" + `textField -q -text smedgeUI_Range` + "\n");
+	fprint $fd ("PacketSize=" + `textField -q -text smedgeUI_PacketSize` + "\n");
+	fprint $fd ("Priority=" + `intSliderGrp -q -value smedgeUI_Priority` + "\n");
+	fprint $fd ("Paused=" + (`checkBox -q -v smedgeUI_Paused` ? "1" : "0") + "\n");
+	fprint $fd ("Pool=" + `optionMenu -q -select smedgeUI_Pool` + "\n");
+	fprint $fd ("Distribution=" + `optionMenu -q -select smedgeUI_Distribution` + "\n");
+	fprint $fd ("Cores=" + `intField -q -value smedgeUI_Cores` + "\n");
+	fprint $fd ("RAM=" + `intField -q -value smedgeUI_RAM` + "\n");
+	fprint $fd ("SaveBeforeSubmit=" + (`checkBox -q -value smedgeUI_SaveBeforeSubmit` ? "1" : "0") + "\n");
+	fprint $fd ("SubmitLayersSeparately=" + (`checkBox -q -value smedgeUI_SubmitLayersSeparately` ? "1" : "0") + "\n");
+	fprint $fd ("Note=" + `textField -q -text smedgeUI_Note` + "\n");
+	fprint $fd ("ExtraMaya=" + `textField -q -text smedgeUI_ExtraMaya` + "\n");
+	fprint $fd ("ExtraSubmit=" + `textField -q -text smedgeUI_ExtraSubmit` + "\n");
+	fprint $fd ("Distribution=" + `optionMenu -q -select smedgeUI_DistributionMode` + "\n");
+	fprint $fd ("MRVerbosity=" + `optionMenu -q -select smedgeUI_MRVerbosity` + "\n");
+	fprint $fd ("IgnoreErrors=" + `textField -q -text smedgeUI_IgnoreErrors` + "\n");
+	fprint $fd ("EnableErrorOptions=" + (`checkBox -q -value smedgeUI_EnableErrorOptions` ? "1" : "0") + "\n");
+	fprint $fd ("DetectErrors=" + (`checkBox -q -value smedgeUI_DetectErrors` ? "1" : "0") + "\n");
+	fprint $fd ("CheckExitCode=" + (`checkBox -q -value smedgeUI_CheckExitCode` ? "1" : "0") + "\n");
+	fprint $fd ("EnableStagger=" + (`checkBox -q -value smedgeUI_EnableStaggerStart` ? "1" : "0") + "\n");
+	fprint $fd ("StaggerStart=" + `intField -q -value smedgeUI_StaggerStart` + "\n");
+	fprint $fd ("StaggerDelay=" + `intField -q -value smedgeUI_StaggerDelay` + "\n");
+	fprint $fd ("EnableLimit=" + (`checkBox -q -value smedgeUI_EnableLimit` ? "1" : "0") + "\n");
+	fprint $fd ("Limit=" + `intField -q -value smedgeUI_Limit` + "\n");
+	fprint $fd ("OverrideRenderLayers=" + (`checkBox -q -value smedgeUI_OverrideRenderLayers` ? "1" : "0") + "\n");
+	string $all[] = `layout -q -childArray smedgeUI_RenderLayers`;
+	string $layers;
+	for( $control in $all )
+	{
+		if( `checkBox -q -value $control` )
+		{
+			if( size( $layers ) )
+				$layers += ",";
+			$layers += `checkBox -q -l $control`;
+		}
+	}
+	fprint $fd ("RenderLayers=" + $layers + "\n");
+	fclose $fd;
+	
+	print( "// smedgeRender saved render settings to file: " + $file + "\n" );
+}
+
+
+// Callback to enable the Submit button
+// Checks that the Submit executable can be found and run
+global proc int smedge_EnableSubmit()
+{
+	// get the current path to submit
+	string $file = `textFieldButtonGrp -q -fileName "smedge_SubmitPathPath"`;
+	// check if it exists and is executable
+	int $enable = `filetest -x $file`;
+	// enable the button appropriately
+	button -edit -enable $enable smedgeUI_SubmitButton;
+	button -edit -enable $enable smedgeUI_GetPools;
+	// return what we found
+	return $enable;
+}
+
+
+// Callback when the distribution mode is changed
+// Sets the Cores and RAM values appropriately and enables/disables the controls.
+global proc smedge_OnChangeDistribution()
+{
+	int $mode = `optionMenu -q -sl "smedgeUI_Distribution"`;
+	switch( $mode )
+	{
+	case 1:
+		// one per engine
+		intField -e -v  0 "smedgeUI_Cores";
+		intField -e -v  0 "smedgeUI_RAM";
+		rowLayout -e -enable 0 "smedgeUI_EnableDistribution";
+		break;
+	case 2:
+		// one per core
+		intField -e -v  1 "smedgeUI_Cores";
+		intField -e -v -1 "smedgeUI_RAM";
+		rowLayout -e -enable 0 "smedgeUI_EnableDistribution";
+		break;
+	case 3:
+		// custom
+		rowLayout -e -enable 1 "smedgeUI_EnableDistribution";
+		break;
+	}
+}
+
+
+// Callback for handling the "Defaults" button
+global proc smedge_UseDefaults()
+{
+	// delete the window settings file
+	string $file = smedge_GetSettingsFile( false );
+	if( `filetest -r $file` )
+		sysFile -delete $file;
+	// reopen the window
+	smedgeRender;
+}
+
+
+// Callback for handling browse button
+// $control is the name of the control to fill with the value
+// $mode is the -fileMode to fileDialog2 with these possible values:
+//		0 Any file, whether it exists or not.
+//		1 A single existing file.
+//		2 The name of a directory. Both directories and files are displayed in the dialog.
+//		3 The name of a directory. Only directories are displayed in the dialog.
+//		4 Then names of one or more existing files.
+global proc string smedge_Browse( string $control, int $mode )
+{
+	string $current = `textFieldButtonGrp -q -text $control`;
+	if( $mode != 2 && $mode != 3 )
+		$current = dirname( $current );
+	string $result[] = `fileDialog2 -dir $current -fileMode $mode`;
+	textFieldButtonGrp -e -text $result[ 0 ] $control;
+	return $result[ 0 ];
+}
+
+
+// Main Entry Point:
+// Opens a window to allow you to submit a render
+global proc smedgeRender() 
+{
+	// remove current UI, if any
+	if( `window -exists smedge_RenderUI` )
+		deleteUI smedge_RenderUI;
+		
+	// try to load the last settings to populate the window
+	string $settings[] = smedge_LoadLastSettings();
+	string $default;
+	string $last;
+	int $enable;
+	
+	// default layout sizes
+	int $rowSpacing  = 5;
+	int $labelWidth  = 120;
+	int $checkWidth  = 16;
+	int $browseWidth = 20;
+	int $labelOffset = 5;
+	int $unpadded    = 0;
+	int $textSmall   = 35;
+	int $textMedium  = 75;
+	int $textLarge   = 150;
+
+	// make a cool submit window
+	window -t "Smedge Render" smedge_RenderUI;
+	$form = `formLayout`;
+	$tabs = `tabLayout 
+			-childResizable 1
+			-innerMarginWidth 5
+			-innerMarginHeight 5`;
+
+	// Basic Info tab
+	$tab1 = `columnLayout 
+			-adjustableColumn 1
+			-rowSpacing $rowSpacing
+			-columnAttach "both" $labelOffset`;
+
+		// Job Name
+		// By default it will use Project: Scene
+		rowLayout
+				-numberOfColumns 3
+				-adjustableColumn 3
+				-columnWidth 1 $labelWidth
+				-columnWidth 2 $checkWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded
+				-columnAttach 3 "both" $unpadded;
+			text -l "Name:";
+			$default = basename( `workspace -q -rd`, "" ) + ": " + basename( `file -q -sn`, "" );
+			$last    = smedge_GetLastSetting( $settings, "Name", $default );
+			$enable  = (int) smedge_GetLastSetting( $settings, "EnableName", "0" );
+			checkBox
+					-label ""
+					-value $enable
+					-onCommand "textField -edit -enable 1 smedgeUI_Name"
+					-offCommand "textField -edit -enable 0 smedgeUI_Name"
+					smedgeUI_EnableName;
+			textField
+					-enable $enable
+					-text ($enable ? $last : $default)
+					smedgeUI_Name;
+			setParent ..;
+		
+		// Render Folder
+		// By default it will use the workspace output folder
+		rowLayout
+				-numberOfColumns 3
+				-adjustableColumn 3
+				-columnWidth 1 $labelWidth
+				-columnWidth 2 $checkWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded
+				-columnAttach 3 "both" $unpadded;
+			text -l "Render Folder:";
+			$default = `workspace -q -rd` + `workspace -fre "images"`;
+			$last    = smedge_GetLastSetting( $settings, "RenderDir", $default );
+			$enable  = (int) smedge_GetLastSetting( $settings, "EnableRenderDir", "0" );
+			checkBox
+					-label ""
+					-value $enable
+					-onCommand "textFieldButtonGrp -edit -enable 1 smedgeUI_RenderDir"
+					-offCommand "textFieldButtonGrp -edit -enable 0 smedgeUI_RenderDir"
+					smedgeUI_EnableRenderDir;
+			textFieldButtonGrp
+					-enable $enable
+					-text ($enable ? $last : $default)
+					-adjustableColumn 1
+					-buttonLabel "..."
+					-buttonCommand "smedge_Browse smedgeUI_RenderDir 3"
+					-columnAttach 2 "both" $unpadded
+					-columnWidth 2 $browseWidth
+					smedgeUI_RenderDir;
+			setParent ..;
+
+		// Frame Range
+		// By default it will use the frame range in the render globals
+		rowLayout
+				-numberOfColumns 5
+				-adjustableColumn 3
+				-columnWidth 1 $labelWidth
+				-columnWidth 2 $checkWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded
+				-columnAttach 3 "both" $unpadded
+				-columnAttach 4 "both" $unpadded
+				-columnAttach 5 "both" $unpadded
+				-columnAlign 4 "right";
+			text -l "Frame Range:";
+			$default = `getAttr defaultRenderGlobals.startFrame` + "-" + `getAttr defaultRenderGlobals.endFrame`;
+			$last    = smedge_GetLastSetting( $settings, "Range", $default );
+			$enable  = (int) smedge_GetLastSetting( $settings, "EnableRange", "0" );
+			checkBox
+					-label ""
+					-value $enable
+					-onCommand "textField -edit -enable 1 smedgeUI_Range"
+					-offCommand "textField -edit -enable 0 smedgeUI_Range"
+					smedgeUI_EnableRange;
+			textField
+					-enable $enable
+					-text ($enable ? $last : $default)
+					smedgeUI_Range;
+			text -l "  Packet Size:";
+			$last = smedge_GetLastSetting( $settings, "PacketSize", "1" );
+			textField
+					-text $last
+					smedgeUI_PacketSize;
+			setParent ..;
+
+		// Priority		
+		rowLayout
+				-numberOfColumns 3
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded
+				-columnAttach 3 "both" $unpadded;
+			text -l "Priority";
+			intSliderGrp
+					-field true
+					-value ((int) smedge_GetLastSetting( $settings, "Priority", "50" ))
+					-minValue 0 
+					-maxValue 100
+					-adjustableColumn 2
+					smedgeUI_Priority;
+			checkBox 
+					-value ((int) smedge_GetLastSetting( $settings, "Paused", "0" ))
+					-l "Paused"
+					smedgeUI_Paused;
+			setParent ..;
+
+		// Pool
+		rowLayout
+				-numberOfColumns 3
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded
+				-columnAttach 3 "both" $unpadded;
+			text -l "Pool:";
+			optionMenu smedgeUI_Pool;
+				menuItem -l "Whole System";
+				menuItem -l "My Computer";
+				string $pools[] = smedge_GetPoolList();
+				for( $each in $pools )
+					menuItem -l $each;
+			optionMenu 
+					-edit
+					-select ((int) smedge_GetLastSetting( $settings, "Pool", "1" ))
+					"smedgeUI_Pool";
+			button
+					-label "Get Pools"
+					-backgroundColor .9 .8 .4
+					-command "smedge_GetPoolsFromMaster"
+					"smedgeUI_GetPools";
+			setParent ..;
+
+		// Distribution
+		rowLayout
+				-numberOfColumns 3
+				-adjustableColumn 3
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded
+				-columnAttach 3 "both" $unpadded;
+			text -l "Distribution:";
+			optionMenu 
+					-changeCommand "smedge_OnChangeDistribution" 
+					smedgeUI_Distribution;
+				menuItem -l "One per Engine";
+				menuItem -l "One per core";
+				menuItem -l "Customize";
+			optionMenu 
+					-edit 
+					-select ((int) smedge_GetLastSetting( $settings, "Distribution", "1" )) 
+					smedgeUI_Distribution;
+			rowLayout
+					-numberOfColumns 4
+					-columnAttach4 "right" "both" "right" "both"
+					-columnAlign4 "right" "left" "right" "left"
+					-columnOffset4 $unpadded $unpadded $unpadded $unpadded
+					-columnWidth 1 $textSmall
+					-columnWidth 3 $textSmall
+					smedgeUI_EnableDistribution;
+				text -l " Cores:";
+				intField 
+						-min -1 
+						-max 2000000000 
+						-step 1 
+						-value ((int) smedge_GetLastSetting( $settings, "Cores", "0" )) 
+						"smedgeUI_Cores";
+				text -l " RAM:";
+				$initi = (int) smedge_GetLastSetting( $settings, "RAM", 0 );
+				intField 
+						-min -1 
+						-max 2000000000 
+						-step 1 
+						-value ((int) smedge_GetLastSetting( $settings, "RAM", "0" ))
+						"smedgeUI_RAM";
+				setParent ..;
+			setParent ..;
+		// update the enabled state
+		smedge_OnChangeDistribution();
+
+		// other options
+		rowLayout
+				-numberOfColumns 3
+				-columnWidth3 $labelWidth $textLarge $textLarge
+				-columnAttach3 "right" "both" "both"
+				-columnOffset3 $labelOffset $unpadded $unpadded;
+			text -l "Options:";
+			checkBox
+					-label "Save before submitting"
+					-value ((int) smedge_GetLastSetting( $settings, "SaveBeforeSubmit", "1" ))
+					-align "left"
+					smedgeUI_SaveBeforeSubmit;
+			checkBox
+				    -label "Submit layers separately"
+				    -value ((int) smedge_GetLastSetting( $settings, "SubmitLayersSeparately", "0" ))
+			    	-align "left"
+			    	smedgeUI_SubmitLayersSeparately;
+			setParent ..;
+
+		// note
+		rowLayout
+				-numberOfColumns 2
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded;
+			text -l "Note:";
+			textField smedgeUI_Note;
+			setParent ..;
+			
+		setParent ..;
+	
+	// Render Layers tab
+	$tab5 = `formLayout`;
+		$enable = (int) smedge_GetLastSetting( $settings, "OverrideRenderLayers", "0" );
+		string $lastLayers[] = stringToStringArray( smedge_GetLastSetting( $settings, "RenderLayers", "" ), "," );
+		$t5_1 = `checkBox 
+				-label "Override Render Layers:" 
+				-value $enable
+				-onCommand  "scrollLayout -edit -enable 1 smedgeUI_RenderLayers"
+				-offCommand "scrollLayout -edit -enable 0 smedgeUI_RenderLayers"
+				smedgeUI_OverrideRenderLayers`;
+		$t5_2 = `scrollLayout 
+				-enable $enable 
+				smedgeUI_RenderLayers`;
+			// get the render layers
+			string $allLayers[] = `ls -type renderLayer`;
+			string $layers[];
+			// sort the layers in their display order
+			for( $layer in $allLayers )
+				stringArrayInsertAtIndex( `getAttr ($layer + ".displayOrder")`, $layers, $layer );
+			string $empty[] = { "" };
+			$layers = stringArrayRemove( $empty, $layers );
+			// show them as check boxes in the tab
+			for( $layer in $layers )
+			{
+				// if override is checked, 
+				int $value = size( $lastLayers ) ? stringArrayContains( $layer, $lastLayers ) : `getAttr ($layer + ".renderable")`;
+				checkBox -label $layer -value $value;
+			}
+			setParent ..;
+		formLayout -edit
+				-attachForm		$t5_1	"top"		$rowSpacing
+				-attachForm		$t5_1	"left"		$rowSpacing
+				-attachForm		$t5_1	"right"		$rowSpacing
+				-attachControl	$t5_2	"top"		$rowSpacing		$t5_1
+				-attachForm		$t5_2	"left"		$rowSpacing
+				-attachForm		$t5_2	"right"		$rowSpacing
+				-attachForm		$t5_2	"bottom"	$rowSpacing
+				$tab5;
+		setParent ..;
+	
+	// Render Overrides tab
+	$tab2 = `columnLayout
+			-adjustableColumn 1
+			-rowSpacing $rowSpacing
+			-columnAttach "both" $labelOffset`;
+		text -l "";
+		
+		text -l "Add any additional Maya command line flags here";
+		textField
+				-text (smedge_GetLastSetting( $settings, "ExtraMaya", "" ))
+				"smedgeUI_ExtraMaya";
+		text -l "";
+		
+		text -l "Add any additional Submit command line flags here";
+		textField 
+				-text (smedge_GetLastSetting( $settings, "ExtraSubmit", "" ))
+				"smedgeUI_ExtraSubmit";
+		setParent ..;
+	
+	// AdvancedInfo tab
+	$tab3 = `columnLayout 
+			-adjustableColumn 1
+			-rowSpacing $rowSpacing
+			-columnAttach "both" $labelOffset`;
+
+		// distribution mode
+		rowLayout
+				-numberOfColumns 2
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded;
+			text -l "Distribution Mode:";
+			optionMenu "smedgeUI_DistributionMode";
+				menuItem -l "Default";
+				menuItem -l "Forward";
+				menuItem -l "Reverse";
+				menuItem -l "Sample";
+			optionMenu -edit
+					-select ((int) smedge_GetLastSetting( $settings, "DistributionMode", "1" ))
+					"smedgeUI_DistributionMode";
+			setParent ..;
+			
+		// mental ray verbosity
+		rowLayout
+				-numberOfColumns 2
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded;
+			text -l "Verbosity:";
+			optionMenu "smedgeUI_MRVerbosity";
+				menuItem -l "Default";
+				menuItem -l "No Messages";
+				menuItem -l "Fatal Errors Only";
+				menuItem -l "Errors and Warnings Only";
+				menuItem -l "Progress (including image filenames)";
+			optionMenu -edit
+					-select ((int) smedge_GetLastSetting( $settings, "MRVerbosity", "1" ))
+					"smedgeUI_MRVerbosity";
+			setParent ..;
+			
+		// error ignores		
+		rowLayout
+				-numberOfColumns 2
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded;
+			text -l "Ignore Errors:";
+			textField
+					-text (smedge_GetLastSetting( $settings, "IgnoreErrors", "" ))
+					"smedgeUI_IgnoreErrors";
+			setParent ..;
+			
+		// Error detection
+		// check process exit code
+		rowLayout
+				-numberOfColumns 2
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded;
+			text -l "Error Options:";
+			$enable = (int) smedge_GetLastSetting( $settings, "EnableErrorOptions", "0" );
+			rowLayout 
+					-numberOfColumns 2
+					-adjustableColumn 2
+					-columnWidth 1 $checkWidth
+					-columnAttach 1 "both" $unpadded
+					-columnAttach 2 "both" $unpadded;
+				checkBox
+						-label ""
+						-value $enable
+						-onCommand "rowLayout -edit -enable 1 smedgeUI_ErrorRow"
+						-offCommand "rowLayout -edit -enable 0 smedgeUI_ErrorRow"
+						smedgeUI_EnableErrorOptions;
+				rowLayout 
+						-numberOfColumns 2
+						-columnWidth2 $textLarge $textLarge
+						"smedgeUI_ErrorRow";
+					checkBox 
+							-label "Detect Errors in output" 
+							-value ((int) smedge_GetLastSetting( $settings, "DetectErrors", "1" ))
+							"smedgeUI_DetectErrors";
+					checkBox 
+							-label "Check Process exit code" 
+							-value ((int) smedge_GetLastSetting( $settings, "CheckExitCode", "1" ))
+							"smedgeUI_CheckExitCode";
+					setParent ..;
+				rowLayout -edit -enable $enable smedgeUI_ErrorRow;
+				setParent ..;
+			setParent ..;
+			
+		// Stagger start
+		rowLayout
+				-numberOfColumns 3
+				-adjustableColumn 3
+				-columnWidth 1 $labelWidth
+				-columnWidth 2 $checkWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded
+				-columnAttach 3 "both" $unpadded;
+			text -l "Stagger Start:";
+			$enable  = (int) smedge_GetLastSetting( $settings, "EnableStagger", "0" );
+			checkBox 
+					-label ""
+					-value $enable
+					-onCommand "rowLayout -edit -enable 1 smedgeUI_StaggerStartRow"
+					-offCommand "rowLayout -edit -enable 0 smedgeUI_StaggerStartRow"
+					"smedgeUI_EnableStaggerStart";
+			rowLayout 
+					-numberOfColumns 5
+					-columnAttach5 "right" "both" "right" "both" "left"
+					-columnAlign5  "right" "left" "right" "left" "left"
+					-columnWidth 1 $textSmall
+					-columnWidth 3 $textMedium
+					"smedgeUI_StaggerStartRow";
+				text -l "Start ";
+				intField
+						-value ((int) smedge_GetLastSetting( $settings, "StaggerStart", "1" ))
+						"smedgeUI_StaggerStart";
+				text -l " workers every ";
+				intField
+						-value ((int) smedge_GetLastSetting( $settings, "StaggerDelay", "0" ))
+						"smedgeUI_StaggerDelay";
+				text -l " seconds";
+				setParent ..;
+			rowLayout -edit -enable $enable smedgeUI_StaggerStartRow;
+			setParent ..;
+		
+		// Work Limit
+		rowLayout
+				-numberOfColumns 3
+				-adjustableColumn 3
+				-columnWidth 1 $labelWidth
+				-columnWidth 2 $checkWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded
+				-columnAttach 3 "both" $unpadded;
+			text -l "Work Limit:";
+			$enable  = (int) smedge_GetLastSetting( $settings, "EnableLimit", "0" );
+			checkBox 
+					-label ""
+					-value $enable
+					-onCommand "rowLayout -edit -enable 1 smedgeUI_LimitRow"
+					-offCommand "rowLayout -edit -enable 0 smedgeUI_LimitRow"
+					"smedgeUI_EnableLimit";
+			rowLayout
+					-numberOfColumns 3
+					-columnAttach3 "right" "both" "left"
+					-columnAlign3  "right" "left" "left"
+					-columnWidth 1 $textMedium
+					-columnWidth 3 $textSmall
+					"smedgeUI_LimitRow";
+				text -l "Limit job to ";
+				intField
+						-value ((int) smedge_GetLastSetting( $settings, "Limit", "-1" ))
+						"smedgeUI_Limit";
+				text -l " workers";
+				setParent ..;
+			rowLayout -edit -enable $enable smedgeUI_LimitRow;
+			setParent ..;
+		setParent ..;
+	
+	// Settings tab
+	$tab4 = `columnLayout 
+			-adjustableColumn 1
+			-rowSpacing $rowSpacing`;
+
+		// Path to Submit
+		rowLayout
+				-numberOfColumns 2
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded;
+			text -label "Path to Submit:";
+			textFieldButtonGrp
+					-adjustableColumn 1
+					-columnWidth 2 $browseWidth
+					-columnAttach 2 "both" $unpadded
+					-text (`optionVar -ex smedge_SubmitPath` ? `optionVar -q smedge_SubmitPath` : "")
+					-buttonLabel "..."
+					-changeCommand "optionVar -sv \"smedge_SubmitPath\" `textFieldButtonGrp -q -text \"smedge_SubmitPathPath\"`; smedge_EnableSubmit"
+					-buttonCommand "optionVar -sv \"smedge_SubmitPath\" `smedge_Browse \"smedge_SubmitPathPath\" 1`; smedge_EnableSubmit"
+					"smedge_SubmitPathPath";
+			setParent ..;
+		
+		// Remember settings
+		rowLayout
+				-numberOfColumns 2
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded;
+			text -label "Remember Settings:";
+			optionMenu 
+					-changeCommand "optionVar -iv \"smedge_SubmitRemember\" `optionMenu -q -select \"smedge_ConfigureRemember\"`"
+					"smedge_ConfigureRemember";
+				menuItem -l "For each scene";
+				menuItem -l "For this user";
+				menuItem -l "Always use defaults";
+			$select = `optionVar -ex "smedge_SubmitRemember"` ? `optionVar -q "smedge_SubmitRemember"` : 1;
+			optionMenu -edit -select $select "smedge_ConfigureRemember";
+			setParent ..;
+
+		// Copy to render scenes
+		rowLayout
+				-numberOfColumns 2
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded;
+			text -l "Use File:";
+			optionMenu 
+					-changeCommand "optionVar -iv \"smedge_SubmitCopy\" `optionMenu -q -select \"smedge_SubmitPathCopy\"`"
+					"smedge_SubmitPathCopy";
+				menuItem -l "Copy to renderScenes and use the copy";
+				menuItem -l "Use the file directly";
+			$select = `optionVar -ex smedge_SubmitCopy` ? `optionVar -q smedge_SubmitCopy` : 1;
+			optionMenu -e -select $select "smedge_SubmitPathCopy";
+			setParent ..;
+		
+		// Creator name
+		rowLayout
+				-numberOfColumns 2
+				-adjustableColumn 2
+				-columnWidth 1 $labelWidth
+				-columnAttach 1 "right" $labelOffset
+				-columnAttach 2 "both" $unpadded;
+			text -l "Creator Name:";
+			string $defaultCreator = `about -win` ? `getenv "USERNAME"` : `getenv "USER"`;
+			$init = `optionVar -ex "smedge_Creator"` ? `optionVar -q "smedge_Creator"` : $defaultCreator;
+			textField
+					-text $init 
+					-changeCommand "optionVar -sv \"smedge_Creator\" `textField -q -text \"smedge_ConfigureCreator\"`"
+					"smedge_ConfigureCreator";
+			setParent ..;
+			
+		setParent ..;
+
+	// Add the tabs
+	tabLayout -edit
+			-tabLabel $tab1 "Basic Info"
+			-tabLabel $tab5 "Render Layers"
+			-tabLabel $tab2 "Render Overrides"
+			-tabLabel $tab3 "Advanced Info"
+			-tabLabel $tab4 "Settings"
+			$tabs;
+	setParent ..;
+
+	// Add the buttons
+	$buttons = `formLayout`;
+		$b1 = `button 
+				-label "Submit" 
+				-backgroundColor .4 .9 .4
+				-command "smedge_SaveLastSettings; smedge_DoSubmit"
+				smedgeUI_SubmitButton`;
+		$b2 = `button 
+				-label "Cancel" 
+				-backgroundColor .8 .4 .4 
+				-command "deleteUI smedge_RenderUI"`;
+		$b3 = `button 
+				-label "Defaults"
+				-command "smedge_UseDefaults"`;
+		setParent ..;
+	
+	// layout the buttons
+	formLayout -edit
+			-attachForm 	$b1 	"top"		0
+			-attachForm 	$b1 	"left"		0
+			-attachForm 	$b1 	"right"		0
+			
+			-attachControl	$b2		"top"		5 $b1
+			-attachForm		$b2		"left"		0
+			-attachForm		$b2		"right"		0
+			
+			-attachForm		$b3		"left"		0
+			-attachForm		$b3		"right"		0
+			-attachForm		$b3		"bottom"	0
+			$buttons;
+
+	// layout the window
+	formLayout -edit
+			-attachForm 	$tabs	"top"		5
+			-attachForm 	$tabs	"left"		5
+			-attachForm		$tabs	"right"		100
+			-attachForm 	$tabs	"bottom"	5
+			
+			-attachForm		$buttons "top"		5
+			-attachControl	$buttons "left"		5 $tabs
+			-attachForm		$buttons "right"	5
+			-attachForm		$buttons "bottom"	5
+			$form;
+
+	// show the window
+	showWindow;
+	
+	// if the path to submit has not been set, show the settings and let the user know
+	if( !`smedge_EnableSubmit`)
+	{
+		tabLayout -edit -selectTabIndex 5 $tabs;
+		confirmDialog 
+				-message "Please set the path to Submit in order to submit renders" 
+				-button "OK" 
+				-defaultButton "OK" 
+				-parent smedge_RenderUI;
+	}
+}
+
+// Self-installation:
+// When sourced, this script will look for a "Smedge Render" menu item
+// and will add it if it is not already there
+if( catchQuiet( `menuItem -q -l "MayaWindow|mainRenderMenu|smedgeUI_RenderMenuItem"` ) )
+{
+	global string $gMainRenderMenu;
+	// if the render menu has never been built at all
+	if( `menu -query -numberOfItems $gMainRenderMenu` == 0 )
+		// build it now
+		RenRenderMenu( $gMainRenderMenu );
+		
+	setParent -m $gMainRenderMenu;
+	
+	// add a divider
+	menuItem 
+			-divider true;
+	// add the submit now command
+	menuItem 
+			-label "Smedge Render"
+			-annotation "Submit the current scene to Smedge with the last used settings"
+			-command "smedge_DoSubmit"
+			"smedgeUI_RenderMenuItem";
+	// add the options box
+	menuItem
+			-optionBox true
+			-annotation "Open the Smedge render submitter window"
+			-command "smedgeRender"
+			"smedgeUI_RenderMenuItemOptions";
+}
