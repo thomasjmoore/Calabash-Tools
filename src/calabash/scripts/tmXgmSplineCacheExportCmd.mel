@@ -1,4 +1,4 @@
-global proc tmXgmSplineCacheExportCmd(string $flag, string $file, int $start, int $end)
+global proc tmXgmSplineCacheExportCmd(string $flag, string $file, int $start, int $end, int $relativeSample, float $sampleLow, float $sampleHight)
 {
 
     float $startFrame = $start;
@@ -29,16 +29,17 @@ global proc tmXgmSplineCacheExportCmd(string $flag, string $file, int $start, in
     string $jobCommand = " -file " + "\"" +  $files + "\"";
     $jobCommand += " -df " + $format;
     $jobCommand += " -fr " + $startFrame + " " + $endFrame;
+
     /*
     $jobCommand += " -step " + $step;
 
-
+*/
     if($relativeSample)
     {
         $jobCommand += " -frs " + $sampleLow;
         $jobCommand += " -frs " + $sampleHight;
     }
-
+    /*
     if($preRoll)
     {
         $jobCommand += " -pr";
