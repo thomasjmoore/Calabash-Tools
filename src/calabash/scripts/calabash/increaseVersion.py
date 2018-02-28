@@ -4,6 +4,7 @@
 import maya.cmds as cmds
 import pymel.core as pm
 import os
+from maya import mel
 
 
 def versionUp(*args):
@@ -22,6 +23,9 @@ def versionUp(*args):
         pm.saveFile(force=True)
     if save =="Cancel":
         return
-    pm.saveAs(os.path.join(path, newfile), f=True)
+    new_file_path = os.path.join(path, newfile)
+    pm.saveAs(new_file_path, f=True)
 
+    # that slash replace might not work on mac
+    mel.eval('addRecentFile("%s", "mayaAscii")'%(new_file_path.replace("\\","/")))
     return newfile
