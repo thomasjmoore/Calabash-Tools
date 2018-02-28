@@ -308,11 +308,8 @@ class Playblaster(object):
             print "green triggered"
             self.remove_hud()
 
-        audio_list = cmds.ls(type="audio")
-        if audio_list:
-            audio = audio_list[0]
-        else:
-            audio =""
+        gPlayBackSlider = pm.melGlobals['gPlayBackSlider']
+        audio = cmds.timeControl(gPlayBackSlider, q=True, sound=True)
 
         cmds.playblast(format="qt",
                        filename=self.filename,
