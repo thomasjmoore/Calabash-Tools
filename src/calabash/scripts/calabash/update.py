@@ -6,6 +6,7 @@ from os import listdir
 from os.path import isfile, join
 import zipfile
 import shutil
+from . import calabash_menu as cm
 
 temp = cmds.internalVar(utd=True)
 this_path = os.path.normpath(os.path.dirname(__file__))
@@ -69,6 +70,7 @@ def install(zip_file=""):
     shutil.copytree("%s%s%s"%(unzipped_files, os.path.sep,"calabash"), "%s%s%s"%(module_path, os.path.sep,"calabash"))
 
     print("Calabash Tools Update Installed")
+    reload(cm)
 
 def check():
     update = check_version()
@@ -76,7 +78,16 @@ def check():
         print("Calabash Tools are up to date")
         return
 
-    print("Update found")
+    cmds.warning("Update found")
+    update = cmds.confirmDialog(title="Update founnd",
+                                   message="Install Update?",
+                                   button=["Update", "Cancel"],
+                                   defaultButton="Update",
+                                   cancelButton="Cancel",
+                                   dismissString="Cancel")
+    if not update == "Update":
+        cmds.warning("Action canceled")
+        return
     zip_file = download()
 
     if not zip_file:

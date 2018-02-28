@@ -17,34 +17,36 @@ def calabash_menu():
 
     ###############################################################################
 
-    vray_tools_submenu = cmds.menuItem('vray_tools_sub', p=calabash_menu, subMenu=True, label='Vray Tools', tearOff=True)
     general_submenu = cmds.menuItem('general_sub', p=calabash_menu, subMenu=True, label='General', tearOff=True)
-    rigging_submenu = cmds.menuItem('rigging_sub', p=calabash_menu, subMenu=True, label='Rigging', tearOff=True)
     ani_submenu = cmds.menuItem('ani_sub', p=calabash_menu, subMenu=True, label='Animation', tearOff=True)
+    rigging_submenu = cmds.menuItem('rigging_sub', p=calabash_menu, subMenu=True, label='Rigging', tearOff=True)
+    Rendering_submenu = cmds.menuItem('rendering_sub', p=calabash_menu, subMenu=True, label='Render', tearOff=True)
     xgen_submenu = cmds.menuItem('xgen_sub', p=calabash_menu, subMenu=True, label='XGen', tearOff=True)
     hatch_submenu = cmds.menuItem('hatch_sub', p=calabash_menu, subMenu=True, label='Hatchimals', tearOff=True)
 
     ###############################################################################
 
     # Vray Submenu
-    cmds.menuItem(p=vray_tools_submenu, divider=True, dividerLabel='Vray Attributes', itl=True)
+    cmds.menuItem(p=Rendering_submenu, label='Submit to Smedge', c='from maya import mel; mel.eval("smedgeRender");')
 
-    cmds.menuItem(p=vray_tools_submenu, label='Add Subdivision Attributes', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.makeVraySubdAttr()')
-    cmds.menuItem(p=vray_tools_submenu, label='Add Object ID Attributes', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.makeVrayObjId()')
-    cmds.menuItem(p=vray_tools_submenu, label='Add Material ID Attributes (Beta)', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.makeVrayMatId()')
-    cmds.menuItem(p=vray_tools_submenu, label='Add Displacement Control', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.displacementControl()')
+    cmds.menuItem(p=Rendering_submenu, divider=True, dividerLabel='Vray Attributes', itl=True)
 
-    cmds.menuItem(p=vray_tools_submenu, divider=True, dividerLabel='Vray Object Properties', itl=True)
+    cmds.menuItem(p=Rendering_submenu, label='Add Subdivision Attributes', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.makeVraySubdAttr()')
+    cmds.menuItem(p=Rendering_submenu, label='Add Object ID Attributes', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.makeVrayObjId()')
+    cmds.menuItem(p=Rendering_submenu, label='Add Material ID Attributes (Beta)', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.makeVrayMatId()')
+    cmds.menuItem(p=Rendering_submenu, label='Add Displacement Control', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.displacementControl()')
 
-    cmds.menuItem(p=vray_tools_submenu, label='Apply single object properties node to selection', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.single_vop()')
-    cmds.menuItem(p=vray_tools_submenu, label='Primary Vis Off', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.primVis()')
-    cmds.menuItem(p=vray_tools_submenu, label='Matte Surface', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.matteSurface()')
+    cmds.menuItem(p=Rendering_submenu, divider=True, dividerLabel='Vray Object Properties', itl=True)
 
-    cmds.menuItem(p=vray_tools_submenu, divider=True, dividerLabel='Render Settings', itl=True)
+    cmds.menuItem(p=Rendering_submenu, label='Apply single object properties node to selection', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.single_vop()')
+    cmds.menuItem(p=Rendering_submenu, label='Primary Vis Off', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.primVis()')
+    cmds.menuItem(p=Rendering_submenu, label='Matte Surface', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.matteSurface()')
 
-    cmds.menuItem(p=vray_tools_submenu, label='Apply Final Render Settings', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.renderSettings()')
-    cmds.menuItem(p=vray_tools_submenu, label='Apply Final Render GI Settings', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.giSettings()')
-    cmds.menuItem(p=vray_tools_submenu, label='Render Elements for Selected Lights', c='from maya import mel;mel.eval("vrLightPass;")')
+    cmds.menuItem(p=Rendering_submenu, divider=True, dividerLabel='Render Settings', itl=True)
+
+    cmds.menuItem(p=Rendering_submenu, label='Apply Final Render Settings', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.renderSettings()')
+    cmds.menuItem(p=Rendering_submenu, label='Apply Final Render GI Settings', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.giSettings()')
+    cmds.menuItem(p=Rendering_submenu, label='Render Elements for Selected Lights', c='from maya import mel;mel.eval("vrLightPass;")')
 
 
 
