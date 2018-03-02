@@ -1,5 +1,6 @@
-# calabash
+# Calabash Tools
 
+Installation:
 Drag and drop the install.py into your Maya viewport, then restart Maya.
 
 If that does not work, try:
