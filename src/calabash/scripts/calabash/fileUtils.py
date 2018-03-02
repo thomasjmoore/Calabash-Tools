@@ -37,8 +37,8 @@ def publishCurrentFile():
     if not sel:
         return
 
-    exp_ma = pm.exportSelected(os.path.join(version_dir, filename))
-    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary")
+    exp_ma = pm.exportSelected(os.path.join(version_dir, filename), constructionHistory=True)
+    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary", constructionHistory=True)
 
     print ("Exported: %s, %s" % (exp_ma, exp_mb))
 
@@ -108,8 +108,8 @@ def publish_vray_rig():
         return
 
     pm.select(sel)
-    exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii")
-    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary")
+    exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii", constructionHistory=True)
+    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary", constructionHistory=True)
 
     print ("Exported: %s, %s" % (exp_ma, exp_mb))
     path, file = os.path.split(exp_ma)
@@ -173,8 +173,8 @@ def publish_groom_rig():
         return
 
     pm.select(sel)
-    exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii")
-    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary")
+    exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii", constructionHistory=True)
+    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary", constructionHistory=True)
 
     print ("Exported: %s, %s" % (exp_ma, exp_mb))
     path, file = os.path.split(exp_ma)

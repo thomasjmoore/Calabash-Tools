@@ -18,6 +18,7 @@ def calabash_menu():
     ###############################################################################
 
     general_submenu = cmds.menuItem('general_sub', p=calabash_menu, subMenu=True, label='General', tearOff=True)
+    model_submenu = cmds.menuItem('model_sub', p=calabash_menu, subMenu=True, label='Modeling', tearOff=True)
     ani_submenu = cmds.menuItem('ani_sub', p=calabash_menu, subMenu=True, label='Animation', tearOff=True)
     rigging_submenu = cmds.menuItem('rigging_sub', p=calabash_menu, subMenu=True, label='Rigging', tearOff=True)
     Rendering_submenu = cmds.menuItem('rendering_sub', p=calabash_menu, subMenu=True, label='Render', tearOff=True)
@@ -56,6 +57,12 @@ def calabash_menu():
     # General Submenu
     cmds.menuItem(p=general_submenu, label='Increase File Version', c='from calabash import increaseVersion;reload(increaseVersion);increaseVersion.versionUp()')
     cmds.menuItem(p=general_submenu, label='Check For Updates...', c='from calabash import update;reload(update);update.check()')
+
+
+    ###############################################################################
+
+    # Modeling Submenu
+    cmds.menuItem(p=model_submenu, label='Delete Intermediate Shapes', c='from calabash import delIntermediateShapes;reload(delIntermediateShapes);delIntermediateShapes.del_int_shapes()')
 
 
     ###############################################################################
