@@ -69,10 +69,6 @@ class Playblaster(object):
         proj = os.path.basename(projpath)
         return proj
 
-    def add_hud(self):
-        self.scene_name_hud()
-        self.framecount_hud()
-
     def remove_hud(self):
         if cmds.headsUpDisplay("HUDSceneName", exists=True):
             cmds.headsUpDisplay("HUDSceneName", remove=True)
@@ -309,9 +305,11 @@ class Playblaster(object):
             self.set_viewports()
 
         if self.hud:
-            self.add_hud()
-
-        if self.custom_hud_chk and self.hud:
+            self.scene_name_hud()
+        if self.hud_frame_chk:
+            self.framecount_hud()
+        if self.custom_hud_chk:
+            print "ONNNNNNNNNNN"
             self.custom_hud(self.custom_hud_text)
 
         if self.green:
@@ -328,13 +326,14 @@ class Playblaster(object):
         gPlayBackSlider = pm.melGlobals['gPlayBackSlider']
         audio = cmds.timeControl(gPlayBackSlider, q=True, sound=True)
 
-        cmds.playblast(format="qt",
+        cmds.playblast(
+                       format="qt",
                        filename=self.filename,
                        sequenceTime=False,
                        clearCache=True,
                        viewer=True,
                        showOrnaments=True,
-                       offScreen=False,
+                       offScreen=self.offscreen,
                        compression="H.264",
                        quality=100,
                        widthHeight=[self.w, self.h],
