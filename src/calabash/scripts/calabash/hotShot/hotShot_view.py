@@ -34,7 +34,7 @@ class ControlMainWindow(QtWidgets.QDialog):
 
         self.hotShot.read_shot_file()
 
-        self.populate()
+        #self.populate()
 
         self.ui.project_le.textChanged.connect(self.update_project)
 
@@ -53,8 +53,11 @@ class ControlMainWindow(QtWidgets.QDialog):
             self.ui.shotList_tbl.setItem(row, 0, QtWidgets.QTableWidgetItem(key))
             self.ui.shotList_tbl.setItem(row, 1, QtWidgets.QTableWidgetItem(start))
             self.ui.shotList_tbl.setItem(row, 2, QtWidgets.QTableWidgetItem(end))
-            #self.ui.shotList_tbl.item(0,row).setText(key)
+
+            #self.ui.shotList_tbl.cellChanged(row, 1).connect(self.shot_changed)
+            #self.ui.shotList_tbl.cellChanged(row, 2).connect(self.shot_changed)
             row += 1
+        self.ui.shotList_tbl.cellChanged.connect(self.shot_changed)
 
 
     def update_project(self):
@@ -63,6 +66,9 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.hotShot.shot_file = shots_file
         self.hotShot.read_shot_file()
         self.populate()
+
+    def shot_changed(self):
+        print "shot changed"
 
 #############################################################################################################
 

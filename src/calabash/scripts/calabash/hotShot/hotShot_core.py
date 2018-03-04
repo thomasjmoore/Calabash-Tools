@@ -38,3 +38,10 @@ class hotShot():
     def remove_shot(self, shot=""):
         pass
 
+
+    def save_shots(self):
+        if not self.shot_file:
+            warnings.warn("No shot file provided.")
+            return
+
+        libJson.write_json_file(self.shots, self.shotfile)
