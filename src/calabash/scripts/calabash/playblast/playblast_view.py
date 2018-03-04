@@ -24,7 +24,7 @@ def maya_main_window():
 
 
 class ControlMainWindow(QtWidgets.QDialog):
-    version = "1.0"
+    version = "1.1"
 
     def __init__(self, parent=None):
         super(ControlMainWindow, self).__init__(parent)
@@ -33,6 +33,7 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.ui = customUI.Ui_playblast_dlg()
         self.ui.setupUi(self)
 
+        # Setup GUI values
         title = self.ui.title_lbl.text()
         self.ui.title_lbl.setText("%s V%s" % (title, self.version))
         self.ui.filename_le.setText(self.playblaster.filename)
@@ -41,12 +42,14 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.ui.width_le.setText(str(self.playblaster.w))
         self.ui.height_le.setText(str(self.playblaster.h))
         self.ui.hud_chk.setChecked(self.playblaster.hud)
+        self.ui.frameHud_chk.setChecked(self.playblaster.hud_frame_chk)
         self.ui.cstmHud_chk.setChecked(self.playblaster.custom_hud_chk)
         self.ui.clearViewport_chk.setChecked(self.playblaster.clean_vp)
         self.ui.green_chk.setChecked(self.playblaster.green)
         self.ui.filename_le.setEnabled(self.playblaster.editname)
         self.ui.overwrite_chk.setChecked(self.playblaster.overwrite)
-
+        self.ui.offscreen_chk.setChecked(self.playblaster.offscreen)
+        self.ui.cam_chk.setChecked(self.playblaster.hidecameragates)
         self.set_button_color()
 
         self.custom_hud_chk()
