@@ -309,7 +309,6 @@ class Playblaster(object):
         if self.hud_frame_chk:
             self.framecount_hud()
         if self.custom_hud_chk:
-            print "ONNNNNNNNNNN"
             self.custom_hud(self.custom_hud_text)
 
         if self.green:
