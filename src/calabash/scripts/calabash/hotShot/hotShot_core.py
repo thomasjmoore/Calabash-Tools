@@ -40,8 +40,13 @@ class hotShot():
     def add_shot(self, shot=""):
         pass
 
-    def edit_shot(self, shot=""):
-        pass
+    def save_shot_file(self, shot=""):
+        if not self.shots:
+            warnings.warn("No data to write.")
+            return
+
+        libJson.write_json_file(self.shots, self.shot_file)
+
 
     def remove_shot(self, shot=""):
         pass
@@ -87,18 +92,19 @@ class hotShot():
         difference = False
         if self.software == "maya":
             # GET timeline start frame, end frame, and render start/end frame
-            cur_start = oma.MAnimControl.minTime().value()
-            cur_end = oma.MAnimControl.maxTime().value()
-            cur_render_start = cmds.getAttr("defaultRenderGlobals.startFrame")
-            cur_render_end = cmds.getAttr("defaultRenderGlobals.endFrame")
+            cur_start = int(oma.MAnimControl.minTime().value())
+            cur_end = int(oma.MAnimControl.maxTime().value())
+            cur_render_start = int(cmds.getAttr("defaultRenderGlobals.startFrame"))
+            cur_render_end = int(cmds.getAttr("defaultRenderGlobals.endFrame"))
 
+            print cur_start == int(self.start)
             # COMPARE with new values
             # IF difference found, set return difference TRUE
 
-            if (not cur_start == self.start or
-                not cur_render_start == self.start or
-                not cur_end == self.end or
-                not cur_render_end == self.end):
+            if (not cur_start == int(self.start) or
+                not cur_render_start == int(self.start) or
+                not cur_end == int(self.end) or
+                not cur_render_end == int(self.end)):
                     difference = True
 
             apply_settings = False
@@ -122,9 +128,10 @@ class hotShot():
 
             # set start timeline/render settings
             # set end timeline/render settings
-            start = oma.MAnimControl.setMinTime(om.MTime(self.start))
-            end = oma.MAnimControl.setMaxTime(om.MTime(self.end))
-            oma.MAnimControl.setAnimationStartEndTime(om.MTime(self.start), om.MTime(self.end))
+            start = oma.MAnimControl.setMinTime(om.MTime(int(self.start)))
+
+            end = oma.MAnimControl.setMaxTime(om.MTime(int(self.end)))
+            oma.MAnimControl.setAnimationStartEndTime(om.MTime(int(self.start)), om.MTime(int(self.end)))
             cmds.setAttr("defaultRenderGlobals.startFrame", self.start)
             cmds.setAttr("defaultRenderGlobals.endFrame", self.end)
 
@@ -132,14 +139,17 @@ class hotShot():
 def test_func():
     my_hotShot = hotShot()
 
-    my_hotShot.shot_file = r"C:\Users\Thomas\Dropbox\Calabash\Airstream\Airstream\shots.json"
+    my_hotShot.shot_file = "%s%sshots.json" % (get_proj(), os.path.sep)
+    print my_hotShot.shot_file
     my_hotShot.set_software("maya")
-    print "set software"
     my_hotShot.shot_name = my_hotShot.get_current_shot()
-    print "get current shot"
     my_hotShot.get_shot_settings()
     apply_settings = my_hotShot.current_shot_settings()
 
     if apply_settings:
         my_hotShot.apply_shot_settings()
-    
+
+def get_proj():
+    curProj = cmds.workspace(fn=True, q=True)
+
+    return curProj

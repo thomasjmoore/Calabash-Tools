@@ -37,13 +37,12 @@ class ControlMainWindow(QtWidgets.QDialog):
         #self.populate()
 
         self.ui.project_le.textChanged.connect(self.update_project)
+        self.ui.saveClose_btn.clicked.connect(self.save)
+        self.ui.noSave_btn.clicked.connect(self.close_without_save)
 
-        self.ui.project_le.setText(r"C:\Users\Thomas\Dropbox\Calabash\Airstream\Airstream")
-
+        self.ui.project_le.setText(hotShot_core.get_proj())
 
     def populate(self):
-
-        print self.hotShot.shots
         row = 0
         for key, value in sorted(self.hotShot.shots.items()):
             #print(key, value)
@@ -59,7 +58,6 @@ class ControlMainWindow(QtWidgets.QDialog):
             row += 1
         self.ui.shotList_tbl.cellChanged.connect(self.shot_changed)
 
-
     def update_project(self):
         text = self.ui.project_le.text()
         shots_file = "%s%sshots.json" % (text, os.path.sep)
@@ -68,7 +66,23 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.populate()
 
     def shot_changed(self):
-        print "shot changed"
+        rows = self.ui.shotList_tbl.rowCount()
+        new_shots = {}
+        for r in xrange(rows):
+            shotname = self.ui.shotList_tbl.item(r, 0).text()
+            start = self.ui.shotList_tbl.item(r, 1).text()
+            end = self.ui.shotList_tbl.item(r, 2).text()
+
+            new_shots[shotname] = {"start": start, "end": end}
+
+        self.hotShot.shots = new_shots
+
+    def save(self):
+        self.hotShot.save_shot_file()
+        delete()
+
+    def close_without_save(self):
+        delete()
 
 #############################################################################################################
 
