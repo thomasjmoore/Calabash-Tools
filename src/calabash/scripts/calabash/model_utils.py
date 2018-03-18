@@ -22,12 +22,13 @@ def del_int_shapes():
 
 def cleanup_mesh():
     sel = pm.ls(sl=True)
-    pm.polyNormalPerVertex(ufn=True)
-    pm.polySoftEdge(a=180)
-    mel.eval("FreezeTransformations")
-    del_int_shapes()
-
     for s in sel:
+        pm.select(s)
+        pm.polyNormalPerVertex(ufn=True)
+        pm.polySoftEdge(a=180)
+        mel.eval("FreezeTransformations")
+        del_int_shapes()
+
         pm.delete(s, ch=True)
         pm.setAttr(s + ".tx", k=True, l=False)
         pm.setAttr(s + ".ty", k=True, l=False)

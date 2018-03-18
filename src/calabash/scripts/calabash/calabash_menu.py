@@ -68,8 +68,8 @@ def calabash_menu():
 
     # Rigging Submenu
     cmds.menuItem(p=rigging_submenu, label='Publish Selected Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile()')
-    cmds.menuItem(p=rigging_submenu, label='Publish Vray Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_vray_rig()')
-    cmds.menuItem(p=rigging_submenu, label='Publish Groom Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_groom_rig()')
+    cmds.menuItem(p=rigging_submenu, label='Publish Vray Shading', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_vray_rig()')
+    cmds.menuItem(p=rigging_submenu, label='Publish Groom', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_groom_rig()')
 
     cmds.menuItem(p=rigging_submenu, divider=True, itl=True)
     cmds.menuItem(p=rigging_submenu, label='Hide Joints', c='from calabash import rigUtils;reload(rigUtils);rigUtils.jointDisplay()')
