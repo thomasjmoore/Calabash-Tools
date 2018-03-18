@@ -1,7 +1,6 @@
 from maya import cmds
 from pymel import core as pm
 from maya import mel
-from . import delIntermediateShapes as dIS
 
 __all__ = [
     'jointDisplay'
