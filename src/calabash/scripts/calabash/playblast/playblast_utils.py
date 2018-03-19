@@ -21,6 +21,7 @@ class Playblaster(object):
     clean_vp = True
     hud = True
     custom_hud_chk = False
+    hud_frame_chk = True
     custom_hud_text = ""
     w = 960
     h = 540
@@ -28,7 +29,9 @@ class Playblaster(object):
     default_color = [0,1,0]
     overwrite = True
     editname = False
-
+    camera = ""
+    offscreen = False
+    hidecameragates = True
 
     # viewportSettings
 
@@ -66,10 +69,6 @@ class Playblaster(object):
         proj = os.path.basename(projpath)
         return proj
 
-    def add_hud(self):
-        self.scene_name_hud()
-        self.framecount_hud()
-
     def remove_hud(self):
         if cmds.headsUpDisplay("HUDSceneName", exists=True):
             cmds.headsUpDisplay("HUDSceneName", remove=True)
@@ -90,6 +89,7 @@ class Playblaster(object):
 
         if pm.getPanel(to=active_panel) == "modelPanel":
             self.modelPanel = model_editor
+            self.camera = (pm.modelEditor(self.modelPanel, q=True, camera=True)).getShape()
             return model_editor
         else:
             self.modelPanel = ""
@@ -139,11 +139,24 @@ class Playblaster(object):
 
 
     def set_cameras(self):
-        cams = pm.ls(type="camera")
-        for cam in cams:
-            cam.displayFilmGate.set(0)
-            cam.displaySafeAction.set(0)
-            cam.displaySafeTitle.set(0)
+        #cams = pm.ls(type="camera")
+        #for cam in cams:
+
+        self.cam_dr = self.camera.displayResolution.get()
+        self.cam_df = self.camera.displayFilmGate.get()
+        self.cam_dsa = self.camera.displaySafeAction.get()
+        self.cam_dst = self.camera.displaySafeTitle.get()
+
+        self.camera.displayResolution.set(0)
+        self.camera.displayFilmGate.set(0)
+        self.camera.displaySafeAction.set(0)
+        self.camera.displaySafeTitle.set(0)
+
+    def reset_cameras(self):
+        self.camera.displayResolution.set(self.cam_dr)
+        self.camera.displayFilmGate.set(self.cam_df)
+        self.camera.displaySafeAction.set(self.cam_dsa)
+        self.camera.displaySafeTitle.set(self.cam_dst)
 
     def set_viewports(self):
 
@@ -292,9 +305,10 @@ class Playblaster(object):
             self.set_viewports()
 
         if self.hud:
-            self.add_hud()
-
-        if self.custom_hud_chk and self.hud:
+            self.scene_name_hud()
+        if self.hud_frame_chk:
+            self.framecount_hud()
+        if self.custom_hud_chk:
             self.custom_hud(self.custom_hud_text)
 
         if self.green:
@@ -311,13 +325,14 @@ class Playblaster(object):
         gPlayBackSlider = pm.melGlobals['gPlayBackSlider']
         audio = cmds.timeControl(gPlayBackSlider, q=True, sound=True)
 
-        cmds.playblast(format="qt",
+        cmds.playblast(
+                       format="qt",
                        filename=self.filename,
                        sequenceTime=False,
                        clearCache=True,
                        viewer=True,
                        showOrnaments=True,
-                       offScreen=False,
+                       offScreen=self.offscreen,
                        compression="H.264",
                        quality=100,
                        widthHeight=[self.w, self.h],
@@ -330,6 +345,7 @@ class Playblaster(object):
 
         if self.clean_vp or self.green:
             self.reset_viewports()
+            self.reset_cameras()
 
         if self.green:
             cmds.displayRGBColor("background", r, g, b)

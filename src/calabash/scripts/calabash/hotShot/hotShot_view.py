@@ -34,16 +34,15 @@ class ControlMainWindow(QtWidgets.QDialog):
 
         self.hotShot.read_shot_file()
 
-        self.populate()
+        #self.populate()
 
         self.ui.project_le.textChanged.connect(self.update_project)
+        self.ui.saveClose_btn.clicked.connect(self.save)
+        self.ui.noSave_btn.clicked.connect(self.close_without_save)
 
-        self.ui.project_le.setText(r"C:\Users\Thomas\Dropbox\Calabash\Airstream\Airstream")
-
+        self.ui.project_le.setText(hotShot_core.get_proj())
 
     def populate(self):
-
-        print self.hotShot.shots
         row = 0
         for key, value in sorted(self.hotShot.shots.items()):
             #print(key, value)
@@ -53,9 +52,11 @@ class ControlMainWindow(QtWidgets.QDialog):
             self.ui.shotList_tbl.setItem(row, 0, QtWidgets.QTableWidgetItem(key))
             self.ui.shotList_tbl.setItem(row, 1, QtWidgets.QTableWidgetItem(start))
             self.ui.shotList_tbl.setItem(row, 2, QtWidgets.QTableWidgetItem(end))
-            #self.ui.shotList_tbl.item(0,row).setText(key)
-            row += 1
 
+            #self.ui.shotList_tbl.cellChanged(row, 1).connect(self.shot_changed)
+            #self.ui.shotList_tbl.cellChanged(row, 2).connect(self.shot_changed)
+            row += 1
+        self.ui.shotList_tbl.cellChanged.connect(self.shot_changed)
 
     def update_project(self):
         text = self.ui.project_le.text()
@@ -63,6 +64,25 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.hotShot.shot_file = shots_file
         self.hotShot.read_shot_file()
         self.populate()
+
+    def shot_changed(self):
+        rows = self.ui.shotList_tbl.rowCount()
+        new_shots = {}
+        for r in xrange(rows):
+            shotname = self.ui.shotList_tbl.item(r, 0).text()
+            start = self.ui.shotList_tbl.item(r, 1).text()
+            end = self.ui.shotList_tbl.item(r, 2).text()
+
+            new_shots[shotname] = {"start": start, "end": end}
+
+        self.hotShot.shots = new_shots
+
+    def save(self):
+        self.hotShot.save_shot_file()
+        delete()
+
+    def close_without_save(self):
+        delete()
 
 #############################################################################################################
 

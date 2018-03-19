@@ -30,6 +30,16 @@ def makeVrayObjId():
         print s
         cmds.vray("addAttributesFromGroup", s, "vray_objectID", 1)
 
+# Remove a Vray Object ID attribute on shape nodes of selected geometry
+def removeVrayObjId():
+    shapes = getShapes()
+    print shapes
+    if not shapes:
+        return
+    for s in shapes:
+        print s
+        cmds.vray("addAttributesFromGroup", s, "vray_objectID", 0)
+
 
 # Create Vray Subdivision attributes on shape nodes of selected geometry
 def makeVraySubdAttr():
@@ -116,7 +126,6 @@ def getShapes():
             continue
         for shape in shapes:
             allShapes.add(shape)
-    print allShapes
     return allShapes
 
 def getVrayObjProperties(objs=[]):

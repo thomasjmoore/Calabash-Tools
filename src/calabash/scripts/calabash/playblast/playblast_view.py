@@ -24,7 +24,7 @@ def maya_main_window():
 
 
 class ControlMainWindow(QtWidgets.QDialog):
-    version = "1.0"
+    version = "1.1"
 
     def __init__(self, parent=None):
         super(ControlMainWindow, self).__init__(parent)
@@ -33,6 +33,7 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.ui = customUI.Ui_playblast_dlg()
         self.ui.setupUi(self)
 
+        # Setup GUI values
         title = self.ui.title_lbl.text()
         self.ui.title_lbl.setText("%s V%s" % (title, self.version))
         self.ui.filename_le.setText(self.playblaster.filename)
@@ -41,12 +42,14 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.ui.width_le.setText(str(self.playblaster.w))
         self.ui.height_le.setText(str(self.playblaster.h))
         self.ui.hud_chk.setChecked(self.playblaster.hud)
+        self.ui.frameHud_chk.setChecked(self.playblaster.hud_frame_chk)
         self.ui.cstmHud_chk.setChecked(self.playblaster.custom_hud_chk)
         self.ui.clearViewport_chk.setChecked(self.playblaster.clean_vp)
         self.ui.green_chk.setChecked(self.playblaster.green)
         self.ui.filename_le.setEnabled(self.playblaster.editname)
         self.ui.overwrite_chk.setChecked(self.playblaster.overwrite)
-
+        self.ui.offscreen_chk.setChecked(self.playblaster.offscreen)
+        self.ui.cam_chk.setChecked(self.playblaster.hidecameragates)
         self.set_button_color()
 
         self.custom_hud_chk()
@@ -55,11 +58,13 @@ class ControlMainWindow(QtWidgets.QDialog):
         self.ui.filename_le.textChanged.connect(self.filename)
         self.ui.editName_chk.clicked.connect(self.editname)
         self.ui.overwrite_chk.clicked.connect(self.overwrite)
+        self.ui.offscreen_chk.clicked.connect(self.offscreen)
         self.ui.width_le.textChanged.connect(self.width)
         self.ui.height_le.textChanged.connect(self.height)
         self.ui.start_le.textChanged.connect(self.start)
         self.ui.end_le.textChanged.connect(self.end)
         self.ui.hud_chk.clicked.connect(self.hud)
+        self.ui.frameHud_chk.clicked.connect(self.frameHud)
         self.ui.cstmHud_chk.clicked.connect(self.custom_hud)
         self.ui.cstmHud_le.textChanged.connect(self.custom_hud_text)
         self.ui.clearViewport_chk.clicked.connect(self.clean_vp)
@@ -85,6 +90,8 @@ class ControlMainWindow(QtWidgets.QDialog):
             self.ui.filename_le.setText(filename)
             self.ui.cstmHud_chk.setDisabled(False)
             self.ui.cstmHud_le.setDisabled(False)
+            self.ui.cam_chk.setDisabled(False)
+            self.ui.frameHud_chk.setDisabled(False)
             self.ui.hud_chk.setDisabled(False)
             self.ui.clearViewport_chk.setDisabled(False)
 
@@ -92,9 +99,18 @@ class ControlMainWindow(QtWidgets.QDialog):
             filename = self.playblaster.pb_filename()
             self.ui.filename_le.setText(filename)
             self.ui.cstmHud_chk.setDisabled(True)
+            self.ui.cam_chk.setDisabled(True)
             self.ui.cstmHud_le.setDisabled(True)
             self.ui.hud_chk.setDisabled(True)
+            self.ui.frameHud_chk.setDisabled(True)
             self.ui.clearViewport_chk.setDisabled(True)
+
+    def offscreen(self):
+        isChecked = self.ui.offscreen_chk.checkState()
+        if isChecked:
+            self.playblaster.offscreen = True
+        else:
+            self.playblaster.offscreen = False
 
     def custom_hud_chk(self):
         is_checked = self.ui.hud_chk.checkState()
@@ -138,8 +154,16 @@ class ControlMainWindow(QtWidgets.QDialog):
     def hud(self):
         self.playblaster.hud = self.ui.hud_chk.checkState()
 
+    def frameHud(self):
+        self.playblaster.hud_frame_chk = self.ui.frameHud_chk.checkState()
+
     def custom_hud(self):
-        self.playblaster.custom_hud_chk = self.ui.cstmHud_chk.checkState()
+        isChecked = self.ui.cstmHud_chk.checkState()
+        if isChecked:
+            self.playblaster.custom_hud_chk = True
+        else:
+            self.playblaster.custom_hud_chk = False
+        print self.playblaster.custom_hud_chk
 
     def get_custom_hud_text(self):
         if cmds.optionVar(exists="pbCustomHud"):
