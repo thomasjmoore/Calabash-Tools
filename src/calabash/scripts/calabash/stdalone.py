@@ -1,17 +1,46 @@
 import maya.standalone
 import os
+import sys
 
 # Start Maya in batch mode
 maya.standalone.initialize(name='python')
-print "opened file"
 from maya import cmds
-import pymel.core as pm
-import os
-import shutil
 
 os.environ["PYMEL_SKIP_MEL_INIT"] = "1"
-print os.environ["PYMEL_SKIP_MEL_INIT"]
+#print os.environ["PYMEL_SKIP_MEL_INIT"]
 
+import pymel.core as pm
+import shutil
+
+
+
+def load_script():
+    print sys.argv[3]
+
+    cmds.workspace(sys.argv[3], o=True)
+
+    cmds.file(sys.argv[1], force=True, open=True, loadAllReferences=True)
+    cmds.evalDeferred('print cmds.ls(type="reference")')
+
+    sel_list = sys.argv[2].split(",")
+    del sel_list[-1]
+    print sel_list
+    cmds.select(sel_list)
+
+    from . import fileUtils as fu
+    reload(fu)
+    fu.publish_vray_rig()
+    os.system("pause")
+
+
+def testRun():
+    print "file tested"
+    cmds.file(sys.argv[1], force=True, open=True)
+
+    print sys.argv[1]
+    cmds.evalDeferred('print cmds.ls(dag=True)')
+
+    os.system("pause")
 
 def publishCurrentFile():
 
@@ -144,3 +173,5 @@ def assign_default_shader(file_path):
     # Starting Maya 2016, we have to call uninitialize to properly shutdown
     if float(cmds.about(v=True)) >= 2016.0:
         maya.standalone.uninitialize()
+
+
