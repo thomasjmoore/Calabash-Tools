@@ -1,0 +1,23 @@
+import maya.cmds as cmds
+import subprocess
+file_path = cmds.file(sceneName=True, q=True)
+sel = cmds.ls(sl=True)[0]
+
+os.environ["PYMEL_SKIP_MEL_INIT"] = "1"
+os.environ["MAYA_PUB_FILE"] = file_path
+os.environ["MAYA_PUB_SEL"] = sel
+
+# replace mayaPath with the path on your system to mayapy.exe
+mayaPath = 'c:/program files/autodesk/maya2017/bin/mayapy.exe'
+# replace scriptPath with the path to the script you just saved
+#scriptPath = 'c:/mayaTools/stdalone.py'
+scriptPath = '-c "import stdalone; stdalone.publish_vray_rig()"'
+def publishVray():
+    maya = subprocess.Popen(mayaPath+' '+scriptPath,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    out,err = maya.communicate()
+    exitcode = maya.returncode
+    if str(exitcode) != '0':
+        print(err)
+
+publishVray()
+            
