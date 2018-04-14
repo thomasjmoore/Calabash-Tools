@@ -146,3 +146,45 @@ def getVrayObjProperties(objs=[]):
     if not vops:
         cmds.warning("Vray Object Properties node not found")
     return vops
+
+
+from maya import cmds
+
+
+def removeVrayObjId():
+    shapes = getShapes()
+
+    if not shapes:
+       return
+
+    for s in shapes:
+        print s
+        cmds.vray("addAttributesFromGroup", s, "vray_objectID", 0)
+
+
+def removeSubDiv():
+    shapes = getShapes()
+
+    if not shapes:
+        return
+
+    for s in shapes:
+        print s
+        cmds.vray("addAttributesFromGroup", s, "vray_subdivision", 0)
+        cmds.vray("addAttributesFromGroup", s, "vray_subquality", 0)
+
+
+def addOpenSubdiv():
+    shapes = getShapes()
+
+    if not shapes:
+        return
+
+    for s in shapes:
+        print s
+        cmds.vray("addAttributesFromGroup", s, "vray_opensubdiv", 1)
+
+
+
+
+
