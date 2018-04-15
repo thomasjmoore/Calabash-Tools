@@ -181,23 +181,44 @@ class MyDockingUI(QtWidgets.QWidget):
         self.selection_rbtn.setChecked(True)
         self.shapes_rbtn.setChecked(True)
 
+        self.add_btn.clicked.connect(self.add_btn_clicked)
+        self.rem_bt.clicked.connect(self.remove_btn_clicked)
 
-        self.buttons = []
+    def check_ui(self):
+        selected = self.selection_rbtn.isChecked()
+        shapes = self.shapes_rbtn.isChecked()
 
-        for i in xrange(len(btns)):
-            button = QtWidgets.QPushButton(btns[i]["label"], self)
-            button.clicked.connect(lambda x=i:self.btnFunc(index=x))
-            self.buttons.append(button)
-            self.main_layout.addWidget(button)
+        commands = []
+        if self.subd_chk.isChecked():
+            commands.append("vray_subdivision")
+        if self.subdDisp_chk.isChecked():
+            commands.append("vray_subquality")
+        if self.disp_chk.isChecked():
+            commands.append("vray_displacement")
+        if self.objID_chk.isChecked():
+            commands.append("vray_objectID")
+        if self.openSubdiv_chk.isChecked():
+            commands.append("vray_opensubdiv")
 
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.main_layout.addItem(spacerItem)
+        return selected, shapes, commands
 
-    def btnFunc(self, index):
-        print 'Pushed button {}'.format(index)
-        c = compile(btns[index]["c"], 'myCmd_mod', 'exec')
-        exec (c)
+    def add_btn_clicked(self):
+        selected, shapes, commands = self.check_ui()
 
+        if not commands:
+            return
+
+        for c in commands:
+            vrayUtils.vray_attributes(selected=selected, shapes=shapes, add=True, command=c)
+
+    def remove_btn_clicked(self):
+        selected, shapes, commands = self.check_ui()
+
+        if not commands:
+            return
+
+        for c in commands:
+            vrayUtils.vray_attributes(selected=selected, shapes=shapes, add=False, command=c)
 
     @staticmethod
     def delete_instances():
