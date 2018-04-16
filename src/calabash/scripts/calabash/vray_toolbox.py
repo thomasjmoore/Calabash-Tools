@@ -230,6 +230,10 @@ class MyDockingUI(QtWidgets.QWidget):
             self.subdDisp_chk.setDisabled(True)
             self.disp_chk.setDisabled(True)
             self.openSubdiv_chk.setDisabled(True)
+            self.subd_chk.setChecked(False)
+            self.subdDisp_chk.setChecked(False)
+            self.disp_chk.setChecked(False)
+            self.openSubdiv_chk.setChecked(False)
         else:
             self.subd_chk.setEnabled(True)
             self.subdDisp_chk.setEnabled(True)
