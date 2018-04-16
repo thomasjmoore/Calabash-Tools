@@ -1,6 +1,7 @@
 # VRAY UTILS
 
 from maya import cmds
+from pymel import core as pm
 
 
 
@@ -13,6 +14,7 @@ def renderSettings():
     cmds.setAttr("vraySettings.sys_regsgen_xc", 16)
     cmds.setAttr("vraySettings.sys_regsgen_seqtype", 5)
 
+
 def giSettings():
     cmds.setAttr("vraySettings.primaryEngine", 0)
     cmds.setAttr("vraySettings.imap_subdivs", 100)
@@ -20,9 +22,42 @@ def giSettings():
     cmds.setAttr("vraySettings.subdivs", 1800)
 
 
+def vray_attributes(selected=True, shapes=True, add=True, command=""):
+    if not command:
+        return
+
+    sel = pm.ls(sl=True, l=True)
+    
+    # if selected is false, get list all decendents, filter for tranforms
+    if not selected:
+        objs = set()
+        for s in sel:
+            rel = pm.listRelatives(s, f=True, allDescendents=True, type="transform")
+            for o in rel:
+                objs.add(s)
+                objs.add(o)
+    else:
+        objs = sel        
+
+    # if shapes is True, get shapes
+    if shapes:
+        items = get_shapes(objs)
+    else:
+        items = objs
+    if not items:
+        return
+
+    for i in items:
+        cmds.vray("addAttributesFromGroup", i, command, add)
+        if add:
+            proc = "ADDED"
+        else:
+            proc = "REMOVED"
+        print("%s.%s %s." % (i, command, proc))
+
 # Create a Vray Object ID attribute on shape nodes of selected geometry
 def makeVrayObjId():
-    shapes = getShapes()
+    shapes = get_shapes()
     print shapes
     if not shapes:
         return
@@ -30,9 +65,10 @@ def makeVrayObjId():
         print s
         cmds.vray("addAttributesFromGroup", s, "vray_objectID", 1)
 
+
 # Remove a Vray Object ID attribute on shape nodes of selected geometry
 def removeVrayObjId():
-    shapes = getShapes()
+    shapes = get_shapes()
     print shapes
     if not shapes:
         return
@@ -43,7 +79,7 @@ def removeVrayObjId():
 
 # Create Vray Subdivision attributes on shape nodes of selected geometry
 def makeVraySubdAttr():
-    shapes = getShapes()
+    shapes = get_shapes()
 
     if not shapes:
        return
@@ -52,11 +88,12 @@ def makeVraySubdAttr():
        cmds.vray("addAttributesFromGroup", s, "vray_subdivision", 1)
        cmds.vray("addAttributesFromGroup", s, "vray_subquality", 1)
 
+
 def makeVrayMatId():
     shadingGrpSet = set()
     shaderSet = set()
 
-    shapes = getShapes()
+    shapes = get_shapes()
 
     if not shapes:
         return
@@ -75,7 +112,7 @@ def makeVrayMatId():
         cmds.vray("addAttributesFromGroup", s, "vray_material_id", 1)
 
 def displacementControl():
-    shapes = getShapes()
+    shapes = get_shapes()
 
     if not shapes:
        return
@@ -115,13 +152,14 @@ def matteSurface():
         cmds.setAttr("%s.refractionAmount" % v, 0)
 
 # General Utils
-def getShapes():
-    sel = cmds.ls(sl=1, l=1)
+def get_shapes(objs=""):
+    if not objs:
+        objs = pm.ls(sl=1, l=1)
     allShapes=set()
-    if not sel:
+    if not objs:
         return
-    for s in sel:
-        shapes = cmds.listRelatives(s, s=1, ni=1, f=1)
+    for s in objs:
+        shapes = pm.listRelatives(s, s=1, ni=1, f=1)
         if not shapes:
             continue
         for shape in shapes:
@@ -146,3 +184,45 @@ def getVrayObjProperties(objs=[]):
     if not vops:
         cmds.warning("Vray Object Properties node not found")
     return vops
+
+
+from maya import cmds
+
+
+def removeVrayObjId():
+    shapes = get_shapes()
+
+    if not shapes:
+       return
+
+    for s in shapes:
+        print s
+        cmds.vray("addAttributesFromGroup", s, "vray_objectID", 0)
+
+
+def removeSubDiv():
+    shapes = get_shapes()
+
+    if not shapes:
+        return
+
+    for s in shapes:
+        print s
+        cmds.vray("addAttributesFromGroup", s, "vray_subdivision", 0)
+        cmds.vray("addAttributesFromGroup", s, "vray_subquality", 0)
+
+
+def addOpenSubdiv():
+    shapes = get_shapes()
+
+    if not shapes:
+        return
+
+    for s in shapes:
+        print s
+        cmds.vray("addAttributesFromGroup", s, "vray_opensubdiv", 1)
+
+
+
+
+
