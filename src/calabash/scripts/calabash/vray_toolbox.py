@@ -184,6 +184,9 @@ class MyDockingUI(QtWidgets.QWidget):
         self.add_btn.clicked.connect(self.add_btn_clicked)
         self.rem_bt.clicked.connect(self.remove_btn_clicked)
 
+        self.transforms_rbtn.clicked.connect(self.transforms_clicked)
+        self.shapes_rbtn.clicked.connect(self.transforms_clicked)
+
     def check_ui(self):
         selected = self.selection_rbtn.isChecked()
         shapes = self.shapes_rbtn.isChecked()
@@ -219,6 +222,19 @@ class MyDockingUI(QtWidgets.QWidget):
 
         for c in commands:
             vrayUtils.vray_attributes(selected=selected, shapes=shapes, add=False, command=c)
+
+    def transforms_clicked(self):
+        is_checked = self.transforms_rbtn.isChecked()
+        if is_checked:
+            self.subd_chk.setDisabled(True)
+            self.subdDisp_chk.setDisabled(True)
+            self.disp_chk.setDisabled(True)
+            self.openSubdiv_chk.setDisabled(True)
+        else:
+            self.subd_chk.setEnabled(True)
+            self.subdDisp_chk.setEnabled(True)
+            self.disp_chk.setEnabled(True)
+            self.openSubdiv_chk.setEnabled(True)
 
     @staticmethod
     def delete_instances():
