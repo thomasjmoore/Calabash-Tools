@@ -1,0 +1,63 @@
+// Add the menu items to the timeline and window menus
+
+
+global proc string AddMyMenuItems()
+{
+    // Global variable to hold the test to see if the menu is populated.
+    global int $gMyMenuItemsTest;
+    // Menu var needed in our case because we are inserting in the middle of the menu
+    global string $gMainWindowMenu;
+
+    if( $gMyMenuItemsTest == 0 ) 
+    {
+        // Actually build your menu.
+        // Note that if you don't need to insert it after a specific entry,
+        // You can just do `menuItem -label "blep"`. No need of -ia and -p
+        // Also, for inserting in the middle you have to put stuff in reverse order.
+        // If you are just appending, put it in the normal order.
+        menuItem -label "Good Playblast..." -insertAfter "playblastItem" -parent $gMainWindowMenu -c "python(\"import goodPlayblast_c.playblast_utils as gu; reload(gu); pb = gu.Playblaster(); pb.playblast()\")" -image "goodplayblast.png" GoodPlayblastWindowMenu;
+        menuItem -label "Good Playblast..." -insertAfter "GoodPlayblastWindowMenu" -parent $gMainWindowMenu -c "python(\"import goodPlayblast_c.playblast_view as gp; reload(gp); gp.launch()\")" -optionBox true GoodPlayblastWindowMenuOption;
+        $gMyMenuItemsTest = 1;
+    }
+    return "RemoveMyMenuItems()"; // Returns the callback
+}
+
+global proc string AddMyTimelineMenuItems()
+{
+    // Global variable to hold the test to see if the menu is populated.
+    global int $gMyTimelineMenuItemsTest;
+    // Menu var needed in our case because we are inserting in the middle of the menu
+    global string $gmyTimelineMenu = "TimeSliderMenu";
+
+    if( $gMyTimelineMenuItemsTest == 0 ) 
+    {
+        menuItem -label "Good Playblast..." -parent $gmyTimelineMenu -c "python(\"import goodPlayblast_c.playblast_utils as gu; reload(gu); pb = gu.Playblaster(); pb.playblast()\")" -image "goodplayblast.png" GoodPlayblastTimelineMenu;
+        menuItem -insertAfter "GoodPlayblastTimelineMenu" -parent $gmyTimelineMenu -c "python(\"import goodPlayblast_c.playblast_view as gp; reload(gp); gp.launch()\")" -optionBox true GoodPlayblastTimelineMenuOption;
+
+        $gMyTimelineMenuItemsTest = 1;
+    }
+    return "RemoveMyMenuItems()"; // Returns the callback
+}
+
+
+global proc RemoveMyMenuItems()
+{
+    global int $gMyMenuItemsTest;
+    global int $gMyTimelineMenuItemsTest;
+
+    if( $gMyMenuItemsTest == 1 ) 
+    {
+        // Delete your items if they exist (yes we are kind of 
+        // doing the check twice, but I find it safe. 
+        // The user could have deleted it from Maya in the command
+        // line for whatever reason, more robustness is always good.
+        if(`menuItem -ex GoodPlayblastWindowMenu`) deleteUI -mi GoodPlayblastWindowMenu;
+        if(`menuItem -ex GoodPlayblastWindowMenuOption`) deleteUI -mi GoodPlayblastWindowMenuOption;
+    }
+    
+    if ($gMyTimelineMenuItemsTest == 1 )
+    {
+        if(`menuItem -ex GoodPlayblastTimelineMenu`) deleteUI -mi GoodPlayblastTimelineMenu;
+    }
+ 
+}

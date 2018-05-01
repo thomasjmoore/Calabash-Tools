@@ -41,7 +41,8 @@ def calabash_menu():
 
 
     # Animation Submenu
-    cmds.menuItem(p=ani_submenu, label='Playblast-O-Scope', c='from calabash import playblast;reload(playblast);playblast.launch()')
+    cmds.menuItem(p=ani_submenu, label='Good Playblast', c='from goodPlayblast_c import playblast_utils as gu; reload(gu); pb = gu.Playblaster(); pb.playblast()', image="goodplayblast.png")
+    cmds.menuItem(p=ani_submenu, optionBox=True, c='import goodPlayblast_c.playblast_view as gp; reload(gp); gp.launch()')
 
 
     ###############################################################################
