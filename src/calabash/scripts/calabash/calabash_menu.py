@@ -61,15 +61,12 @@ def calabash_menu():
     cmds.menuItem(p=rendering_submenu, label='Submit to Smedge', c='from maya import mel; mel.eval("smedgeRender");')
 
     cmds.menuItem(p=rendering_submenu, divider=True, dividerLabel='Vray Attributes', itl=True)
-
     cmds.menuItem(p=rendering_submenu, label='Vray Toolbox', c='from calabash import vray_toolbox;reload(vray_toolbox);vray_toolbox.dock_window(vray_toolbox.MyDockingUI)')
     cmds.menuItem(p=rendering_submenu, label='Add Material ID Attributes (Beta)', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.makeVrayMatId()')
-
     cmds.menuItem(p=rendering_submenu, divider=True, dividerLabel='Vray Object Properties', itl=True)
     cmds.menuItem(p=rendering_submenu, label='Apply single object properties node to selection', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.single_vop()')
     cmds.menuItem(p=rendering_submenu, label='Primary Vis Off', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.primVis()')
     cmds.menuItem(p=rendering_submenu, label='Matte Surface', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.matteSurface()')
-
     cmds.menuItem(p=rendering_submenu, divider=True, dividerLabel='Render Settings', itl=True)
     cmds.menuItem(p=rendering_submenu, label='Apply Final Render Settings', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.renderSettings()')
     cmds.menuItem(p=rendering_submenu, label='Apply Final Render GI Settings', c='from calabash import vrayUtils;reload(vrayUtils);vrayUtils.giSettings()')
