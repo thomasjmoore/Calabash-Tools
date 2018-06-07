@@ -37,12 +37,12 @@ def publishCurrentFile():
     if not sel:
         return
 
-    exp_ma = pm.exportSelected(os.path.join(version_dir, filename), constructionHistory=True)
+    #exp_ma = pm.exportSelected(os.path.join(version_dir, filename), constructionHistory=True)
     exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary", constructionHistory=True)
 
-    print ("Exported: %s, %s" % (exp_ma, exp_mb))
+    print ("Exported: %s" % (exp_mb))
 
-    shutil.copy2(exp_ma, os.path.join(nonvray_dir,non_ver))
+    #shutil.copy2(exp_ma, os.path.join(nonvray_dir,non_ver))
     shutil.copy2(exp_mb, os.path.join(nonvray_dir,non_ver_mb))
 
 
@@ -108,13 +108,13 @@ def publish_vray_rig():
         return
 
     pm.select(sel)
-    exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii", constructionHistory=True, f=True)
+    #exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii", constructionHistory=True, f=True)
     exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary", constructionHistory=True, f=True)
 
-    print ("Exported: %s, %s" % (exp_ma, exp_mb))
-    path, file = os.path.split(exp_ma)
-    file, ext = os.path.splitext(file)
-    shutil.copy2(exp_ma, os.path.join(vray_dir,rbasename + ".ma"))
+    print ("Exported: %s" % (exp_mb))
+    #path, file = os.path.split(exp_ma)
+    #file, ext = os.path.splitext(file)
+    #shutil.copy2(exp_ma, os.path.join(vray_dir,rbasename + ".ma"))
     shutil.copy2(exp_mb, os.path.join(vray_dir,rbasename + ".mb"))
 
     pm.newFile(f=True)
@@ -173,13 +173,13 @@ def publish_groom_rig():
         return
 
     pm.select(sel)
-    exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii", constructionHistory=True, f=True)
+    #exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii", constructionHistory=True, f=True)
     exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary", constructionHistory=True, f=True)
 
-    print ("Exported: %s, %s" % (exp_ma, exp_mb))
-    path, file = os.path.split(exp_ma)
-    file, ext = os.path.splitext(file)
-    shutil.copy2(exp_ma, os.path.join(groom_dir, rbasename + ".ma"))
+    print ("Exported: %s " % (exp_mb))
+    #path, file = os.path.split(exp_ma)
+    #file, ext = os.path.splitext(file)
+    #shutil.copy2(exp_ma, os.path.join(groom_dir, rbasename + ".ma"))
     shutil.copy2(exp_mb, os.path.join(groom_dir, rbasename + ".mb"))
 
     pm.newFile(f=True)
