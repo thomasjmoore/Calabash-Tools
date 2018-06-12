@@ -176,7 +176,6 @@ class Playblaster(object):
         if cmds.pluginInfo("xgenToolkit", loaded=True, q=True):
             self.xgenHUDVisibility = cmds.optionVar(q="xgenHUDVisibility")
 
-
         self.originAxis = cmds.toggleAxis(o=True, q=True)
         if not self.override_hud:
             return
@@ -273,7 +272,11 @@ class Playblaster(object):
 
         if pm.getPanel(to=active_panel) == "modelPanel":
             self.modelPanel = model_editor
-            self.camera = (pm.modelEditor(self.modelPanel, q=True, camera=True)).getShape()
+            #self.camera = (pm.modelEditor(self.modelPanel, q=True, camera=True)).getShape()
+            self.camera = (pm.modelEditor(self.modelPanel, q=True, camera=True))
+            if pm.nodeType(self.camera) == "transform":
+                self.camera = self.camera.getShape()
+            print pm.nodeType(self.camera)
             return model_editor
         else:
             self.modelPanel = ""
@@ -327,18 +330,21 @@ class Playblaster(object):
         self.cam_df = self.camera.displayFilmGate.get()
         self.cam_dsa = self.camera.displaySafeAction.get()
         self.cam_dst = self.camera.displaySafeTitle.get()
+        self.cam_overscan = self.camera.overscan.get()
 
         if not self.gates:
             self.camera.displayResolution.set(0)
             self.camera.displayFilmGate.set(0)
             self.camera.displaySafeAction.set(0)
             self.camera.displaySafeTitle.set(0)
+            self.camera.overscan.set(1)
 
     def reset_cameras(self):
         self.camera.displayResolution.set(self.cam_dr)
         self.camera.displayFilmGate.set(self.cam_df)
         self.camera.displaySafeAction.set(self.cam_dsa)
         self.camera.displaySafeTitle.set(self.cam_dst)
+        self.camera.overscan.set(self.cam_overscan)
 
     def set_viewports(self):
         if not self.override_vp:

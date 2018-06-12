@@ -10,7 +10,7 @@ def arnoldCheck(*args, **kwargs):
         cmds.confirmDialog(title='WARNING: ARNOLD IS LOADING', message='Arnold is being loaded.', button=['OK'],
                            defaultButton='OK')
 
-arnoldCallback = om.MSceneMessage.addStringArrayCallback(om.MSceneMessage.kBeforePluginLoad, arnoldCheck)
+#arnoldCallback = om.MSceneMessage.addStringArrayCallback(om.MSceneMessage.kBeforePluginLoad, arnoldCheck)
 
 
 from maya import mel

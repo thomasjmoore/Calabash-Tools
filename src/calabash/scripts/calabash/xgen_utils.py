@@ -44,7 +44,9 @@ def cache_groomableSplines(desc=[]):
     for d in desc:
         cmds.select(d)
         d_short = cmds.ls(d, sn=True)
-        d_removeNS = d_short[0].split(":")[-1]
+        #d_removeNS = d_short[0].split(":")[-1]
+        d_split = d_short[0].split(":")
+        d_removeNS = "_".join(d_split)
         cache_name = "%s_%s.abc" % (fileName, d_removeNS)
 
         cache_path = "/".join([curProj, "cache", "alembic", fileName, cache_name])
