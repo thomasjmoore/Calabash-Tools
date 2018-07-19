@@ -38,7 +38,14 @@ def publishCurrentFile():
         return
 
     #exp_ma = pm.exportSelected(os.path.join(version_dir, filename), constructionHistory=True)
-    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary", constructionHistory=True)
+    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary",
+                               constructionHistory=True,
+                               channels=True,
+                               constraints=True,
+                               expressions=True,
+                               shader=True,
+                               preserveReferences=True,
+                               )
 
     print ("Exported: %s" % (exp_mb))
 
@@ -109,12 +116,19 @@ def publish_vray_rig():
 
     pm.select(sel)
     #exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii", constructionHistory=True, f=True)
-    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary", constructionHistory=True, f=True)
-
+    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary",
+                               constructionHistory=True,
+                               channels=True,
+                               constraints=True,
+                               expressions=True,
+                               shader=True,
+                               preserveReferences=True,
+                               )
     print ("Exported: %s" % (exp_mb))
     #path, file = os.path.split(exp_ma)
     #file, ext = os.path.splitext(file)
     #shutil.copy2(exp_ma, os.path.join(vray_dir,rbasename + ".ma"))
+    print vray_dir
     shutil.copy2(exp_mb, os.path.join(vray_dir,rbasename + ".mb"))
 
     pm.newFile(f=True)
@@ -174,7 +188,14 @@ def publish_groom_rig():
 
     pm.select(sel)
     #exp_ma = pm.exportSelected(os.path.join(version_dir, filename), type="mayaAscii", constructionHistory=True, f=True)
-    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary", constructionHistory=True, f=True)
+    exp_mb = pm.exportSelected(os.path.join(version_dir, filename), type="mayaBinary",
+                               constructionHistory=True,
+                               channels=True,
+                               constraints=True,
+                               expressions=True,
+                               shader=True,
+                               preserveReferences=True,
+                               )
 
     print ("Exported: %s " % (exp_mb))
     #path, file = os.path.split(exp_ma)
