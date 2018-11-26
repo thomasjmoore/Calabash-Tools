@@ -17,6 +17,10 @@ def calabash_menu():
 
     ###############################################################################
 
+    this_path = os.path.normpath(os.path.dirname(__file__))
+    up_path = (os.path.dirname(this_path))
+    version_file = open(os.path.join(up_path, "version.md"), "r")
+    ver = version_file.read()
 
     general_submenu = cmds.menuItem('general_sub', p=calabash_menu, subMenu=True, label='General', tearOff=True)
     ani_submenu = cmds.menuItem('ani_sub', p=calabash_menu, subMenu=True, label='Animation', tearOff=True)
@@ -36,6 +40,7 @@ def calabash_menu():
     # General Submenu
     cmds.menuItem(p=general_submenu, label='Increase File Version', c='from calabash import increaseVersion;reload(increaseVersion);increaseVersion.versionUp()')
     cmds.menuItem(p=general_submenu, label='Check For Updates...', c='from calabash import update;reload(update);update.check()')
+    cmds.menuItem(p=general_submenu, divider=True, dividerLabel='v%s' % ver, itl=True)
 
 
     ###############################################################################
@@ -119,5 +124,7 @@ def calabash_menu():
     # cmds.menuItem(p=hatch_submenu, label='Publish Season2 Rig', c='from calabash import oldHatchUtils;reload(oldHatchUtils);oldHatchUtils.ohPublishCurrentFile()')
     # cmds.menuItem(p=hatch_submenu, label='Publish Season2 No Vray Rig', c='from calabash import oldHatchUtils;reload(oldHatchUtils);oldHatchUtils.ohPublish_mayaMat_rig()')
     # cmds.menuItem(p=hatch_submenu, label='Rename New Hatch Rigs', c='from calabash import fileUtils;reload(fileUtils);fileUtils.rename_hatch_rigs()')
+
+
 
 calabash_menu()
