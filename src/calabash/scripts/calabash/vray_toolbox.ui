@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>472</height>
+    <height>279</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>windowTitle</string>
+   <string>VRAY TOOLBOX</string>
   </property>
   <layout class="QVBoxLayout" name="form_vLyt">
    <item>
