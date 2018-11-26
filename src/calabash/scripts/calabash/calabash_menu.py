@@ -25,8 +25,9 @@ def calabash_menu():
     rigging_submenu = cmds.menuItem('rigging_sub', p=calabash_menu, subMenu=True, label='Rigging', tearOff=True)
     shading_submenu = cmds.menuItem('shading_sub', p=calabash_menu, subMenu=True, label='Shading', tearOff=True, version="2017")
     xgen_submenu = cmds.menuItem('xgen_sub', p=calabash_menu, subMenu=True, label='XGen', tearOff=True)
-    cmds.menuItem(p=rigging_submenu, divider=True, itl=True)
-    hatch_submenu = cmds.menuItem('hatch_sub', p=calabash_menu, subMenu=True, label='Hatchimals', tearOff=True)
+    fx_submenu = cmds.menuItem('fx_sub', p=calabash_menu, subMenu=True, label='FX', tearOff=True)
+    #cmds.menuItem(p=rigging_submenu, divider=True, itl=True)
+    #hatch_submenu = cmds.menuItem('hatch_sub', p=calabash_menu, subMenu=True, label='Hatchimals', tearOff=True)
 
 
     ###############################################################################
@@ -107,9 +108,16 @@ def calabash_menu():
 
     ###############################################################################
 
+    # FX Submenu
+    cmds.menuItem(p=fx_submenu, label='RGB TBS', c='from calabash import rgb_tbs;reload(rgb_tbs);rgb_tbs.tbs()')
+    cmds.menuItem(p=fx_submenu, label='Classic TBS', c='mel.eval("TBS")')
+
+
+    ###############################################################################
+
     # Hatchimal Submenu
-    cmds.menuItem(p=hatch_submenu, label='Publish Season2 Rig', c='from calabash import oldHatchUtils;reload(oldHatchUtils);oldHatchUtils.ohPublishCurrentFile()')
-    cmds.menuItem(p=hatch_submenu, label='Publish Season2 No Vray Rig', c='from calabash import oldHatchUtils;reload(oldHatchUtils);oldHatchUtils.ohPublish_mayaMat_rig()')
-    cmds.menuItem(p=hatch_submenu, label='Rename New Hatch Rigs', c='from calabash import fileUtils;reload(fileUtils);fileUtils.rename_hatch_rigs()')
+    # cmds.menuItem(p=hatch_submenu, label='Publish Season2 Rig', c='from calabash import oldHatchUtils;reload(oldHatchUtils);oldHatchUtils.ohPublishCurrentFile()')
+    # cmds.menuItem(p=hatch_submenu, label='Publish Season2 No Vray Rig', c='from calabash import oldHatchUtils;reload(oldHatchUtils);oldHatchUtils.ohPublish_mayaMat_rig()')
+    # cmds.menuItem(p=hatch_submenu, label='Rename New Hatch Rigs', c='from calabash import fileUtils;reload(fileUtils);fileUtils.rename_hatch_rigs()')
 
 calabash_menu()
