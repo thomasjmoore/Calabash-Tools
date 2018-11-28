@@ -4,23 +4,30 @@ from maya import cmds
 from pymel import core as pm
 
 
-
 def renderSettings():
+    if not cmds.getAttr("defaultRenderGlobals.currentRenderer") == "vray":
+        cmds.setAttr("defaultRenderGlobals.currentRenderer", "vray", type="string")
+
     cmds.setAttr("vraySettings.samplerType", 4)
     cmds.setAttr("vraySettings.minShadeRate", 2)
     cmds.setAttr("vraySettings.aaFilterType", 1)
-    cmds.setAttr("vraySettings.dmcMaxSubdivs", 4)
+    cmds.setAttr("vraySettings.dmcMaxSubdivs", 10)
     cmds.setAttr("vraySettings.dmcs_useLocalSubdivs", 1)
     cmds.setAttr("vraySettings.sys_regsgen_xc", 16)
     cmds.setAttr("vraySettings.sys_regsgen_seqtype", 5)
+    cmds.setAttr("vraySettings.globopt_render_viewport_subdivision", 0)
 
 
 def giSettings():
-    cmds.setAttr("vraySettings.primaryEngine", 0)
-    cmds.setAttr("vraySettings.imap_subdivs", 100)
-    cmds.setAttr("vraySettings.imap_interpSamples", 40)
-    cmds.setAttr("vraySettings.subdivs", 1800)
+    if not cmds.getAttr("defaultRenderGlobals.currentRenderer") == "vray":
+        cmds.setAttr("defaultRenderGlobals.currentRenderer", "vray", type="string")
 
+    cmds.setAttr("vraySettings.giOn", 1)
+    cmds.setAttr("vraySettings.primaryEngine", 0)
+    cmds.setAttr("vraySettings.secondaryEngine", 3)
+    cmds.setAttr("vraySettings.imap_subdivs", 50)
+    cmds.setAttr("vraySettings.imap_interpSamples", 20)
+    cmds.setAttr("vraySettings.subdivs", 1800)
 
 def vray_attributes(selected=True, shapes=True, add=True, command=""):
     if not command:
