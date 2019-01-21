@@ -8,6 +8,7 @@ def renderSettings():
     if not cmds.getAttr("defaultRenderGlobals.currentRenderer") == "vray":
         cmds.setAttr("defaultRenderGlobals.currentRenderer", "vray", type="string")
 
+    cmds.setAttr("vraySettings.imageFormatStr", "exr (multichannel)", type="string")
     cmds.setAttr("vraySettings.samplerType", 4)
     cmds.setAttr("vraySettings.minShadeRate", 2)
     cmds.setAttr("vraySettings.aaFilterType", 1)
@@ -16,6 +17,8 @@ def renderSettings():
     cmds.setAttr("vraySettings.sys_regsgen_xc", 16)
     cmds.setAttr("vraySettings.sys_regsgen_seqtype", 5)
     cmds.setAttr("vraySettings.globopt_render_viewport_subdivision", 0)
+    cmds.setAttr("vraySettings.imgOpt_exr_autoDataWindow", 1)
+
 
 
 def giSettings():
