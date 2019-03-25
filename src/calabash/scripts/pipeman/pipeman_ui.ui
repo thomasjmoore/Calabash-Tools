@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>mainUI</class>
+ <widget class="QWidget" name="mainUI">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>834</width>
+    <height>404</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Make Live Editor</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QTabWidget" name="tabWidget_pipeman">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="pipeman_anim">
+      <attribute name="title">
+       <string>Animation</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Shot</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Versions</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <item>
+              <widget class="QListWidget" name="listWidget_shots"/>
+             </item>
+             <item>
+              <widget class="QTreeWidget" name="treeWidget_animVersions">
+               <property name="minimumSize">
+                <size>
+                 <width>402</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="lineWidth">
+                <number>1</number>
+               </property>
+               <property name="sizeAdjustPolicy">
+                <enum>QAbstractScrollArea::AdjustToContents</enum>
+               </property>
+               <property name="editTriggers">
+                <set>QAbstractItemView::NoEditTriggers</set>
+               </property>
+               <property name="alternatingRowColors">
+                <bool>true</bool>
+               </property>
+               <property name="indentation">
+                <number>10</number>
+               </property>
+               <property name="itemsExpandable">
+                <bool>false</bool>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="expandsOnDoubleClick">
+                <bool>false</bool>
+               </property>
+               <attribute name="headerCascadingSectionResizes">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="headerDefaultSectionSize">
+                <number>200</number>
+               </attribute>
+               <attribute name="headerHighlightSections">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="headerMinimumSectionSize">
+                <number>200</number>
+               </attribute>
+               <column>
+                <property name="text">
+                 <string>Version</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Status</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_anim_makelive">
+               <property name="text">
+                <string>Make Live</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pipeman_assets">
+      <attribute name="title">
+       <string>Assets</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Assets</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Versions</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QListWidget" name="listWidget_assets"/>
+             </item>
+             <item>
+              <widget class="QTreeWidget" name="treeWidget_versions">
+               <property name="minimumSize">
+                <size>
+                 <width>402</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="lineWidth">
+                <number>1</number>
+               </property>
+               <property name="sizeAdjustPolicy">
+                <enum>QAbstractScrollArea::AdjustToContents</enum>
+               </property>
+               <property name="editTriggers">
+                <set>QAbstractItemView::NoEditTriggers</set>
+               </property>
+               <property name="alternatingRowColors">
+                <bool>true</bool>
+               </property>
+               <property name="indentation">
+                <number>10</number>
+               </property>
+               <property name="itemsExpandable">
+                <bool>false</bool>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="expandsOnDoubleClick">
+                <bool>false</bool>
+               </property>
+               <attribute name="headerCascadingSectionResizes">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="headerDefaultSectionSize">
+                <number>200</number>
+               </attribute>
+               <attribute name="headerHighlightSections">
+                <bool>true</bool>
+               </attribute>
+               <attribute name="headerMinimumSectionSize">
+                <number>200</number>
+               </attribute>
+               <column>
+                <property name="text">
+                 <string>Version</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Status</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_makelive">
+               <property name="text">
+                <string>Make Live</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

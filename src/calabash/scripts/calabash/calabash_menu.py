@@ -30,6 +30,7 @@ def calabash_menu():
     shading_submenu = cmds.menuItem('shading_sub', p=calabash_menu, subMenu=True, label='Shading', tearOff=True, version="2017")
     xgen_submenu = cmds.menuItem('xgen_sub', p=calabash_menu, subMenu=True, label='XGen', tearOff=True)
     fx_submenu = cmds.menuItem('fx_sub', p=calabash_menu, subMenu=True, label='FX', tearOff=True)
+    pipeman_submenu = cmds.menuItem(p=calabash_menu, label='Pipeline Manager', c='from pipeman import pipeman;reload(pipeman),pipeman.run()')
     #cmds.menuItem(p=rigging_submenu, divider=True, itl=True)
     #hatch_submenu = cmds.menuItem('hatch_sub', p=calabash_menu, subMenu=True, label='Hatchimals', tearOff=True)
 
@@ -49,7 +50,8 @@ def calabash_menu():
     # Animation Submenu
     cmds.menuItem(p=ani_submenu, label='Good Playblast', c='from goodPlayblast_c import playblast_utils as gu; reload(gu); pb = gu.Playblaster(); pb.playblast()', image="goodplayblast.png")
     cmds.menuItem(p=ani_submenu, optionBox=True, c='import goodPlayblast_c.playblast_view as gp; reload(gp); gp.launch()')
-
+    cmds.menuItem(p=ani_submenu, label='Publish Animation', c='from calabash import animUtils;reload(animUtils);animUtils.publishAnim()')
+    cmds.menuItem(p=ani_submenu, label='Create AutoCache', c='from calabash import animUtils; reload(animUtils); animUtils.myWin.run()')
 
     ###############################################################################
 
@@ -84,7 +86,7 @@ def calabash_menu():
 
     # Rigging Submenu
     cmds.menuItem(p=rigging_submenu, label='Publish Selected Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile()')
-    cmds.menuItem(p=rigging_submenu, label='Publish Vray Shading', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_vray_rig()')
+    #cmds.menuItem(p=rigging_submenu, label='Publish Vray Shading', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_vray_rig()')
     cmds.menuItem(p=rigging_submenu, label='Publish Groom', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_groom_rig()')
 
     cmds.menuItem(p=rigging_submenu, divider=True, itl=True)
@@ -101,7 +103,7 @@ def calabash_menu():
 
     # Shading Submenu
     cmds.menuItem(p=shading_submenu, label='Rename Shading Groups', c='from calabash import shading_utils;reload(shading_utils);shading_utils.rename_shading_groups()', version="2017")
-
+    cmds.menuItem(p=shading_submenu, label='Apply Materials to Asset', c='from calabash import shading_utils;reload(shading_utils);shading_utils.apply_look()')
 
     ###############################################################################
 
@@ -124,6 +126,7 @@ def calabash_menu():
     # cmds.menuItem(p=hatch_submenu, label='Publish Season2 Rig', c='from calabash import oldHatchUtils;reload(oldHatchUtils);oldHatchUtils.ohPublishCurrentFile()')
     # cmds.menuItem(p=hatch_submenu, label='Publish Season2 No Vray Rig', c='from calabash import oldHatchUtils;reload(oldHatchUtils);oldHatchUtils.ohPublish_mayaMat_rig()')
     # cmds.menuItem(p=hatch_submenu, label='Rename New Hatch Rigs', c='from calabash import fileUtils;reload(fileUtils);fileUtils.rename_hatch_rigs()')
+
 
 
 
