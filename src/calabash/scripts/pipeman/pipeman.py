@@ -35,7 +35,7 @@ import pipeman_ui as ui_file
 import refEdit
 reload(ui_file)
 reload(refEdit)
-debug = True
+debug = False
 
 class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
