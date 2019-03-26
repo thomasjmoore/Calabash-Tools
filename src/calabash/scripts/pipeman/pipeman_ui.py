@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\guest1\Documents\maya\modules\calabash\scripts\calabash\makeLive_ui.ui'
+# Form implementation generated from reading ui file 'C:\Users\guest1\Documents\maya\modules\calabash\scripts\pipeman\pipeman_ui.ui'
 #
-# Created: Thu Mar 21 10:42:46 2019
+# Created: Tue Mar 26 12:17:11 2019
 #      by: pyside2-uic  running on PySide2 2.0.0~alpha0
 #
 # WARNING! All changes made in this file will be lost!
@@ -37,6 +37,7 @@ class Ui_mainUI(object):
         self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
         self.listWidget_shots = QtWidgets.QListWidget(self.pipeman_anim)
+        self.listWidget_shots.setWordWrap(True)
         self.listWidget_shots.setObjectName("listWidget_shots")
         self.horizontalLayout_7.addWidget(self.listWidget_shots)
         self.treeWidget_animVersions = QtWidgets.QTreeWidget(self.pipeman_anim)
@@ -127,6 +128,7 @@ class Ui_mainUI(object):
         mainUI.setWindowTitle(QtWidgets.QApplication.translate("mainUI", "Make Live Editor", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("mainUI", "Shot", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("mainUI", "Versions", None, -1))
+        self.listWidget_shots.setSortingEnabled(True)
         self.treeWidget_animVersions.headerItem().setText(0, QtWidgets.QApplication.translate("mainUI", "Version", None, -1))
         self.treeWidget_animVersions.headerItem().setText(1, QtWidgets.QApplication.translate("mainUI", "Status", None, -1))
         self.pushButton_anim_makelive.setText(QtWidgets.QApplication.translate("mainUI", "Make Live", None, -1))

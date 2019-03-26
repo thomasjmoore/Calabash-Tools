@@ -49,7 +49,14 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_7">
              <item>
-              <widget class="QListWidget" name="listWidget_shots"/>
+              <widget class="QListWidget" name="listWidget_shots">
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+               <property name="sortingEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
              </item>
              <item>
               <widget class="QTreeWidget" name="treeWidget_animVersions">
