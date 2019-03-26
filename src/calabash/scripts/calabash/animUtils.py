@@ -5,6 +5,7 @@ import re
 from PySide2 import QtWidgets
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
 import increaseVersion
+import fileUtils
 import shutil
 
 # Convert Ui file from Designer to a python module
@@ -218,4 +219,77 @@ def publishAnim():
 
     increaseVersion.versionUp()
 
+def ouroboros():
+    """
+    Ouroboros, the snake that eats its own tail
+    """
+
+    # Ouroboros exports a camera from an anim scene, the references it back in
+
+    locdata = fileUtils.get_location()
+    assetroot, filename = locdata['assetroot_filename']
+    dev_dir = locdata['dev_dir']
+    assetname, dept = locdata['assetname_dept']
+
+
+
+    def getLatest(path, basename):
+        if os.listdir(path):
+            for n in os.listdir(path):
+                if basename in n:
+                    basename, ver, ext = n.split('.')
+                    return '%03d' % (int(ver) + 1)
+        else:
+            return '001'
+
+    exp_basename = "{0}_cam".format(assetname)
+
+    camversion_path = os.path.join(assetroot, 'cam')
+    if not os.path.exists(camversion_path):
+        os.mkdir(camversion_path)
+    camversion = getLatest(camversion_path, exp_basename)
+    exp_vname = '{0}.{1}.mb'.format(exp_basename, camversion)
+    exp_refname = '{0}.mb'.format(exp_basename)
+    cam_vpath = os.path.join(assetroot, 'cam', exp_vname)
+    cam_refpath = os.path.join(dev_dir, exp_refname)
+
+    sel = pm.ls(sl=True)
+    for node in sel:
+        if pm.referenceQuery(node, isNodeReferenced=True):
+            print "This is a ref'd node, I'll import it without namespaces, export a version to anim/cams, and then export to shot root"
+            refnode = pm.referenceQuery(node, referenceNode=True)
+            pm.system.FileReference(refnode).importContents(removeNamespace=True)
+
+            pm.select(clear=True)
+            pm.select(node)
+            pm.exportSelected(cam_vpath,
+                              channels=True,
+                              expressions=True,
+                              type='mayaBinary'
+                              )
+
+            shutil.copy2(cam_vpath, cam_refpath)
+            pm.system.createReference(cam_refpath, namespace='CAM')
+            pm.delete(node)
+
+
+        else:
+            print "This is a local camera, I'll export it to anim/cams, and to shot root. Then I will reference it in, and delete the local camera"
+            pm.select(clear=True)
+            pm.select(node)
+            pm.exportSelected(cam_vpath,
+                              channels=True,
+                              expressions=True,
+                              type='mayaBinary'
+                              )
+            shutil.copy2(cam_vpath, cam_refpath)
+            pm.system.createReference(cam_refpath, namespace='CAM')
+            pm.delete(node)
+
+
+def next_version(scene_file):
+    current_version = int(scene_file.split('.')[0].split('_')[-1])
+    scene_name = scene_file.split('.')[0].rstrip('_%03d' % (current_version))
+    next_version = '%03d' % (current_version + 1)
+    return '{0}_{1}.ma'.format(scene_name, next_version)
 myWin = myGui()

@@ -52,6 +52,7 @@ def calabash_menu():
     cmds.menuItem(p=ani_submenu, optionBox=True, c='import goodPlayblast_c.playblast_view as gp; reload(gp); gp.launch()')
     cmds.menuItem(p=ani_submenu, label='Publish Animation', c='from calabash import animUtils;reload(animUtils);animUtils.publishAnim()')
     cmds.menuItem(p=ani_submenu, label='Create AutoCache', c='from calabash import animUtils; reload(animUtils); animUtils.myWin.run()')
+    cmds.menuItem(p=ani_submenu, label='Publish Camera from animation', c='from calabash import animUtils; reload(animUtils); animUtils.ouroboros()')
 
     ###############################################################################
 
