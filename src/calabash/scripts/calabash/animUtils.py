@@ -63,22 +63,19 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.ui.lineEdit_Path_DoIt.setText(self.DoIt_dir)
         self.ui.lineEdit_FrameStart.setText(str(int(pm.playbackOptions(q=True, minTime=True))))
         self.ui.lineEdit_FrameEnd.setText(str(int(pm.playbackOptions(q=True, maxTime=True))))
+        if os.path.exists(os.path.join(self.animroot, 'publish')):
+            if os.path.exists(self.cache_dir):
+                self.ui.lineEdit_Path_Pub.setText(self.cache_dir)
+            else:
 
-        if os.path.exists(self.cache_dir):
-            self.ui.lineEdit_Path_Pub.setText(self.cache_dir)
+                os.mkdir(self.cache_dir)
+                self.ui.lineEdit_Path_Pub.setText(self.cache_dir)
         else:
-            #self.ui.lineEdit_Path_Pub.setText('<No publish folder found>')
-            os.mkdir(self.cache_dir)
-            self.ui.lineEdit_Path_Pub.setText(self.cache_dir)
+            self.ui.lineEdit_Path_Pub.setText('<No publish folder found>')
 
-        if os.path.exists(self.light_dir):
-            self.ui.lineEdit_Path_Light.setText(self.light_dir)
-        else:
-            self.ui.lineEdit_Path_Light.setText('<No render folder found>')
         self.ui.pushButton_Browse_Anim.clicked.connect(self.set_dir_anim)
         self.ui.pushButton_Browse_Pub.clicked.connect(self.set_dir_pub)
-        self.ui.pushButton_Browse_Light.clicked.connect(self.set_dir_light)
-        self.ui.pushButton_Browse_DoIt.clicked.connect(self.set_dir_light)
+        self.ui.pushButton_Browse_DoIt.clicked.connect(self.set_dir_bat)
         self.ui.pushButton_AddTargets.clicked.connect(self.add_targets)
         self.ui.pushButton_DoIt.clicked.connect(self.DoIt)
 
@@ -89,10 +86,6 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     def set_dir_pub(self):
         cache_dir = pm.windows.promptForFolder()
         self.ui.lineEdit_Path_Pub.setText(cache_dir)
-
-    def set_dir_light(self):
-        light_dir = pm.windows.promptForFolder()
-        self.ui.lineEdit_Path_Light.setText(light_dir)
 
     def set_dir_bat(self):
         bat_dir = pm.windows.promptForFolder()
@@ -120,7 +113,6 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         anim = self.ui.lineEdit_Path_Anim.text()
         cache = self.ui.lineEdit_Path_Pub.text()
-        light = self.ui.lineEdit_Path_Light.text()
         frame_range = (self.ui.lineEdit_FrameStart.text(), self.ui.lineEdit_FrameEnd.text())
         if not validate(anim, self.shot_name, 'anim'):
             result = pm.confirmDialog(
@@ -133,24 +125,11 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 dismissString='Close',
             )
             return
-        elif not validate(light, self.shot_name, 'render'):
-            result = pm.confirmDialog(
-                title='Invalid Path',
-                message='Path not found or no scene files matching {0}?'.format(os.path.join(light,
-                                                                                             '{0}_{1}.([0-9]+).ma'.format(
-                                                                                                 self.shot_name,
-                                                                                                 'render'))),
-                button=['Close'],
-                defaultButton='Close',
-                cancelButton='Close',
-                dismissString='Close',
-            )
-            return
+
         DoIt_dict = {
             'scene_name': self.shot_name,
             'anim_dir': anim,
             'cache_dir': cache,
-            'light_dir': light,
             'frame_range': frame_range,
             'targets': {
             }

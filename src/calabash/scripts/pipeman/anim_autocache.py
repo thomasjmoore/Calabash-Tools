@@ -26,32 +26,6 @@ def export_anim(scene_name, anim_dir, cache_dir, targets, frame_range):
 
         cmds.AbcExport(j=command)
 
-def update_anim(scene_name, light_dir, cache_dir, targets):
-    light_file = current_version(light_dir, scene_name, 'file_name')
-    path = os.path.join(light_dir, light_file)
-    pm.openFile(path, f=True)
-    try:
-        for target in targets:
-            target_name = target.split(':')[0]
-            target_ref = pm.FileReference(namespace=targets[target])
-            target_ver = current_version(cache_dir, target_name, 'file_name')
-            abs_path = os.path.join(cache_dir, target_ver)
-            rel_path = os.path.join('scenes', re.findall('(?:scenes)(.*)', abs_path)[0].strip('\\'))
-
-            target_ref.replaceWith(rel_path)
-
-            print '\n*************************************'
-            print rel_path
-            print '\n*************************************'
-
-        pm.saveAs(os.path.join(light_dir, next_version(light_file)))
-        print '\n*************************************'
-        print 'Versioned up:', os.path.join(light_dir, next_version(light_file))
-        print '\n*************************************'
-
-    except:
-        finish = raw_input('Something happened, Press enter to close')
-
 def current_version(path, scene_name, option):
     existing_files = []
 
@@ -75,7 +49,6 @@ def run(dict_input):
     scene_name = dict_input['scene_name']
     anim_dir = dict_input['anim_dir']
     cache_dir = dict_input['cache_dir']
-    light_dir = dict_input['light_dir']
     targets = dict_input['targets']
     frame_range = dict_input['frame_range']
     export_anim(scene_name, anim_dir, cache_dir, targets, frame_range)
