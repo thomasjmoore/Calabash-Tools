@@ -16,7 +16,6 @@ def export_anim(scene_name, anim_dir, cache_dir, targets, frame_range):
                   ' -uvWrite ' \
                   '-worldSpace ' \
                   '-ro ' \
-                  '-sn ' \
                   '-root {2} -file {3}'.format(frame_start, frame_end, target, os.path.join(cache_dir, '{0}_{1}_anim.{2}.abc'.format(
             target.split(':')[0],
 			scene_name,

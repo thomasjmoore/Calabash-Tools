@@ -213,6 +213,8 @@ def publishAnim():
 
     file_path = pm.system.sceneName()
     animroot, filename = os.path.split(file_path)
+    # basename, ver, ext = filename.split('.')
+    # nonver = '{0}.{1}'.format(basename, ext)
     publish_dir = os.path.join(animroot, 'publish')
     pm.system.saveFile(force=True)
     shutil.copy2(file_path, os.path.join(publish_dir, filename))
