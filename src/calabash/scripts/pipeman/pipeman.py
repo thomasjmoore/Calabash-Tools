@@ -53,10 +53,15 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.status_path = os.path.join(self.scenes_root, 'status.json')
         ######## CONNECT UI ELEMENTS AND FUNCTIONS BELOW HERE #########
 
-        self.header = self.ui.treeWidget_versions.header()
-        self.header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-        self.header.setStretchLastSection(False)
-        self.header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        self.header_assets = self.ui.treeWidget_versions.header()
+        self.header_assets.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.header_assets.setStretchLastSection(False)
+        self.header_assets.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+
+        self.header_anim = self.ui.treeWidget_animVersions.header()
+        self.header_anim.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.header_anim.setStretchLastSection(False)
+        self.header_anim.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
 
         self.pop_assetlist()
         self.pop_shotlist()
@@ -64,7 +69,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.ui.listWidget_shots.itemClicked.connect(self.pop_shotVersions)
         self.ui.pushButton_makelive.clicked.connect(self.makelive_assets)
         self.ui.pushButton_anim_makelive.clicked.connect(self.makelive_shots)
-
+        self.ui.pushButton_anim_openlatest.clicked.connect(self.open_latest)
         if not os.path.isfile(self.status_path):
             self.make_statusfile(self.status_path)
 
@@ -237,18 +242,18 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         selected_version = self.ui.treeWidget_animVersions.currentItem()
         spot = '_'.join(selected_shot.text().split('_')[:-1])
         shot = selected_shot.text().split('_')[-1]
-        animName = spot + '_' + shot
+        shotroot = spot + '_' + shot
 
         shot_path = self.getShots()[spot][shot]
 
         if '.abc' in selected_version.text(0):
-            cachename = '{0}_{1}'.format('_'.join(selected_version.text(0).split('_')[:-3]), animName)
+            cachename = '{0}_{1}'.format('_'.join(selected_version.text(0).split('_')[:-3]), shotroot)
             live_path = os.path.join(shot_path, '{0}_cache.abc'.format(cachename))
             version_path = os.path.join(shot_path, 'anim', 'publish', 'cache', selected_version.text(0))
             shutil.copy2(version_path, live_path)
             self.update_status('shot', selected_shot.text(), selected_version.text(0), 'cache')
         else:
-            live_path = os.path.join(shot_path, '{0}_anim.ma'.format(animName))
+            live_path = os.path.join(shot_path, '{0}_anim.ma'.format(shotroot))
             version_path = os.path.join(shot_path, 'anim', 'publish', selected_version.text(0))
             shutil.copy2(version_path, live_path)
             print refEdit.edit(live_path)
@@ -309,7 +314,30 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             except KeyError:
                 pass
 
-        ######## CONNECT UI ELEMENTS AND FUNCTIONS ABOVE HERE #########
+    def open_latest(self):
+
+        selected_shot = self.ui.listWidget_shots.currentItem().text()
+        spot = '_'.join(selected_shot.split('_')[:-1])
+        shot = selected_shot.split('_')[-1]
+        shotroot = spot + '_' + shot
+        animpath = os.path.join(self.scenes_root, "{0}_shots".format(spot), shot, 'anim')
+        basename = shotroot + '_anim'
+
+        def getLatest(path, basename):
+            if os.listdir(path):
+                for n in os.listdir(path):
+                    if basename in n:
+                        basename, ver, ext = n.split('.')
+                        return '%03d' % (int(ver) + 1)
+            else:
+                return '001'
+
+        animver = "{0}.{1}.ma".format(basename, getLatest(animpath, basename))
+        pm.openFile(os.path.join(animpath, animver))
+
+
+
+######## CONNECT UI ELEMENTS AND FUNCTIONS ABOVE HERE #########
 
     def deleteControl(self, control):
         if pm.workspaceControl(control, q=True, exists=True):
