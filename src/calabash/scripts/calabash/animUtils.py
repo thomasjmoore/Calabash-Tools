@@ -5,6 +5,7 @@ import re
 from PySide2 import QtWidgets
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
 import increaseVersion
+import fileUtils
 import shutil
 
 # Convert Ui file from Designer to a python module
@@ -43,8 +44,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     #scene_dir = '_'.join(file_path.split('/')[:3])
 
     shot_name = filename.split('.')[0].replace('_anim', '')
-    anim_dir = os.path.join(shot_dir, 'anim')
-    cache_dir = os.path.join(shot_dir, 'anim', 'publish', 'cache')
+    anim_dir = os.path.join(shot_dir, 'anim').replace('\\', '/')
+    cache_dir = os.path.join(shot_dir, 'anim', 'publish', 'cache').replace('\\', '/')
     light_dir = os.path.join(shot_dir, 'render')
     DoIt_fileName = 'autocache_{0}'.format(shot_name)
     DoIt_dir = os.path.join(shot_dir, '{0}.bat'.format(DoIt_fileName))
@@ -62,22 +63,19 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.ui.lineEdit_Path_DoIt.setText(self.DoIt_dir)
         self.ui.lineEdit_FrameStart.setText(str(int(pm.playbackOptions(q=True, minTime=True))))
         self.ui.lineEdit_FrameEnd.setText(str(int(pm.playbackOptions(q=True, maxTime=True))))
+        if os.path.exists(os.path.join(self.animroot, 'publish')):
+            if os.path.exists(self.cache_dir):
+                self.ui.lineEdit_Path_Pub.setText(self.cache_dir)
+            else:
 
-        if os.path.exists(self.cache_dir):
-            self.ui.lineEdit_Path_Pub.setText(self.cache_dir)
+                os.mkdir(self.cache_dir)
+                self.ui.lineEdit_Path_Pub.setText(self.cache_dir)
         else:
-            #self.ui.lineEdit_Path_Pub.setText('<No publish folder found>')
-            os.mkdir(self.cache_dir)
-            self.ui.lineEdit_Path_Pub.setText(self.cache_dir)
+            self.ui.lineEdit_Path_Pub.setText('<No publish folder found>')
 
-        if os.path.exists(self.light_dir):
-            self.ui.lineEdit_Path_Light.setText(self.light_dir)
-        else:
-            self.ui.lineEdit_Path_Light.setText('<No render folder found>')
         self.ui.pushButton_Browse_Anim.clicked.connect(self.set_dir_anim)
         self.ui.pushButton_Browse_Pub.clicked.connect(self.set_dir_pub)
-        self.ui.pushButton_Browse_Light.clicked.connect(self.set_dir_light)
-        self.ui.pushButton_Browse_DoIt.clicked.connect(self.set_dir_light)
+        self.ui.pushButton_Browse_DoIt.clicked.connect(self.set_dir_bat)
         self.ui.pushButton_AddTargets.clicked.connect(self.add_targets)
         self.ui.pushButton_DoIt.clicked.connect(self.DoIt)
 
@@ -89,10 +87,6 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         cache_dir = pm.windows.promptForFolder()
         self.ui.lineEdit_Path_Pub.setText(cache_dir)
 
-    def set_dir_light(self):
-        light_dir = pm.windows.promptForFolder()
-        self.ui.lineEdit_Path_Light.setText(light_dir)
-
     def set_dir_bat(self):
         bat_dir = pm.windows.promptForFolder()
         self.ui.lineEdit_Path_DoIt.setText(bat_dir)
@@ -101,11 +95,14 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def add_targets(self):
         self.ui.listWidget_targets.clear()
+        self.targets = []
         sel = pm.ls(sl=1)
         for item in sel:
-            self.targets.append(item)
+            item = pm.PyNode(item)
+            self.targets.append((item, item.fullPath()))
+            print 'add_target:', item.fullPath()
             target_item = QtWidgets.QListWidgetItem(self.ui.listWidget_targets)
-            target_item.setText(str(item))
+            target_item.setText(str(item.fullPath()))
 
     def DoIt(self):
         def validate(path, scene_name, mode):
@@ -119,7 +116,6 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         anim = self.ui.lineEdit_Path_Anim.text()
         cache = self.ui.lineEdit_Path_Pub.text()
-        light = self.ui.lineEdit_Path_Light.text()
         frame_range = (self.ui.lineEdit_FrameStart.text(), self.ui.lineEdit_FrameEnd.text())
         if not validate(anim, self.shot_name, 'anim'):
             result = pm.confirmDialog(
@@ -132,32 +128,21 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 dismissString='Close',
             )
             return
-        elif not validate(light, self.shot_name, 'render'):
-            result = pm.confirmDialog(
-                title='Invalid Path',
-                message='Path not found or no scene files matching {0}?'.format(os.path.join(light,
-                                                                                             '{0}_{1}.([0-9]+).ma'.format(
-                                                                                                 self.shot_name,
-                                                                                                 'render'))),
-                button=['Close'],
-                defaultButton='Close',
-                cancelButton='Close',
-                dismissString='Close',
-            )
-            return
+
         DoIt_dict = {
             'scene_name': self.shot_name,
             'anim_dir': anim,
             'cache_dir': cache,
-            'light_dir': light,
             'frame_range': frame_range,
             'targets': {
             }
         }
 
-        for target in self.targets:
+        for target, target_dag in self.targets:
+
             target_ns = str(target).split(':')[0]
-            DoIt_dict['targets'][str(target)] = target_ns
+            DoIt_dict['targets'][str(target)] = (str(target), target_ns, target_dag)
+            print 'add target to dict:', target, target_ns, target_dag
 
         DoIt_script = 'import maya.standalone\n' \
                       'maya.standalone.initialize(name="python")\n' \
@@ -198,7 +183,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def run(self):
         # Set Ui's name
-        self.setObjectName('Project_tools_ui')
+        self.setObjectName('autocache_ui')
         # Explictly define workspacecontrol name
         workspaceControlName = self.objectName() + 'WorkspaceControl'
         # delete existing controls
@@ -212,10 +197,85 @@ def publishAnim():
 
     file_path = pm.system.sceneName()
     animroot, filename = os.path.split(file_path)
+    # basename, ver, ext = filename.split('.')
+    # nonver = '{0}.{1}'.format(basename, ext)
     publish_dir = os.path.join(animroot, 'publish')
     pm.system.saveFile(force=True)
     shutil.copy2(file_path, os.path.join(publish_dir, filename))
 
     increaseVersion.versionUp()
 
-myWin = myGui()
+def ouroboros():
+    """
+    Ouroboros, the snake that eats its own tail
+    """
+
+    # Ouroboros exports a camera from an anim scene, the references it back in
+
+    locdata = fileUtils.get_location()
+    assetroot, filename = locdata['assetroot_filename']
+    dev_dir = locdata['dev_dir']
+    assetname, dept = locdata['assetname_dept']
+
+
+
+    def getLatest(path, basename):
+        if os.listdir(path):
+            for n in os.listdir(path):
+                if basename in n:
+                    basename, ver, ext = n.split('.')
+                    return '%03d' % (int(ver) + 1)
+        else:
+            return '001'
+
+    exp_basename = "{0}_cam".format(assetname)
+
+    camversion_path = os.path.join(assetroot, 'cam')
+    if not os.path.exists(camversion_path):
+        os.mkdir(camversion_path)
+    camversion = getLatest(camversion_path, exp_basename)
+    exp_vname = '{0}.{1}.mb'.format(exp_basename, camversion)
+    exp_refname = '{0}.mb'.format(exp_basename)
+    cam_vpath = os.path.join(assetroot, 'cam', exp_vname)
+    cam_refpath = os.path.join(dev_dir, exp_refname)
+
+    sel = pm.ls(sl=True)
+    for node in sel:
+        if pm.referenceQuery(node, isNodeReferenced=True):
+            print "This is a ref'd node, I'll import it without namespaces, export a version to anim/cams, and then export to shot root"
+            refnode = pm.referenceQuery(node, referenceNode=True)
+            pm.system.FileReference(refnode).importContents(removeNamespace=True)
+
+            pm.select(clear=True)
+            pm.select(node)
+            pm.exportSelected(cam_vpath,
+                              channels=True,
+                              expressions=True,
+                              type='mayaBinary'
+                              )
+
+            shutil.copy2(cam_vpath, cam_refpath)
+            pm.system.createReference(cam_refpath, namespace='CAM')
+            pm.delete(node)
+
+
+        else:
+            print "This is a local camera, I'll export it to anim/cams, and to shot root. Then I will reference it in, and delete the local camera"
+            pm.select(clear=True)
+            pm.select(node)
+            pm.exportSelected(cam_vpath,
+                              channels=True,
+                              expressions=True,
+                              type='mayaBinary'
+                              )
+            shutil.copy2(cam_vpath, cam_refpath)
+            pm.system.createReference(cam_refpath, namespace='CAM')
+            pm.delete(node)
+
+
+def next_version(scene_file):
+    current_version = int(scene_file.split('.')[0].split('_')[-1])
+    scene_name = scene_file.split('.')[0].rstrip('_%03d' % (current_version))
+    next_version = '%03d' % (current_version + 1)
+    return '{0}_{1}.ma'.format(scene_name, next_version)
+autocache_gui = myGui()

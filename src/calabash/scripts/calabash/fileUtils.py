@@ -18,28 +18,26 @@ def get_location():
     # Returns a dictionary of paths and names for asset dev
     file_path = cmds.file(sceneName=True, q=True)
     assetroot, filename = os.path.split(file_path)
+    dept = ('default', assetroot)
     if os.path.split(assetroot)[1] == 'shd':
         shd_path = os.path.dirname(file_path)
+        dept = ('shd', shd_path)
         assetroot, throwaway = os.path.split(shd_path)
 
     publish_dir = os.path.join(assetroot, 'publish')
     dev_dir = os.path.dirname(assetroot)
     type_dir = os.path.dirname(dev_dir)
     basename, ver, ext = filename.split(".")
-    #  allow for '_' in assetname, split then rejoin all but the last item
-    assetname, dept = ('_'.join(basename.split('_')[:-1]), basename.split('_')[-1])
-    non_ver = ".".join((assetname, ext))
 
 
     return {'file_path': file_path, 'assetroot_filename': (assetroot, filename), 'publish_dir': publish_dir,
-            'dev_dir': dev_dir, 'type_dir': type_dir, 'basename_ver_ext': (basename, ver, ext),
-            'assetname_dept': (assetname, dept), 'non_ver': non_ver}
+            'dev_dir': dev_dir, 'type_dir': type_dir, 'basename_ver_ext': (basename, ver, ext), 'dept':dept}
 
 
 def publishCurrentFile():
 
 
-    debug = False  # False to disable variable printout
+    debug = True  # False to disable variable printout
     locdata = get_location()
     file_path = locdata['file_path']
 
@@ -48,11 +46,8 @@ def publishCurrentFile():
 
     dev_dir = locdata['dev_dir']
     type_dir = locdata['type_dir']
-
+    dept, deptpath = locdata['dept']
     basename, ver, ext = locdata['basename_ver_ext']
-    assetname, dept = locdata['assetname_dept']
-
-    non_ver = locdata['non_ver']
 
     sel = pm.ls(sl=True)
 
@@ -67,8 +62,8 @@ def publishCurrentFile():
         print 'dev_dir', dev_dir
         print 'Type_dir', type_dir
         print 'basename: {0}, ver: {1} ext: {2}'.format(basename, ver, ext)
-        print 'assetname: {0}, dept: {1}'.format(assetname, dept)
-        print 'Non-Version name:', non_ver
+        print 'dept:', dept
+
 
     # Cleanup unknown nodes
     if pm.ls(type='unknown'):
@@ -89,10 +84,12 @@ def publishCurrentFile():
     # export materials, remove namespaces, export shaded rig, reload current scene to restore references
     if dept == 'shd':
 
-        shd_publish = os.path.join(assetroot, 'shd', 'publish')
-        mtl_filename = '{0}_mtl.{1}.mb'.format(assetname, ver)
+        shd_publish = os.path.join(deptpath, 'publish')
+        mtl_filename = '{0}_mtl.{1}.mb'.format(basename, ver)
+        print '#############'
+        print 'export mtl'
         mtl_export_path = os.path.join(shd_publish, mtl_filename)
-
+        print '#############'
         print 'Versioning up: ', increaseVersion.versionUp()
 
 

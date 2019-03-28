@@ -2,6 +2,23 @@ from maya import cmds
 from pymel import core as pm
 import re
 
+"""
+apply look v2:
+select all assets + mtl ref node last
+for asset in selection:
+    make list of mesh, dagpath tuples
+    apply_materials(list of mesh/dagpaths, mtl_refnode)
+    get SGs under refnode
+    for sg in SGs:
+        for mesh in sg.meshes:
+            if mesh in assetmeshes[0]:
+                apply mesh to sg
+                
+another possible fix:
+add metadata to assetroot node (World),
+assetName,
+
+"""
 
 def rename_shading_groups():
     # Renames selected shading groups, or all in scene if none are selected
@@ -232,8 +249,12 @@ def exportShaders(SGs, export_path):
 
         pm.select(node, ne=1, add=1)
     asset_name = pm.sceneName().split('/')[-1].split('_')[0]
+    print '########################'
+    print
     print asset_name
     print export_path
+    print
+    print '########################'
     expSel = cmds.file(export_path, f=True, es=True, exp=True, ch=False, chn=False, con=False, type='mayaBinary')
 
 

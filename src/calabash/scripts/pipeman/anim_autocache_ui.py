@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'I:\GoogleDrive\Scripts\Pipeline\DoItMkr_ui.ui'
+# Form implementation generated from reading ui file 'C:\Users\guest1\Documents\maya\modules\calabash\scripts\pipeman\anim_autocache_ui.ui'
 #
-# Created: Sat Nov 17 18:56:52 2018
+# Created: Wed Mar 27 16:34:33 2019
 #      by: pyside2-uic  running on PySide2 2.0.0~alpha0
 #
 # WARNING! All changes made in this file will be lost!
@@ -91,20 +91,6 @@ class Ui_mainUI(object):
         self.pushButton_Browse_Pub.setObjectName("pushButton_Browse_Pub")
         self.horizontalLayout_3.addWidget(self.pushButton_Browse_Pub)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.label_2 = QtWidgets.QLabel(mainUI)
-        self.label_2.setObjectName("label_2")
-        self.horizontalLayout_2.addWidget(self.label_2)
-        spacerItem4 = QtWidgets.QSpacerItem(74, 20, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem4)
-        self.lineEdit_Path_Light = QtWidgets.QLineEdit(mainUI)
-        self.lineEdit_Path_Light.setObjectName("lineEdit_Path_Light")
-        self.horizontalLayout_2.addWidget(self.lineEdit_Path_Light)
-        self.pushButton_Browse_Light = QtWidgets.QPushButton(mainUI)
-        self.pushButton_Browse_Light.setObjectName("pushButton_Browse_Light")
-        self.horizontalLayout_2.addWidget(self.pushButton_Browse_Light)
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.pushButton_AddTargets = QtWidgets.QPushButton(mainUI)
@@ -118,8 +104,8 @@ class Ui_mainUI(object):
         self.label_5 = QtWidgets.QLabel(mainUI)
         self.label_5.setObjectName("label_5")
         self.horizontalLayout_6.addWidget(self.label_5)
-        spacerItem5 = QtWidgets.QSpacerItem(50, 20, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_6.addItem(spacerItem5)
+        spacerItem4 = QtWidgets.QSpacerItem(50, 20, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_6.addItem(spacerItem4)
         self.lineEdit_Path_DoIt = QtWidgets.QLineEdit(mainUI)
         self.lineEdit_Path_DoIt.setObjectName("lineEdit_Path_DoIt")
         self.horizontalLayout_6.addWidget(self.lineEdit_Path_DoIt)
@@ -130,8 +116,8 @@ class Ui_mainUI(object):
         self.verticalLayout.addLayout(self.verticalLayout_2)
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        spacerItem6 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_5.addItem(spacerItem6)
+        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_5.addItem(spacerItem5)
         self.pushButton_DoIt = QtWidgets.QPushButton(mainUI)
         self.pushButton_DoIt.setObjectName("pushButton_DoIt")
         self.horizontalLayout_5.addWidget(self.pushButton_DoIt)
@@ -142,7 +128,7 @@ class Ui_mainUI(object):
         QtCore.QMetaObject.connectSlotsByName(mainUI)
 
     def retranslateUi(self, mainUI):
-        mainUI.setWindowTitle(QtWidgets.QApplication.translate("mainUI", "Do It Maker 3000!", None, -1))
+        mainUI.setWindowTitle(QtWidgets.QApplication.translate("mainUI", "Animation Autocache", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("mainUI", "Do it Button 3000", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("mainUI", "Animation Directory", None, -1))
         self.pushButton_Browse_Anim.setText(QtWidgets.QApplication.translate("mainUI", "Browse", None, -1))
@@ -150,10 +136,8 @@ class Ui_mainUI(object):
         self.label_7.setText(QtWidgets.QApplication.translate("mainUI", "Frame End:", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("mainUI", "Published Animation Directory", None, -1))
         self.pushButton_Browse_Pub.setText(QtWidgets.QApplication.translate("mainUI", "Browse", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("mainUI", "Lighting Directory", None, -1))
-        self.pushButton_Browse_Light.setText(QtWidgets.QApplication.translate("mainUI", "Browse", None, -1))
         self.pushButton_AddTargets.setText(QtWidgets.QApplication.translate("mainUI", "Add Targets From Selection", None, -1))
-        self.label_5.setText(QtWidgets.QApplication.translate("mainUI", "DoIt Batch file Location", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("mainUI", "Batch file Location", None, -1))
         self.pushButton_Browse_DoIt.setText(QtWidgets.QApplication.translate("mainUI", "Browse", None, -1))
         self.pushButton_DoIt.setText(QtWidgets.QApplication.translate("mainUI", "Do It!", None, -1))
 
