@@ -201,6 +201,8 @@ def publishAnim():
     # nonver = '{0}.{1}'.format(basename, ext)
     publish_dir = os.path.join(animroot, 'publish')
     pm.system.saveFile(force=True)
+    if not os.path.exists(publish_dir):
+        os.mkdir(publish_dir)
     shutil.copy2(file_path, os.path.join(publish_dir, filename))
 
     increaseVersion.versionUp()
@@ -215,7 +217,8 @@ def ouroboros():
     locdata = fileUtils.get_location()
     assetroot, filename = locdata['assetroot_filename']
     dev_dir = locdata['dev_dir']
-    assetname, dept = locdata['assetname_dept']
+    basename, ver, ext = locdata['basename_ver_ext']
+
 
 
 
@@ -228,7 +231,7 @@ def ouroboros():
         else:
             return '001'
 
-    exp_basename = "{0}_cam".format(assetname)
+    exp_basename = "{0}_cam".format(basename)
 
     camversion_path = os.path.join(assetroot, 'cam')
     if not os.path.exists(camversion_path):
