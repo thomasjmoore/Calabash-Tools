@@ -44,8 +44,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     #scene_dir = '_'.join(file_path.split('/')[:3])
 
     shot_name = filename.split('.')[0].replace('_anim', '')
-    anim_dir = os.path.join(shot_dir, 'anim')
-    cache_dir = os.path.join(shot_dir, 'anim', 'publish', 'cache')
+    anim_dir = os.path.join(shot_dir, 'anim').replace('\\', '/')
+    cache_dir = os.path.join(shot_dir, 'anim', 'publish', 'cache').replace('\\', '/')
     light_dir = os.path.join(shot_dir, 'render')
     DoIt_fileName = 'autocache_{0}'.format(shot_name)
     DoIt_dir = os.path.join(shot_dir, '{0}.bat'.format(DoIt_fileName))
@@ -95,11 +95,14 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def add_targets(self):
         self.ui.listWidget_targets.clear()
+        self.targets = []
         sel = pm.ls(sl=1)
         for item in sel:
-            self.targets.append(item)
+            item = pm.PyNode(item)
+            self.targets.append((item, item.fullPath()))
+            print 'add_target:', item.fullPath()
             target_item = QtWidgets.QListWidgetItem(self.ui.listWidget_targets)
-            target_item.setText(str(item))
+            target_item.setText(str(item.fullPath()))
 
     def DoIt(self):
         def validate(path, scene_name, mode):
@@ -135,9 +138,11 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             }
         }
 
-        for target in self.targets:
+        for target, target_dag in self.targets:
+
             target_ns = str(target).split(':')[0]
-            DoIt_dict['targets'][str(target)] = target_ns
+            DoIt_dict['targets'][str(target)] = (str(target), target_ns, target_dag)
+            print 'add target to dict:', target, target_ns, target_dag
 
         DoIt_script = 'import maya.standalone\n' \
                       'maya.standalone.initialize(name="python")\n' \
@@ -178,7 +183,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def run(self):
         # Set Ui's name
-        self.setObjectName('Project_tools_ui')
+        self.setObjectName('autocache_ui')
         # Explictly define workspacecontrol name
         workspaceControlName = self.objectName() + 'WorkspaceControl'
         # delete existing controls
@@ -196,6 +201,8 @@ def publishAnim():
     # nonver = '{0}.{1}'.format(basename, ext)
     publish_dir = os.path.join(animroot, 'publish')
     pm.system.saveFile(force=True)
+    if not os.path.exists(publish_dir):
+        os.mkdir(publish_dir)
     shutil.copy2(file_path, os.path.join(publish_dir, filename))
 
     increaseVersion.versionUp()
@@ -210,11 +217,11 @@ def ouroboros():
     locdata = fileUtils.get_location()
     assetroot, filename = locdata['assetroot_filename']
     dev_dir = locdata['dev_dir']
-    assetname, dept = locdata['assetname_dept']
+    basename, ver, ext = locdata['basename_ver_ext']
 
-
-
+    print 'basename, ver, ext:', basename, ver, ext
     def getLatest(path, basename):
+        print 'getting latest {0} file'.format(basename)
         if os.listdir(path):
             for n in os.listdir(path):
                 if basename in n:
@@ -223,7 +230,7 @@ def ouroboros():
         else:
             return '001'
 
-    exp_basename = "{0}_cam".format(assetname)
+    exp_basename = "{0}_cam".format(basename.replace('_anim', ''))
 
     camversion_path = os.path.join(assetroot, 'cam')
     if not os.path.exists(camversion_path):
@@ -234,6 +241,12 @@ def ouroboros():
     cam_vpath = os.path.join(assetroot, 'cam', exp_vname)
     cam_refpath = os.path.join(dev_dir, exp_refname)
 
+    print 'camversion_path:', camversion_path
+    print 'camversion:', camversion
+    print 'exp_vname:', exp_vname
+    print 'exp_refname:', exp_refname
+    print 'cam_vpath', cam_vpath
+    print 'cam_refpath:', cam_refpath
     sel = pm.ls(sl=True)
     for node in sel:
         if pm.referenceQuery(node, isNodeReferenced=True):
@@ -249,7 +262,7 @@ def ouroboros():
                               type='mayaBinary'
                               )
 
-            shutil.copy2(cam_vpath, cam_refpath)
+            shutil.copyfile(cam_vpath, cam_refpath)
             pm.system.createReference(cam_refpath, namespace='CAM')
             pm.delete(node)
 
@@ -263,7 +276,7 @@ def ouroboros():
                               expressions=True,
                               type='mayaBinary'
                               )
-            shutil.copy2(cam_vpath, cam_refpath)
+            shutil.copyfile(cam_vpath, cam_refpath)
             pm.system.createReference(cam_refpath, namespace='CAM')
             pm.delete(node)
 
@@ -273,4 +286,4 @@ def next_version(scene_file):
     scene_name = scene_file.split('.')[0].rstrip('_%03d' % (current_version))
     next_version = '%03d' % (current_version + 1)
     return '{0}_{1}.ma'.format(scene_name, next_version)
-myWin = myGui()
+autocache_gui = myGui()
