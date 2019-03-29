@@ -2,6 +2,20 @@ from maya import cmds
 from pymel import core as pm
 import re
 
+"""
+in render scene, reference mtl files with same namespace as used in anim, eg.TUNA:World, TUNA_mtl
+select assets/group containing assets, menu>apply mtls
+list all geo under selection
+make dict namespace:{node:dagpath}
+for namespace in dict:
+    find all SGs with namespace
+    for sg in SGs:
+        targetmeshes = []
+        for mesh in sg.meshes:
+            if mesh in dict[namespace]:
+                targetmeshes.append(dict[namespace][mesh])
+        pm.hypershade(sg, targetmeshes)
+"""
 
 def rename_shading_groups():
     # Renames selected shading groups, or all in scene if none are selected
@@ -128,24 +142,25 @@ def write_assignments(SGs):
         scrubber(SG, 0)
         add_attr(SG, 'meshes', mk_mesh_list(SG))
 
-def make_assignments(asset_ns, asset_name):
+def make_assignments(namespace, target_meshes):
 
-    target_SGs = get_asset_look_SGs(asset_name)
-    print 'Making assignments:', asset_name
-    print target_SGs
+    target_SGs = get_asset_look_SGs(namespace)
+    print 'Making assignments:', namespace
+
     for SG in target_SGs:
-        print SG
+
         meshes_list = SG.getAttr('meshes').split(", ")
         meshes = []
-        print meshes_list
+
         for n, mesh in enumerate(meshes_list):
-            check_name = asset_ns + ':' + mesh
-            if pm.objExists(check_name):
-                meshes.append(check_name)
-        print meshes
+            mesh = mesh.replace('Shape', '')
+            if mesh in target_meshes:
+                meshes.append(target_meshes[mesh])
+
         pm.select(clear=True)
         pm.select(meshes)
         pm.hyperShade(assign=SG)
+        print 'Assigned {0} to {1}'.format(SG, meshes)
 
 def find_rig_connections(SG):
 
@@ -194,17 +209,31 @@ def write_connections(SGs):
             add_attr(SG, 'control_' + str(cnt), connection)
             cnt+=1
 
-def make_connections(asset_ns, asset_name):
-    target_SGs = get_asset_look_SGs(asset_name)
+def make_connections(namespace, target_curves):
+    target_SGs = get_asset_look_SGs(namespace)
 
     for SG in target_SGs:
         for attr in SG.listAttr():
+
             if re.search('control_', str(attr)):
+
                 type, source, destination = pm.getAttr(attr).split(', ')
-                if type == 'transform':
-                    pm.connectAttr(asset_ns + source, asset_name + '_mtl' + destination)
-                if type == 'expression':
-                    source.setString(destination)
+                if ':' in destination:
+                    destination = destination.split(':')[-1]
+                source_ctl = source.split('.')[0]
+                source_attr = source.split('.')[-1]
+                if source_ctl in target_curves:
+
+                    if type == 'transform':
+                        print 'Connecting {0} to {1}'.format(target_curves[source_ctl]+'.'+source_attr, namespace + '_mtl:' + destination)
+                        try:
+                            pm.connectAttr(target_curves[source_ctl]+'.'+source_attr, namespace + '_mtl:' + destination)
+                        except RuntimeError:
+
+                            print 'Cannot find:', namespace + '_mtl:' + destination
+                    if type == 'expression':
+                        source.setString(namespace + '_mtl:' + destination)
+
 
 def exportShaders(SGs, export_path):
     network_to_export = []
@@ -232,8 +261,12 @@ def exportShaders(SGs, export_path):
 
         pm.select(node, ne=1, add=1)
     asset_name = pm.sceneName().split('/')[-1].split('_')[0]
+    print '########################'
+    print
     print asset_name
     print export_path
+    print
+    print '########################'
     expSel = cmds.file(export_path, f=True, es=True, exp=True, ch=False, chn=False, con=False, type='mayaBinary')
 
 
@@ -250,16 +283,42 @@ def publish_mtl(export_path):
 
 
 def apply_look():
-    assets = pm.ls(sl=1)
-    for asset in assets:
-        if ":" in asset:
-            asset_ns = asset.split(":")[0]
-            print asset_ns
-            asset_name = get_asset_name(asset_ns)
+    sel = pm.ls(sl=1)
+    for item in sel:
 
-            make_assignments(asset_ns, asset_name)
-            make_connections(asset_ns, asset_name)
-        else:
-            print 'No Namespace found!'
+        meshns_sorted = {}
+        curvens_sorted = {}
+        for mesh in pm.listRelatives(item, ad=True, type='mesh'):
+            mesh = pm.PyNode(mesh)
+            mesh_transform = pm.PyNode(pm.listRelatives(mesh, p=True)[0])
+            if pm.hasAttr(mesh_transform, 'namespace'):
+                mesh_ns = mesh_transform.getAttr('namespace')
+                nodename = mesh_transform.shortName().split(':')[-1]
+                if mesh_ns in meshns_sorted:
+                    meshns_sorted[mesh_ns][nodename] = mesh_transform.longName()
+                else:
+                    meshns_sorted[mesh_ns] = {nodename: mesh_transform.longName()}
+        for curve in pm.listRelatives(item, ad=True, type='nurbsCurve'):
+            curve = pm.PyNode(curve)
+            curve_transform = pm.PyNode(pm.listRelatives(curve, p=True)[0])
+            if pm.hasAttr(curve_transform, 'namespace'):
+                curve_ns = curve_transform.getAttr('namespace')
+
+                nodename = curve_transform.shortName().split(':')[-1]
+                if curve_ns in curvens_sorted:
+                    curvens_sorted[curve_ns][nodename] = curve_transform.longName()
+                else:
+                    curvens_sorted[curve_ns] = {nodename: curve_transform.longName()}
+        for namespace in meshns_sorted:
+            print 'Connecting meshes with namespace:', namespace
+            target_meshes = meshns_sorted[namespace]
+            make_assignments(namespace, target_meshes)
+
+        for namespace in curvens_sorted:
+            print 'Connecting curves with namespace:', namespace
+            target_curves = curvens_sorted[namespace]
+
+            make_connections(namespace, target_curves)
+
 
 

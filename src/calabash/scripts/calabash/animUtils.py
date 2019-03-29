@@ -214,6 +214,9 @@ def ouroboros():
 
     # Ouroboros exports a camera from an anim scene, the references it back in
 
+
+    #planned feature: remove display layers
+
     locdata = fileUtils.get_location()
     assetroot, filename = locdata['assetroot_filename']
     dev_dir = locdata['dev_dir']

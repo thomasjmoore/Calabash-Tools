@@ -33,8 +33,10 @@ reload(blah)
 #import converted ui file.
 import pipeman_ui as ui_file
 import refEdit
+from calabash import fileUtils
 reload(ui_file)
 reload(refEdit)
+reload(fileUtils)
 debug = False
 
 class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
@@ -69,7 +71,9 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.ui.listWidget_shots.itemClicked.connect(self.pop_shotVersions)
         self.ui.pushButton_makelive.clicked.connect(self.makelive_assets)
         self.ui.pushButton_anim_makelive.clicked.connect(self.makelive_shots)
-        self.ui.pushButton_anim_openlatest.clicked.connect(self.open_latest)
+        self.ui.pushButton_anim_openlatest.clicked.connect(self.open_latest_shot)
+        self.ui.pushButton_asset_openlatest.clicked.connect(self.open_latest_asset)
+
         if not os.path.isfile(self.status_path):
             self.make_statusfile(self.status_path)
 
@@ -314,7 +318,16 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             except KeyError:
                 pass
 
-    def open_latest(self):
+    def unsaved_confirm(self):
+        result = pm.confirmBox(
+            title='Unsaved Changes',
+            message='This file contains unsaved changes, save before continuing?',
+            button=['Yes', 'No', 'Cancel'],
+            dismissString='Close'
+        )
+        return result
+
+    def open_latest_shot(self):
 
         selected_shot = self.ui.listWidget_shots.currentItem().text()
         spot = '_'.join(selected_shot.split('_')[:-1])
@@ -322,20 +335,86 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         shotroot = spot + '_' + shot
         animpath = os.path.join(self.scenes_root, "{0}_shots".format(spot), shot, 'anim')
         basename = shotroot + '_anim'
+        animver = "{0}.{1}.ma".format(basename, fileUtils.getLatest(animpath, basename))
+        try:
+            pm.openFile(os.path.join(animpath, animver))
+        except RuntimeError:
+            confirm = self.unsaved_confirm()
 
-        def getLatest(path, basename):
-            if os.listdir(path):
-                for n in os.listdir(path):
-                    if basename in n:
-                        basename, ver, ext = n.split('.')
-                        return '%03d' % (int(ver) + 1)
+            if confirm == True:
+                pm.saveFile()
+                pm.openFile(os.path.join(animpath, animver), force=True)
+            elif confirm == False:
+                pm.openFile(os.path.join(animpath, animver), force=True)
             else:
-                return '001'
+                pass
 
-        animver = "{0}.{1}.ma".format(basename, getLatest(animpath, basename))
-        pm.openFile(os.path.join(animpath, animver))
+    def open_latest_asset(self):
 
+        selected_asset = self.ui.listWidget_assets.currentItem().text()
+        assetype = ''
+        for dir in os.listdir(self.assets_root):
+            for item in os.listdir(os.path.join(self.assets_root, dir)):
+                if selected_asset in item:
+                    assettype = dir
 
+        sel_assetroot = os.path.join(self.assets_root, assettype, 'dev', selected_asset)
+        shd_path = os.path.join(sel_assetroot, 'shd')
+        latest_assetver = fileUtils.getLatest(sel_assetroot, selected_asset)
+        if os.path.exists(shd_path):
+            if os.listdir(shd_path):
+                latest_shdver = fileUtils.getLatest(shd_path, selected_asset)
+                for shd_version in os.listdir(shd_path):
+                    if latest_shdver in shd_version:
+                        latest_shd = shd_version
+        for asset_version in os.listdir(sel_assetroot):
+            if latest_assetver in asset_version:
+                latest_asset = asset_version
+
+        if latest_asset:
+            result = pm.confirmDialog(
+                title='Choose your own adventure!',
+                message='A renderable version of this asset was found, which rig do you want to open?',
+                button=['Non-Renderable', 'Renderable', 'Cancel'],
+                cancelButton='Close',
+                dismissString='Close',
+            )
+            if result == 'Non-Renderable':
+                try:
+
+                    pm.openFile(os.path.join(sel_assetroot, latest_asset))
+                except RuntimeError:
+
+                    confirm = self.unsaved_confirm()
+
+                    if confirm == True:
+
+                        pm.saveFile()
+                        pm.openFile(os.path.join(sel_assetroot, latest_asset), force=True)
+                    elif confirm == False:
+
+                        pm.openFile(os.path.join(sel_assetroot, latest_asset), force=True)
+                    else:
+                        pass
+            elif result == 'Renderable':
+                try:
+
+                    pm.openFile(os.path.join(shd_path, latest_shd))
+                except RuntimeError:
+
+                    confirm = self.unsaved_confirm()
+
+                    if confirm == True:
+
+                        pm.saveFile()
+                        pm.openFile(os.path.join(shd_path, latest_shd), force=True)
+                    elif confirm == False:
+
+                        pm.openFile(os.path.join(shd_path, latest_shd), force=True)
+                    else:
+                        pass
+            else:
+                return
 
 ######## CONNECT UI ELEMENTS AND FUNCTIONS ABOVE HERE #########
 

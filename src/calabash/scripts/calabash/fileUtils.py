@@ -34,6 +34,19 @@ def get_location():
             'dev_dir': dev_dir, 'type_dir': type_dir, 'basename_ver_ext': (basename, ver, ext), 'dept':dept}
 
 
+def getLatest(path, basename):
+    versions = []
+    if os.listdir(path):
+        for n in os.listdir(path):
+            if basename in n:
+                basename, ver, ext = n.split('.')
+                versions.append(ver)
+                #return '%03d' % (int(ver) + 1)
+        return sorted(versions)[-1]
+    else:
+        return '001'
+
+
 def publishCurrentFile():
 
 
@@ -83,7 +96,7 @@ def publishCurrentFile():
     # If in shd scene: define mtl export params, version up, import refs with namespaces,
     # export materials, remove namespaces, export shaded rig, reload current scene to restore references
     if dept == 'shd':
-
+        basename = basename.replace('_shd', '')
         shd_publish = os.path.join(deptpath, 'publish')
         mtl_filename = '{0}_mtl.{1}.mb'.format(basename, ver)
         print '#############'
@@ -97,14 +110,14 @@ def publishCurrentFile():
             if pm.referenceQuery(node, inr=True):
                 refNode = pm.referenceQuery(node, rfn=True)
                 fileRef = pm.FileReference(refnode=refNode)
-                fileRef.importContents(removeNamespace=False)
+                fileRef.importContents(removeNamespace=True)
         pm.select(sel)
         shading_utils.publish_mtl(mtl_export_path)
 
         pm.select(sel)
-        for node in sel:
-            ns, obj = node.split(':')
-            pm.namespace(rm=str(ns), mnr=True)
+        # for node in sel:
+        #     ns, obj = node.split(':')
+        #     pm.namespace(rm=str(ns), mnr=True)
 
         exp_ma = pm.exportSelected(os.path.join(shd_publish, filename),
                                    constructionHistory=True,

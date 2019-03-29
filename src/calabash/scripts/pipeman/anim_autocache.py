@@ -2,7 +2,17 @@ import pymel.core as pm
 import maya.cmds as cmds
 import os
 import re
+"""
+list all geo under target
+add attribute namespace
+namespace = geo_ns
 
+-uatp / -userAttrPrefix string namespace
+
+
+
+            
+"""
 def export_anim(scene_name, anim_dir, cache_dir, targets, frame_range):
     path = os.path.join(anim_dir, current_version(anim_dir, scene_name, 'file_name'))
     frame_start, frame_end = frame_range
@@ -11,13 +21,28 @@ def export_anim(scene_name, anim_dir, cache_dir, targets, frame_range):
     print '\n*************************************'
     print pm.sceneName()
     print '\n*************************************'
-    for target in targets.keys():
+    for item in targets.keys():
+
+        target, target_ns, target_dag = targets[item]
+
+        for item in targets:
+            for mesh in pm.listRelatives(item, ad=True, type=['mesh', 'nurbsCurve']):
+                mesh = pm.PyNode(mesh)
+                mesh_transform = pm.PyNode(pm.listRelatives(mesh, p=True)[0])
+                if len(mesh.namespaceList()) > 0:
+                    if not pm.hasAttr(mesh_transform, 'namespace'):
+                        pm.addAttr(mesh_transform, ln='namespace', dt='string')
+
+                    pm.setAttr(mesh_transform.longName() + '.namespace', ':'.join(mesh.namespaceList()))
+
         command = '-fr {0} {1}' \
                   ' -uvWrite ' \
                   '-worldSpace ' \
                   '-ro ' \
-                  '-root {2} -file {3}'.format(frame_start, frame_end, target, os.path.join(cache_dir, '{0}_{1}_anim.{2}.abc'.format(
-            target.split(':')[0],
+                  '-sn 0 ' \
+                  '-attr color -attr namespace -attr material ' \
+                  '-root {2} -file {3}'.format(frame_start, frame_end, target_dag, os.path.join(cache_dir, '{0}_{1}_anim.{2}.abc'.format(
+            target_ns,
 			scene_name,
             current_version(anim_dir, scene_name, 'number'))))
         print '\n*************************************'
