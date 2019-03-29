@@ -3,18 +3,12 @@ from pymel import core as pm
 import re
 
 """
-in render scene, reference mtl files with same namespace as used in anim, eg.TUNA:World, TUNA_mtl
-select assets/group containing assets, menu>apply mtls
-list all geo under selection
-make dict namespace:{node:dagpath}
-for namespace in dict:
-    find all SGs with namespace
-    for sg in SGs:
-        targetmeshes = []
-        for mesh in sg.meshes:
-            if mesh in dict[namespace]:
-                targetmeshes.append(dict[namespace][mesh])
-        pm.hypershade(sg, targetmeshes)
+bugs:
+if shape node isnt named the same as transform, material app fails
+fix: for each shape node connected to SG, get transform node instead
+
+shading switches with shape node inputs are not recorded
+fix: add if incommingConnection is type('mesh') check
 """
 
 def rename_shading_groups():
@@ -49,7 +43,7 @@ def rename_shading_groups():
 
     cmds.warning("%s shading group(s) were renamed."%sg_rename_count)
 
-debugMode = False
+debugMode = True
 
 def all_render_nodes():
     textureNodes = []
@@ -172,6 +166,7 @@ def find_rig_connections(SG):
     if debugMode: print('upstream_renderNodes:', upstream_renderNodes)
     #filter for all transform and expression nodes connected to shader network
     transforms = [node for node in all_upstream_nodes if pm.nodeType(node) == 'transform']
+    shapes = [node for node in all_upstream_nodes if pm.nodeType(node) == 'mesh']
     expressions = [node for node in all_upstream_nodes if pm.nodeType(node) == 'expression']
 
     for transform in transforms:
@@ -191,6 +186,24 @@ def find_rig_connections(SG):
                     transformAttr = dest.listConnections(s=1,d=0,p=1)[0]
                 controller_pairs.append("transform, {0}, {1}".format(transformAttr, dest))
                 if debugMode: print("transform, {0}, {1}".format(transformAttr, dest))
+
+    for shape in shapes:
+        source = pm.PyNode(shape)
+        if debugMode: print('source:',source, 'destinations:', source.listConnections(s=0,d=1,p=1))
+
+        for dest in source.listConnections(s=0,d=1,p=1):
+
+            dest = pm.PyNode(dest)
+            if debugMode: print('destination:', dest, dest.nodeType())
+            #if shape node is going into a render node,
+            if dest.nodeType() in all_render_nodes():
+                if debugMode: print dest
+                try:
+                    shapeAttr = dest.listConnections(s=1,d=0,p=1)[0].split(':')[1]
+                except:
+                    shapeAttr = dest.listConnections(s=1,d=0,p=1)[0]
+                controller_pairs.append("transform, {0}, {1}".format(shapeAttr, dest))
+                if debugMode: print("transform, {0}, {1}".format(shapeAttr, dest))
 
     for expression in expressions:
 

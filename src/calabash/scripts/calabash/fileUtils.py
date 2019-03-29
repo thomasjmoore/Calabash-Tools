@@ -37,11 +37,16 @@ def get_location():
 def getLatest(path, basename):
     versions = []
     if os.listdir(path):
+        print basename
+        print os.listdir(path)
         for n in os.listdir(path):
             if basename in n:
                 basename, ver, ext = n.split('.')
                 versions.append(ver)
                 #return '%03d' % (int(ver) + 1)
+        print versions
+    if len(versions) > 0:
+        print 'returning:', sorted(versions)[-1]
         return sorted(versions)[-1]
     else:
         return '001'

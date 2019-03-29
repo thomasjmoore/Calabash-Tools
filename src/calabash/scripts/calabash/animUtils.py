@@ -29,7 +29,9 @@ import DoItMkr as DoIt
 reload(DoIt)
 
 '''
-
+"""
+Put autocache scripts in autocache folder under shotroot
+"""
 # import converted ui file.
 from pipeman import anim_autocache_ui as ui_file
 

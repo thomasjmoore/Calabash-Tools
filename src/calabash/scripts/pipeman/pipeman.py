@@ -30,6 +30,14 @@ import <module> as blah
 reload(blah)
 '''
 
+"""
+Wishlist:
+Make all latest live button
+make multiple cache files live
+    (compare basenames)
+
+"""
+
 #import converted ui file.
 import pipeman_ui as ui_file
 import refEdit
@@ -334,31 +342,68 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         shot = selected_shot.split('_')[-1]
         shotroot = spot + '_' + shot
         animpath = os.path.join(self.scenes_root, "{0}_shots".format(spot), shot, 'anim')
-        basename = shotroot + '_anim'
-        animver = "{0}.{1}.ma".format(basename, fileUtils.getLatest(animpath, basename))
-        try:
-            pm.openFile(os.path.join(animpath, animver))
-        except RuntimeError:
-            confirm = self.unsaved_confirm()
+        basename_anim = shotroot + '_anim'
+        animver = "{0}.{1}.ma".format(basename_anim, fileUtils.getLatest(animpath, basename_anim))
+        renderpath = os.path.join(self.scenes_root, "{0}_shots".format(spot), shot, 'render')
+        basename_render = shotroot + '_render'
+        if os.path.exists(renderpath):
+            if os.listdir(renderpath):
+                latest_renderver = fileUtils.getLatest(renderpath, basename_render)
+                for render_version in os.listdir(renderpath):
+                    if latest_renderver in render_version:
+                        latest_render = render_version
 
-            if confirm == True:
-                pm.saveFile()
-                pm.openFile(os.path.join(animpath, animver), force=True)
-            elif confirm == False:
-                pm.openFile(os.path.join(animpath, animver), force=True)
-            else:
-                pass
+        if latest_render:
+            result = pm.confirmDialog(
+                title='Choose your own adventure!',
+                message='A renderable scene of this shot was found, which scene do you want to open?',
+                button=['animation', 'Renderable', 'Cancel'],
+                cancelButton='Close',
+                dismissString='Close',
+            )
+            print result
+            if result == 'animation':
+                try:
+                    pm.openFile(os.path.join(animpath, animver))
+                except RuntimeError:
+                    confirm = self.unsaved_confirm()
+
+                    if confirm == True:
+                        pm.saveFile()
+                        pm.openFile(os.path.join(animpath, animver), force=True)
+                    elif confirm == False:
+                        pm.openFile(os.path.join(animpath, animver), force=True)
+                    else:
+                        pass
+            if result == 'Renderable':
+                try:
+                    pm.openFile(os.path.join(renderpath, latest_render))
+                except RuntimeError:
+                    confirm = self.unsaved_confirm()
+
+                    if confirm == True:
+                        pm.saveFile()
+                        pm.openFile(os.path.join(renderpath, latest_render), force=True)
+                    elif confirm == False:
+                        pm.openFile(os.path.join(renderpath, latest_render), force=True)
+                    else:
+                        pass
+
+
 
     def open_latest_asset(self):
 
         selected_asset = self.ui.listWidget_assets.currentItem().text()
-        assetype = ''
-        for dir in os.listdir(self.assets_root):
-            for item in os.listdir(os.path.join(self.assets_root, dir)):
-                if selected_asset in item:
-                    assettype = dir
 
-        sel_assetroot = os.path.join(self.assets_root, assettype, 'dev', selected_asset)
+        def getType():
+            assettype = ''
+            for dir in os.listdir(self.assets_root):
+                for item in os.listdir(os.path.join(self.assets_root, dir)):
+                    if selected_asset in item:
+                        assettype = dir
+            return assettype
+
+        sel_assetroot = os.path.join(self.assets_root, getType(), 'dev', selected_asset)
         shd_path = os.path.join(sel_assetroot, 'shd')
         latest_assetver = fileUtils.getLatest(sel_assetroot, selected_asset)
         if os.path.exists(shd_path):
@@ -367,11 +412,19 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 for shd_version in os.listdir(shd_path):
                     if latest_shdver in shd_version:
                         latest_shd = shd_version
+                    else:
+                        print '{0} not found'.format(latest_shdver)
+            else:
+                print '{0} is empty'.format(shd_path)
+        else:
+            print '{0} doesnt exist'.format(shd_path)
         for asset_version in os.listdir(sel_assetroot):
             if latest_assetver in asset_version:
                 latest_asset = asset_version
+            else:
+                print '{0} not found'.format(latest_assetver)
 
-        if latest_asset:
+        if latest_shd:
             result = pm.confirmDialog(
                 title='Choose your own adventure!',
                 message='A renderable version of this asset was found, which rig do you want to open?',
@@ -396,6 +449,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                         pm.openFile(os.path.join(sel_assetroot, latest_asset), force=True)
                     else:
                         pass
+
             elif result == 'Renderable':
                 try:
 
@@ -415,6 +469,24 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                         pass
             else:
                 return
+
+        else:
+            try:
+
+                pm.openFile(os.path.join(sel_assetroot, latest_asset))
+            except RuntimeError:
+
+                confirm = self.unsaved_confirm()
+
+                if confirm == True:
+
+                    pm.saveFile()
+                    pm.openFile(os.path.join(sel_assetroot, latest_asset), force=True)
+                elif confirm == False:
+
+                    pm.openFile(os.path.join(sel_assetroot, latest_asset), force=True)
+                else:
+                    pass
 
 ######## CONNECT UI ELEMENTS AND FUNCTIONS ABOVE HERE #########
 
