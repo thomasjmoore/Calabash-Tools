@@ -50,7 +50,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     cache_dir = os.path.join(shot_dir, 'anim', 'publish', 'cache').replace('\\', '/')
     light_dir = os.path.join(shot_dir, 'render')
     DoIt_fileName = 'autocache_{0}'.format(shot_name)
-    DoIt_dir = os.path.join(shot_dir, '{0}.bat'.format(DoIt_fileName))
+    DoIt_dir = os.path.join(shot_dir, 'autocache')
 
     def __init__(self, parent=None):
 
@@ -157,13 +157,15 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                       'anim_autocache.run(DoIt_dict)'.format(DoIt_dict)
 
         DoIt_bat = '"{0}" "{1}.py"'.format(r"C:\Program Files\Autodesk\Maya2018\bin\mayapy.exe",
-                                           os.path.join(self.shot_dir, self.DoIt_fileName))
+                                           os.path.join(self.ui.lineEdit_Path_DoIt.text(), 'autocache', self.DoIt_fileName))
 
         if len(self.targets) > 0:
 
-            bat_fileName = '{0}.bat'.format(os.path.join(self.shot_dir, self.DoIt_fileName))
-            DoIt_scriptName = '{0}.py'.format(os.path.join(self.shot_dir, self.DoIt_fileName))
-            print self.shot_dir, self.DoIt_fileName
+            bat_fileName = '{0}.bat'.format(os.path.join(self.ui.lineEdit_Path_DoIt.text(), 'autocache', self.DoIt_fileName))
+            DoIt_scriptName = '{0}.py'.format(os.path.join(self.ui.lineEdit_Path_DoIt.text(), 'autocache', self.DoIt_fileName))
+            print self.DoIt_fileName
+            if not os.path.exists(os.path.join(self.ui.lineEdit_Path_DoIt.text(), 'autocache')):
+                os.mkdir(os.path.join(self.ui.lineEdit_Path_DoIt.text(), 'autocache'))
             with open(bat_fileName, 'w') as bat_write:
                 bat_write.write(DoIt_bat)
                 print 'bat write successful!', bat_fileName

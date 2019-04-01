@@ -34,30 +34,45 @@ def get_location():
             'dev_dir': dev_dir, 'type_dir': type_dir, 'basename_ver_ext': (basename, ver, ext), 'dept':dept}
 
 
+def ismultipart(path, basename):
+    if os.listdir(path):
+        for n in os.listdir(path):
+            if basename in n:
+                if '-' in n:
+                    return True
+
 def getLatest(path, basename, **kwargs):
     filename = False
     stage = ''
-
+    parts = False
     for kwarg, value in kwargs.items():
         if kwarg == 'filename':
             filename = value
         elif kwarg == 'stage':
             stage = value
+        elif kwarg == 'parts':
+            parts == value
     versions_num = []
     versions_name = []
+    multiversions = {}
     if os.listdir(path):
         for n in os.listdir(path):
             if basename in n:
-                basename, ver, ext = n.split('.')
+                basename_full, ver, ext = n.split('.')
                 if stage:
-                    if stage in basename:
+                    if stage in basename_full:
                         versions_name.append(n)
                         versions_num.append(ver)
+                        if '-' in basename_full:
+                            if basename_full in multiversions:
+                                multiversions[basename_full].append(n)
+                            else:
+                                multiversions[basename_full] = [n]
                 else:
                     versions_name.append(n)
                     versions_num.append(ver)
                 #return '%03d' % (int(ver) + 1)
-    if len(versions_num) > 0:
+    if len(versions_name) > 0:
         if filename:
             print 'returning:', sorted(versions_name)[-1]
             return sorted(versions_name)[-1]

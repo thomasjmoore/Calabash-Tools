@@ -343,6 +343,9 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         shotroot = spot + '_' + shot
         animpath = os.path.join(self.scenes_root, "{0}_shots".format(spot), shot, 'anim')
         basename = shotroot
+        basename_parts = []
+        if fileUtils.ismultipart(animpath, basename):
+            basename_parts = fileUtils.getLatest(animpath, basename, filename=True, stage='anim', parts=True)
         animver = fileUtils.getLatest(animpath, basename, filename=True, stage='anim')
         renderpath = os.path.join(self.scenes_root, "{0}_shots".format(spot), shot, 'render')
         basename_render = shotroot + '_render'
@@ -364,6 +367,28 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             )
             print result
             if result == 'animation':
+                if basename_parts:
+                    result = pm.confirmDialog(
+                        title='Choose your own adventure!',
+                        message='Multiple parts were found, which scene do you want to open?',
+                        button=basename_parts,
+                        cancelButton='Close',
+                        dismissString='Close',
+                    )
+                    print result
+
+                    try:
+                        pm.openFile(os.path.join(animpath, result))
+                    except RuntimeError:
+                        confirm = self.unsaved_confirm()
+
+                        if confirm == True:
+                            pm.saveFile()
+                            pm.openFile(os.path.join(animpath, result), force=True)
+                        elif confirm == False:
+                            pm.openFile(os.path.join(animpath, result), force=True)
+                        else:
+                            pass
                 try:
                     pm.openFile(os.path.join(animpath, animver))
                 except RuntimeError:

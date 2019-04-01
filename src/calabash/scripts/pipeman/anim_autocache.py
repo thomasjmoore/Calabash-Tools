@@ -3,15 +3,7 @@ import maya.cmds as cmds
 import os
 import re
 """
-list all geo under target
-add attribute namespace
-namespace = geo_ns
-
--uatp / -userAttrPrefix string namespace
-
-
-
-            
+       
 """
 def export_anim(scene_name, anim_dir, cache_dir, targets, frame_range):
     path = os.path.join(anim_dir, current_version(anim_dir, scene_name, 'file_name'))
@@ -40,6 +32,7 @@ def export_anim(scene_name, anim_dir, cache_dir, targets, frame_range):
                   '-worldSpace ' \
                   '-ro ' \
                   '-sn 0 ' \
+                  '-wv ' \
                   '-attr color -attr namespace -attr material ' \
                   '-root {2} -file {3}'.format(frame_start, frame_end, target_dag, os.path.join(cache_dir, '{0}_{1}_anim.{2}.abc'.format(
             target_ns,
