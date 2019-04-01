@@ -33,7 +33,7 @@ def export_anim(scene_name, anim_dir, cache_dir, targets, frame_range):
                   '-ro ' \
                   '-sn 0 ' \
                   '-wv ' \
-                  '-attr color -attr namespace -attr material ' \
+                  '-attr color -attr Color -attr namespace -attr material -attr Material' \
                   '-root {2} -file {3}'.format(frame_start, frame_end, target_dag, os.path.join(cache_dir, '{0}_{1}_anim.{2}.abc'.format(
             target_ns,
 			scene_name,

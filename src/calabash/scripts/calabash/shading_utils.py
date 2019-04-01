@@ -225,7 +225,7 @@ def write_connections(SGs):
 
 def make_connections(namespace, target_curves, meshes):
     target_SGs = get_asset_look_SGs(namespace)
-
+    #print target_curves
     for SG in target_SGs:
         for attr in SG.listAttr():
 
@@ -236,19 +236,26 @@ def make_connections(namespace, target_curves, meshes):
                     destination = destination.split(':')[-1]
                 source_ctl = source.split('.')[0]
                 source_attr = source.split('.')[-1]
-                if source_ctl in target_curves:
 
-                    if type == 'transform':
-                        #print 'Connecting {0} to {1}'.format(target_curves[source_ctl]+'.'+source_attr, namespace + '_mtl:' + destination)
-                        try:
-                            pm.connectAttr(target_curves[source_ctl]+'.'+source_attr, namespace + '_mtl:' + destination)
-                        except RuntimeError:
-                            #print 'Cannot find:', namespace + '_mtl:' + destination
-                            pass
-                        except RuntimeError:
-                            print 'Cannot find:', namespace + '_mtl:' + destination
-                    if type == 'expression':
-                        source.setString(namespace + '_mtl:' + destination)
+                for curve in target_curves:
+
+                    if source_ctl in curve:
+                        if type == 'transform':
+                            #target_curve_noShape = re.sub(r'\|([a-z]+):{0}.([a-z]+)$'.format(curve), '',target_curves[curve], flags=re.IGNORECASE)
+                            #print target_curve_noShape
+                            print target_curves[curve]
+                            target_curve_transform = pm.listRelatives(target_curves[curve], p=True)[0]
+                            print target_curve_transform
+                            print source_attr
+                            print 'Connecting {0} to {1}'.format(target_curve_transform + '.' + source_attr, namespace + '_mtl:' + destination)
+                            try:
+                                pm.connectAttr(target_curve_transform + '.'+source_attr, namespace + '_mtl:' + destination)
+                            except Exception as exception:
+                                #     print 'FAILED'
+                                print exception
+
+                        if type == 'expression':
+                            source.setString(namespace + '_mtl:' + destination)
                 if type == 'shape':
                     print 'Connecting {0} to {1}'.format(meshes[source_ctl] + '.' + source_attr,
                                                          namespace + '_mtl:' + destination)
@@ -256,8 +263,9 @@ def make_connections(namespace, target_curves, meshes):
                         print meshes
                         pm.connectAttr(meshes[source_ctl] + '.' + source_attr,
                                        namespace + '_mtl:' + destination)
-                    except:
-                        print 'FAILED'
+                    except Exception as exception:
+                        #     print 'FAILED'
+                        print exception
 
 def exportShaders(SGs, export_path):
     network_to_export = []
@@ -334,12 +342,12 @@ def apply_look():
                 else:
                     curvens_sorted[curve_ns] = {nodename: curve.longName()}
         for namespace in meshns_sorted:
-            print 'Connecting meshes with namespace:', namespace
+            #print 'Connecting meshes with namespace:', namespace
             target_meshes = meshns_sorted[namespace]
             make_assignments(namespace, target_meshes)
 
         for namespace in curvens_sorted:
-            print 'Connecting curves with namespace:', namespace
+            #print 'Connecting curves with namespace:', namespace
             target_curves = curvens_sorted[namespace]
 
             make_connections(namespace, target_curves, meshns_sorted[namespace])
