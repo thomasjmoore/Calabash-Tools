@@ -28,12 +28,12 @@ def export_anim(scene_name, anim_dir, cache_dir, targets, frame_range):
         for item in targets:
             for mesh in pm.listRelatives(item, ad=True, type=['mesh', 'nurbsCurve']):
                 mesh = pm.PyNode(mesh)
-                mesh_transform = pm.PyNode(pm.listRelatives(mesh, p=True)[0])
+                #mesh_transform = pm.PyNode(pm.listRelatives(mesh, p=True)[0])
                 if len(mesh.namespaceList()) > 0:
-                    if not pm.hasAttr(mesh_transform, 'namespace'):
-                        pm.addAttr(mesh_transform, ln='namespace', dt='string')
+                    if not pm.hasAttr(mesh, 'namespace'):
+                        pm.addAttr(mesh, ln='namespace', dt='string')
 
-                    pm.setAttr(mesh_transform.longName() + '.namespace', ':'.join(mesh.namespaceList()))
+                    pm.setAttr(mesh.longName() + '.namespace', ':'.join(mesh.namespaceList()))
 
         command = '-fr {0} {1}' \
                   ' -uvWrite ' \

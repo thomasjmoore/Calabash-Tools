@@ -34,22 +34,41 @@ def get_location():
             'dev_dir': dev_dir, 'type_dir': type_dir, 'basename_ver_ext': (basename, ver, ext), 'dept':dept}
 
 
-def getLatest(path, basename):
-    versions = []
+def getLatest(path, basename, **kwargs):
+    filename = False
+    stage = ''
+
+    for kwarg, value in kwargs.items():
+        if kwarg == 'filename':
+            filename = value
+        elif kwarg == 'stage':
+            stage = value
+    versions_num = []
+    versions_name = []
     if os.listdir(path):
-        print basename
-        print os.listdir(path)
         for n in os.listdir(path):
             if basename in n:
                 basename, ver, ext = n.split('.')
-                versions.append(ver)
+                if stage:
+                    if stage in basename:
+                        versions_name.append(n)
+                        versions_num.append(ver)
+                else:
+                    versions_name.append(n)
+                    versions_num.append(ver)
                 #return '%03d' % (int(ver) + 1)
-        print versions
-    if len(versions) > 0:
-        print 'returning:', sorted(versions)[-1]
-        return sorted(versions)[-1]
+    if len(versions_num) > 0:
+        if filename:
+            print 'returning:', sorted(versions_name)[-1]
+            return sorted(versions_name)[-1]
+        else:
+            print 'returning:', sorted(versions_num)[-1]
+            return sorted(versions_num)[-1]
     else:
-        return '001'
+        if filename:
+            return "{0}.001.ma".format(basename)
+        else:
+            return '001'
 
 
 def publishCurrentFile():

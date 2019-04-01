@@ -342,10 +342,11 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         shot = selected_shot.split('_')[-1]
         shotroot = spot + '_' + shot
         animpath = os.path.join(self.scenes_root, "{0}_shots".format(spot), shot, 'anim')
-        basename_anim = shotroot + '_anim'
-        animver = "{0}.{1}.ma".format(basename_anim, fileUtils.getLatest(animpath, basename_anim))
+        basename = shotroot
+        animver = fileUtils.getLatest(animpath, basename, filename=True, stage='anim')
         renderpath = os.path.join(self.scenes_root, "{0}_shots".format(spot), shot, 'render')
         basename_render = shotroot + '_render'
+        latest_render = ''
         if os.path.exists(renderpath):
             if os.listdir(renderpath):
                 latest_renderver = fileUtils.getLatest(renderpath, basename_render)
@@ -388,7 +389,19 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                         pm.openFile(os.path.join(renderpath, latest_render), force=True)
                     else:
                         pass
+        else:
+            try:
+                pm.openFile(os.path.join(animpath, animver))
+            except RuntimeError:
+                confirm = self.unsaved_confirm()
 
+                if confirm == True:
+                    pm.saveFile()
+                    pm.openFile(os.path.join(animpath, animver), force=True)
+                elif confirm == False:
+                    pm.openFile(os.path.join(animpath, animver), force=True)
+                else:
+                    pass
 
 
     def open_latest_asset(self):
