@@ -18,6 +18,8 @@ def edit(animpath):
                 newline = rawline.replace(line, renderablepath)
                 print(newline)
                 repathed.append(newline)
+            else:
+                print(rawline)
         else:
             print(rawline)
 
