@@ -45,8 +45,7 @@ from calabash import fileUtils
 reload(ui_file)
 reload(refEdit)
 reload(fileUtils)
-debug = True
-
+debug = False
 class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def __init__(self, parent=None):
@@ -75,7 +74,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         self.pop_assetlist()
         self.pop_shotlist()
-        self.ui.listWidget_assets.itemClicked.connect(self.pop_assetVersions)
+        self.ui.treeWidget_assets.itemClicked.connect(self.pop_assetVersions)
         self.ui.treeWidget_versions.itemClicked.connect(self.showcomment_asset)
         self.ui.listWidget_shots.itemClicked.connect(self.pop_shotVersions)
         self.ui.pushButton_makelive.clicked.connect(self.makelive_assets)
@@ -109,7 +108,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 for assetname in os.listdir(os.path.join(asset_type_path, 'dev')):
                     asset_path = os.path.join(asset_type_path, 'dev', assetname)
                     if os.path.isdir(asset_path):
-                        assets[assetname] = os.path.normpath(asset_path)
+                        assets[assetname] = {'path':os.path.normpath(asset_path),"type":asset_type}
         if debug: print 'assets:', assets
         return assets
 
@@ -216,12 +215,23 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 pass
 
     def pop_assetlist(self):
+        asset_types = set()
         for asset in self.getAssets():
-            asset_item = QtWidgets.QListWidgetItem(self.ui.listWidget_assets)
-            asset_item.setText(asset)
+            asset_type = self.getAssets()[asset]['type']
+            asset_types.add(asset_type)
+        asset_types = list(asset_types)
+        for itemtype in asset_types:
+            type_item = QtWidgets.QTreeWidgetItem()
+            type_item.setText(0, itemtype)
+            self.ui.treeWidget_assets.addTopLevelItem(type_item)
+        for asset in self.getAssets():
+            asset_type = self.getAssets()[asset]['type']
+            asset_type_item = self.ui.treeWidget_assets.findItems(asset_type, 0)[0]
+            asset_item = QtWidgets.QTreeWidgetItem(asset_type_item)
+            asset_item.setText(0, asset)
 
     def pop_assetVersions(self):
-        selected_asset = self.ui.listWidget_assets.currentItem().text()
+        selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
         with open(self.status_path, 'r') as statusfile_read:
             stat_read = json.load(statusfile_read)
         self.ui.treeWidget_versions.clear()
@@ -240,39 +250,42 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         type_items.append(topItem_mtl)
 
         self.ui.treeWidget_versions.addTopLevelItems(type_items)
-        for version in self.getVersions_asset(self.getAssets()[selected_asset]):
-            if debug: print 'version:', version
+        try:
+            for version in self.getVersions_asset(self.getAssets()[selected_asset]['path']):
+                if debug: print 'version:', version
 
-            if 'rig' in version.lower():
-                version_item = QtWidgets.QTreeWidgetItem(topItem_rig)
-                version_item.setText(0, version)
-            elif 'shd' in version.lower():
-                version_item = QtWidgets.QTreeWidgetItem(topItem_shd)
-                version_item.setText(0, version)
-            elif 'mtl' in version.lower():
-                version_item = QtWidgets.QTreeWidgetItem(topItem_mtl)
-                version_item.setText(0, version)
-            else:
-                version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_versions)
-                version_item.setText(0, version)
+                if 'rig' in version.lower():
+                    version_item = QtWidgets.QTreeWidgetItem(topItem_rig)
+                    version_item.setText(0, version)
+                elif 'shd' in version.lower():
+                    version_item = QtWidgets.QTreeWidgetItem(topItem_shd)
+                    version_item.setText(0, version)
+                elif 'mtl' in version.lower():
+                    version_item = QtWidgets.QTreeWidgetItem(topItem_mtl)
+                    version_item.setText(0, version)
+                else:
+                    version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_versions)
+                    version_item.setText(0, version)
 
-            try:
-                if stat_read['asset'][selected_asset]['default'] == version_item.text(0):
-                    version_item.setText(1, 'Live')
-            except KeyError:
-                pass
+                try:
+                    if stat_read['asset'][selected_asset]['default'] == version_item.text(0):
+                        version_item.setText(1, 'Live')
+                except KeyError:
+                    pass
 
-            try:
-                if stat_read['asset'][selected_asset]['shd'] == version_item.text(0):
-                    version_item.setText(1, 'Live')
-            except KeyError:
-                pass
+                try:
+                    if stat_read['asset'][selected_asset]['shd'] == version_item.text(0):
+                        version_item.setText(1, 'Live')
+                except KeyError:
+                    pass
 
-            try:
-                if stat_read['asset'][selected_asset]['mtl'] == version_item.text(0):
-                    version_item.setText(1, 'Live')
-            except KeyError:
-                pass
+                try:
+                    if stat_read['asset'][selected_asset]['mtl'] == version_item.text(0):
+                        version_item.setText(1, 'Live')
+                except KeyError:
+                    pass
+        except KeyError:
+            pass
 
     def make_statusfile(self, statusfile_path):
         with open(statusfile_path, 'w') as statusfile:
@@ -282,22 +295,22 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             json.dump(default_content, statusfile)
 
     def makelive_assets(self):
-        selected_asset = self.ui.listWidget_assets.currentItem()
+        selected_asset = self.ui.treeWidget_assets.currentItem()
         selected_version = self.ui.treeWidget_versions.currentItem()
-        asset_path = self.getAssets()[selected_asset.text()]
+        asset_path = self.getAssets()[selected_asset.text(0)]['path']
         dev_dir = os.path.dirname(asset_path)
         type_dir = os.path.dirname(dev_dir)
         if 'shd' in selected_version.text(0):
             version_path = os.path.join(asset_path, 'shd', 'publish', selected_version.text(0))
-            shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}.mb'.format(selected_asset.text())))
+            shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}.mb'.format(selected_asset.text(0))))
             self.update_status('asset', selected_asset.text(), selected_version.text(0), 'shd')
         elif 'mtl' in selected_version.text(0):
             version_path = os.path.join(asset_path, 'shd', 'publish', selected_version.text(0))
-            shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}_mtl.mb'.format(selected_asset.text())))
+            shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}_mtl.mb'.format(selected_asset.text(0))))
             self.update_status('asset', selected_asset.text(), selected_version.text(0), 'mtl')
         else:
             version_path = os.path.join(asset_path, 'publish', selected_version.text(0))
-            shutil.copy2(version_path, os.path.join(type_dir, '{0}.mb'.format(selected_asset.text())))
+            shutil.copy2(version_path, os.path.join(type_dir, '{0}.mb'.format(selected_asset.text(0))))
             self.update_status('asset', selected_asset.text(), selected_version.text(0), 'default')
 
     def makelive_shots(self):
@@ -486,7 +499,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def open_latest_asset(self):
 
-        selected_asset = self.ui.listWidget_assets.currentItem().text()
+        selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
 
         def getType():
             assettype = ''
@@ -498,24 +511,27 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         sel_assetroot = os.path.join(self.assets_root, getType(), 'dev', selected_asset)
         shd_path = os.path.join(sel_assetroot, 'shd')
-        latest_assetver = fileUtils.getLatest(sel_assetroot, selected_asset)
-        if os.path.exists(shd_path):
-            if os.listdir(shd_path):
-                latest_shdver = fileUtils.getLatest(shd_path, selected_asset)
-                for shd_version in os.listdir(shd_path):
-                    if latest_shdver in shd_version:
-                        latest_shd = shd_version
-                    else:
-                        print '{0} not found'.format(latest_shdver)
+        try:
+            latest_assetver = fileUtils.getLatest(sel_assetroot, selected_asset)
+            if os.path.exists(shd_path):
+                if os.listdir(shd_path):
+                    latest_shdver = fileUtils.getLatest(shd_path, selected_asset)
+                    for shd_version in os.listdir(shd_path):
+                        if latest_shdver in shd_version:
+                            latest_shd = shd_version
+                        else:
+                            pass
+                else:
+                    print '{0} is empty'.format(shd_path)
             else:
-                print '{0} is empty'.format(shd_path)
-        else:
-            print '{0} doesnt exist'.format(shd_path)
-        for asset_version in os.listdir(sel_assetroot):
-            if latest_assetver in asset_version:
-                latest_asset = asset_version
-            else:
-                print '{0} not found'.format(latest_assetver)
+                print '{0} doesnt exist'.format(shd_path)
+            for asset_version in os.listdir(sel_assetroot):
+                if latest_assetver in asset_version:
+                    latest_asset = asset_version
+                else:
+                    pass
+        except WindowsError:
+            return
 
         if latest_shd:
             result = pm.confirmDialog(
@@ -582,12 +598,12 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                     pass
 
     def showcomment_asset(self):
-        selected_asset = self.ui.listWidget_assets.currentItem().text()
+        selected_asset = self.ui.treeWidget_assets.currentItem().text()
         selected_version = self.ui.treeWidget_versions.currentItem().text(0)
         assets = self.getAssets()
         try:
             if selected_asset in assets:
-                asset_changelog = os.path.join(assets[selected_asset], 'changelog.json')
+                asset_changelog = os.path.join(assets[selected_asset]['path'], 'changelog.json')
                 if os.path.exists(asset_changelog):
                     with open(asset_changelog, 'r') as log_read:
                         log = json.load(log_read)

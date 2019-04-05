@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:\Users\guest1\Documents\maya\modules\calabash\scripts\pipeman\pipeman_ui.ui'
 #
-# Created: Thu Apr  4 16:24:32 2019
+# Created: Fri Apr  5 15:48:28 2019
 #      by: pyside2-uic  running on PySide2 2.0.0~alpha0
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,9 +13,6 @@ class Ui_mainUI(object):
     def setupUi(self, mainUI):
         mainUI.setObjectName("mainUI")
         mainUI.resize(871, 359)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("pipeman1.gif"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        mainUI.setWindowIcon(icon)
         self.gridLayout = QtWidgets.QGridLayout(mainUI)
         self.gridLayout.setObjectName("gridLayout")
         self.tabWidget_pipeman = QtWidgets.QTabWidget(mainUI)
@@ -90,10 +87,13 @@ class Ui_mainUI(object):
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
         self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.listWidget_assets = QtWidgets.QListWidget(self.pipeman_assets)
-        self.listWidget_assets.setMinimumSize(QtCore.QSize(0, 0))
-        self.listWidget_assets.setObjectName("listWidget_assets")
-        self.verticalLayout_3.addWidget(self.listWidget_assets)
+        self.treeWidget_assets = QtWidgets.QTreeWidget(self.pipeman_assets)
+        self.treeWidget_assets.setMinimumSize(QtCore.QSize(0, 0))
+        self.treeWidget_assets.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.treeWidget_assets.setAnimated(True)
+        self.treeWidget_assets.setHeaderHidden(True)
+        self.treeWidget_assets.setObjectName("treeWidget_assets")
+        self.verticalLayout_3.addWidget(self.treeWidget_assets)
         self.gridLayout_4.addLayout(self.verticalLayout_3, 1, 0, 1, 1)
         self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
@@ -165,7 +165,7 @@ class Ui_mainUI(object):
         self.gridLayout.addWidget(self.tabWidget_pipeman, 1, 0, 1, 1)
 
         self.retranslateUi(mainUI)
-        self.tabWidget_pipeman.setCurrentIndex(0)
+        self.tabWidget_pipeman.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(mainUI)
 
     def retranslateUi(self, mainUI):
@@ -178,7 +178,8 @@ class Ui_mainUI(object):
         self.treeWidget_animVersions.headerItem().setText(0, QtWidgets.QApplication.translate("mainUI", "Version", None, -1))
         self.treeWidget_animVersions.headerItem().setText(1, QtWidgets.QApplication.translate("mainUI", "Status", None, -1))
         self.tabWidget_pipeman.setTabText(self.tabWidget_pipeman.indexOf(self.pipeman_anim), QtWidgets.QApplication.translate("mainUI", "Animation", None, -1))
-        self.listWidget_assets.setSortingEnabled(True)
+        self.treeWidget_assets.setSortingEnabled(True)
+        self.treeWidget_assets.headerItem().setText(0, QtWidgets.QApplication.translate("mainUI", "Type", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("mainUI", "Versions", None, -1))
         self.pushButton_asset_openlatest.setText(QtWidgets.QApplication.translate("mainUI", "Open Latest", None, -1))
         self.treeWidget_versions.headerItem().setText(0, QtWidgets.QApplication.translate("mainUI", "Version", None, -1))
