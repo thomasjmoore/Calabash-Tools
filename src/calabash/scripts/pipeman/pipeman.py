@@ -434,13 +434,14 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 cancelButton='Close',
                 dismissString='Close',
             )
-            print result
+
             if result == 'animation':
                 if basename_parts:
+                    print basename_parts.keys()
                     result = pm.confirmDialog(
                         title='Choose your own adventure!',
                         message='Multiple parts were found, which scene do you want to open?',
-                        button=basename_parts,
+                        button=basename_parts.keys(),
                         cancelButton='Close',
                         dismissString='Close',
                     )
@@ -449,27 +450,28 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                     try:
                         pm.openFile(os.path.join(animpath, result))
                     except RuntimeError:
+                        print 'Opening:', basename_parts[result][-1]
                         confirm = self.unsaved_confirm()
 
                         if confirm == True:
                             pm.saveFile()
-                            pm.openFile(os.path.join(animpath, result), force=True)
+                            pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
                         elif confirm == False:
-                            pm.openFile(os.path.join(animpath, result), force=True)
+                            pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
+
+                else:
+                    try:
+                        pm.openFile(os.path.join(animpath, animver))
+                    except RuntimeError:
+                        confirm = self.unsaved_confirm()
+
+                        if confirm == True:
+                            pm.saveFile()
+                            pm.openFile(os.path.join(animpath, animver), force=True)
+                        elif confirm == False:
+                            pm.openFile(os.path.join(animpath, animver), force=True)
                         else:
                             pass
-                try:
-                    pm.openFile(os.path.join(animpath, animver))
-                except RuntimeError:
-                    confirm = self.unsaved_confirm()
-
-                    if confirm == True:
-                        pm.saveFile()
-                        pm.openFile(os.path.join(animpath, animver), force=True)
-                    elif confirm == False:
-                        pm.openFile(os.path.join(animpath, animver), force=True)
-                    else:
-                        pass
             if result == 'Renderable':
                 try:
                     pm.openFile(os.path.join(renderpath, latest_render))

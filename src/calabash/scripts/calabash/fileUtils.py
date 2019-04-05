@@ -81,8 +81,11 @@ def getLatest(path, basename, **kwargs):
 
     if len(versions_name) > 0:
         if filename:
-            #print 'returning filename:', sorted(versions_name)[-1]
-            return sorted(versions_name)[-1]
+            if parts:
+                return multiversions
+            else:
+                #print 'returning filename:', sorted(versions_name)[-1]
+                return sorted(versions_name)[-1]
 
         elif integer:
             #print 'returning int:', int(sorted(versions_num)[-1])

@@ -50,7 +50,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     cache_dir = os.path.join(shot_dir, 'anim', 'publish', 'cache').replace('\\', '/')
     light_dir = os.path.join(shot_dir, 'render')
     DoIt_fileName = 'autocache_{0}'.format(shot_name)
-    DoIt_dir = os.path.join(shot_dir, 'autocache')
+    DoIt_dir = os.path.join(shot_dir)
 
     def __init__(self, parent=None):
 
