@@ -45,7 +45,7 @@ from calabash import fileUtils
 reload(ui_file)
 reload(refEdit)
 reload(fileUtils)
-debug = False
+debug = True
 
 class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
@@ -76,6 +76,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.pop_assetlist()
         self.pop_shotlist()
         self.ui.listWidget_assets.itemClicked.connect(self.pop_assetVersions)
+        self.ui.treeWidget_versions.itemClicked.connect(self.showcomment_asset)
         self.ui.listWidget_shots.itemClicked.connect(self.pop_shotVersions)
         self.ui.pushButton_makelive.clicked.connect(self.makelive_assets)
         self.ui.pushButton_anim_makelive.clicked.connect(self.makelive_shots)
@@ -179,9 +180,30 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         with open(self.status_path, 'r') as statusfile_read:
             stat_read = json.load(statusfile_read)
         self.ui.treeWidget_animVersions.clear()
+
+        type_items = []
+        topItem_anim = QtWidgets.QTreeWidgetItem()
+        topItem_anim.setText(0, 'Animation')
+        type_items.append(topItem_anim)
+
+        topItem_cache = QtWidgets.QTreeWidgetItem()
+        topItem_cache.setText(0, 'Cache')
+        type_items.append(topItem_cache)
+
+        self.ui.treeWidget_animVersions.addTopLevelItems(type_items)
+
         for version in self.getVersions_shot(self.getShots()[spot][shot]):
-            version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_animVersions)
-            version_item.setText(0, version)
+
+            if '.abc' in version.lower():
+                version_item = QtWidgets.QTreeWidgetItem(topItem_cache)
+                version_item.setText(0, version)
+            elif 'anim' in version.lower():
+                version_item = QtWidgets.QTreeWidgetItem(topItem_anim)
+                version_item.setText(0, version)
+            else:
+                version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_animVersions)
+                version_item.setText(0, version)
+
             try:
                 if stat_read['shot'][selected_shot]['anim'] == version_item.text(0):
                     version_item.setText(1, 'Live')
@@ -203,20 +225,49 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         with open(self.status_path, 'r') as statusfile_read:
             stat_read = json.load(statusfile_read)
         self.ui.treeWidget_versions.clear()
+
+        type_items = []
+        topItem_rig = QtWidgets.QTreeWidgetItem()
+        topItem_rig.setText(0, 'Rig')
+        type_items.append(topItem_rig)
+
+        topItem_shd = QtWidgets.QTreeWidgetItem()
+        topItem_shd.setText(0, 'Shd')
+        type_items.append(topItem_shd)
+
+        topItem_mtl = QtWidgets.QTreeWidgetItem()
+        topItem_mtl.setText(0, 'Mtl')
+        type_items.append(topItem_mtl)
+
+        self.ui.treeWidget_versions.addTopLevelItems(type_items)
         for version in self.getVersions_asset(self.getAssets()[selected_asset]):
             if debug: print 'version:', version
-            version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_versions)
-            version_item.setText(0, version)
+
+            if 'rig' in version.lower():
+                version_item = QtWidgets.QTreeWidgetItem(topItem_rig)
+                version_item.setText(0, version)
+            elif 'shd' in version.lower():
+                version_item = QtWidgets.QTreeWidgetItem(topItem_shd)
+                version_item.setText(0, version)
+            elif 'mtl' in version.lower():
+                version_item = QtWidgets.QTreeWidgetItem(topItem_mtl)
+                version_item.setText(0, version)
+            else:
+                version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_versions)
+                version_item.setText(0, version)
+
             try:
                 if stat_read['asset'][selected_asset]['default'] == version_item.text(0):
                     version_item.setText(1, 'Live')
             except KeyError:
                 pass
+
             try:
                 if stat_read['asset'][selected_asset]['shd'] == version_item.text(0):
                     version_item.setText(1, 'Live')
             except KeyError:
                 pass
+
             try:
                 if stat_read['asset'][selected_asset]['mtl'] == version_item.text(0):
                     version_item.setText(1, 'Live')
@@ -289,7 +340,12 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         version_items = []
         if type == 'asset':
             for item in range(self.ui.treeWidget_versions.topLevelItemCount()):
-                version_items.append(self.ui.treeWidget_versions.topLevelItem(item))
+                #self.ui.treeWidget_versions.topLevelItem(item)
+                type_item = self.ui.treeWidget_versions.topLevelItem(item)
+                childcnt = type_item.childCount()
+                for n in range(childcnt):
+                    child = type_item.child(n)
+                    version_items.append(child)
         elif type == 'shot':
             for item in range(self.ui.treeWidget_animVersions.topLevelItemCount()):
                 version_items.append(self.ui.treeWidget_animVersions.topLevelItem(item))
@@ -428,7 +484,6 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 else:
                     pass
 
-
     def open_latest_asset(self):
 
         selected_asset = self.ui.listWidget_assets.currentItem().text()
@@ -526,6 +581,21 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 else:
                     pass
 
+    def showcomment_asset(self):
+        selected_asset = self.ui.listWidget_assets.currentItem().text()
+        selected_version = self.ui.treeWidget_versions.currentItem().text(0)
+        assets = self.getAssets()
+        try:
+            if selected_asset in assets:
+                asset_changelog = os.path.join(assets[selected_asset], 'changelog.json')
+                if os.path.exists(asset_changelog):
+                    with open(asset_changelog, 'r') as log_read:
+                        log = json.load(log_read)
+                    self.ui.comment_asset.setText(log[selected_version]['comment'])
+        except:
+            pass
+
+
 ######## CONNECT UI ELEMENTS AND FUNCTIONS ABOVE HERE #########
 
     def deleteControl(self, control):
@@ -549,3 +619,6 @@ myWin = myGui()
 
 def run():
     myWin.run()
+
+def test():
+    return 'hello World!'

@@ -6,6 +6,8 @@ import shutil
 #import datetime
 import increaseVersion
 import shading_utils
+import json
+import datetime
 
 __all__ = [
     'publishCurrentFile',
@@ -43,15 +45,20 @@ def ismultipart(path, basename):
 
 def getLatest(path, basename, **kwargs):
     filename = False
+    integer = False
     stage = ''
     parts = False
     for kwarg, value in kwargs.items():
+
         if kwarg == 'filename':
             filename = value
+        elif kwarg == 'integer':
+            integer = value
         elif kwarg == 'stage':
             stage = value
         elif kwarg == 'parts':
-            parts == value
+            parts = value
+
     versions_num = []
     versions_name = []
     multiversions = {}
@@ -71,20 +78,41 @@ def getLatest(path, basename, **kwargs):
                 else:
                     versions_name.append(n)
                     versions_num.append(ver)
-                #return '%03d' % (int(ver) + 1)
+
     if len(versions_name) > 0:
         if filename:
-            print 'returning:', sorted(versions_name)[-1]
+            print 'returning filename:', sorted(versions_name)[-1]
             return sorted(versions_name)[-1]
+
+        elif integer:
+            print 'returning int:', int(sorted(versions_num)[-1])
+            return int(sorted(versions_num)[-1])
         else:
-            print 'returning:', sorted(versions_num)[-1]
+            print 'returning string:', sorted(versions_num)[-1]
             return sorted(versions_num)[-1]
     else:
         if filename:
             return "{0}.001.ma".format(basename)
+
+        elif integer:
+            return 1
         else:
             return '001'
 
+def changelog(assetroot, version, comment):
+    log = os.path.join(assetroot, 'changelog.json')
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if not os.path.exists(log):
+        with open(log, 'w') as log_init:
+            log_body = {}
+            json.dump(log_body, log_init)
+
+    log_entry = {'timestamp': timestamp, 'comment': comment}
+    with open(log, 'r') as log_read:
+        log_body = json.load(log_read)
+    with open(log, 'w') as log_write:
+        log_body[version] = log_entry
+        json.dump(log_body, log_write)
 
 def publishCurrentFile():
 
@@ -134,54 +162,68 @@ def publishCurrentFile():
 
     # If in shd scene: define mtl export params, version up, import refs with namespaces,
     # export materials, remove namespaces, export shaded rig, reload current scene to restore references
-    if dept == 'shd':
-        basename = basename.replace('_shd', '')
-        shd_publish = os.path.join(deptpath, 'publish')
-        mtl_filename = '{0}_mtl.{1}.mb'.format(basename, ver)
-        print '#############'
-        print 'export mtl'
-        mtl_export_path = os.path.join(shd_publish, mtl_filename)
-        print '#############'
-        print 'Versioning up: ', increaseVersion.versionUp()
+    versionup = increaseVersion.versionUp()
+
+    if versionup:
+        result = pm.promptDialog(
+            title = 'Leave a comment',
+            message = '         What did you do?            ',
+            button = ['OK'],
+            defaultButton = 'OK',
+        )
+
+        comment = pm.promptDialog(query=True, text=True)
+
+        print 'Versioning up: ', (versionup)
+        if dept == 'shd':
+            basename = basename.replace('_shd', '')
+            shd_publish = os.path.join(deptpath, 'publish')
+            mtl_filename = '{0}_mtl.{1}.mb'.format(basename, ver)
+            print '#############'
+            print 'export mtl'
+            mtl_export_path = os.path.join(shd_publish, mtl_filename)
 
 
-        for node in sel:
-            if pm.referenceQuery(node, inr=True):
-                refNode = pm.referenceQuery(node, rfn=True)
-                fileRef = pm.FileReference(refnode=refNode)
-                fileRef.importContents(removeNamespace=True)
-        pm.select(sel)
-        shading_utils.publish_mtl(mtl_export_path)
+            for node in sel:
+                if pm.referenceQuery(node, inr=True):
+                    refNode = pm.referenceQuery(node, rfn=True)
+                    fileRef = pm.FileReference(refnode=refNode)
+                    fileRef.importContents(removeNamespace=True)
+            pm.select(sel)
+            shading_utils.publish_mtl(mtl_export_path)
+            print '#############'
+            pm.select(sel)
+            # for node in sel:
+            #     ns, obj = node.split(':')
+            #     pm.namespace(rm=str(ns), mnr=True)
 
-        pm.select(sel)
-        # for node in sel:
-        #     ns, obj = node.split(':')
-        #     pm.namespace(rm=str(ns), mnr=True)
-
-        exp_ma = pm.exportSelected(os.path.join(shd_publish, filename),
-                                   constructionHistory=True,
-                                   channels=True,
-                                   constraints=True,
-                                   expressions=True,
-                                   shader=True,
-                                   preserveReferences=True,
-                                   type='mayaBinary'
-                                   )
-        print ("Exported: %s" % (exp_ma))
-        revert_path = cmds.file(sceneName=True, q=True)
-        print 'Reverting: ', pm.system.openFile(revert_path, force=True)
+            exp_ma = pm.exportSelected(os.path.join(shd_publish, filename),
+                                       constructionHistory=True,
+                                       channels=True,
+                                       constraints=True,
+                                       expressions=True,
+                                       shader=True,
+                                       preserveReferences=True,
+                                       type='mayaBinary'
+                                       )
+            print "Exported: %s" % (exp_ma)
+            revert_path = cmds.file(sceneName=True, q=True)
+            print 'Reverting: ', pm.system.openFile(revert_path, force=True)
+        else:
+            exp_ma = pm.exportSelected(os.path.join(publish_dir, filename),
+                                       constructionHistory=True,
+                                       channels=True,
+                                       constraints=True,
+                                       expressions=True,
+                                       shader=True,
+                                       preserveReferences=True,
+                                       type='mayaBinary'
+                                       )
+            print ("Exported: %s" % (exp_ma))
+            print'Versioning up: ', (versionup)
+        changelog(assetroot, filename.replace('.ma', '.mb'), comment)
     else:
-        exp_ma = pm.exportSelected(os.path.join(publish_dir, filename),
-                                   constructionHistory=True,
-                                   channels=True,
-                                   constraints=True,
-                                   expressions=True,
-                                   shader=True,
-                                   preserveReferences=True,
-                                   type='mayaBinary'
-                                   )
-        print ("Exported: %s" % (exp_ma))
-        print'Versioning up: ', increaseVersion.versionUp()
+        print 'Publishing Cancelled'
     #
     # #shutil.copy2(exp_ma, os.path.join(nonvray_dir,non_ver))
     # shutil.copy2(exp_mb, os.path.join(nonvray_dir,non_ver_mb))

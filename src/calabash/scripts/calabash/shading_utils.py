@@ -78,7 +78,7 @@ def get_asset_name(asset):
         asset_name = re.sub('_' + asset_type, "", asset)
     except:
         asset_name = asset
-    print 'asset_name:', asset_name
+
     return asset_name
 
 def get_asset_look_SGs(asset_name):
@@ -139,7 +139,7 @@ def write_assignments(SGs):
 def make_assignments(namespace, target_meshes):
 
     target_SGs = get_asset_look_SGs(namespace)
-    print 'Making assignments:', namespace
+    #print 'Making assignments:', namespace
 
     for SG in target_SGs:
 
@@ -153,7 +153,7 @@ def make_assignments(namespace, target_meshes):
         pm.select(clear=True)
         pm.select(meshes)
         pm.hyperShade(assign=SG)
-        print 'Assigned {0} to {1}'.format(SG, meshes)
+        #print 'Assigned {0} to {1}'.format(SG, meshes)
 
 def find_rig_connections(SG):
 
@@ -217,7 +217,7 @@ def write_connections(SGs):
     for SG in SGs:
         scrubber(SG, 1)
         rig_connections = find_rig_connections(SG)
-        if True: print rig_connections
+
         cnt = 0
         for connection in rig_connections:
             add_attr(SG, 'control_' + str(cnt), connection)
@@ -243,11 +243,9 @@ def make_connections(namespace, target_curves, meshes):
                         if type == 'transform':
                             #target_curve_noShape = re.sub(r'\|([a-z]+):{0}.([a-z]+)$'.format(curve), '',target_curves[curve], flags=re.IGNORECASE)
                             #print target_curve_noShape
-                            print target_curves[curve]
+
                             target_curve_transform = pm.listRelatives(target_curves[curve], p=True)[0]
-                            print target_curve_transform
-                            print source_attr
-                            print 'Connecting {0} to {1}'.format(target_curve_transform + '.' + source_attr, namespace + '_mtl:' + destination)
+                            #print 'Connecting {0} to {1}'.format(target_curve_transform + '.' + source_attr, namespace + '_mtl:' + destination)
                             try:
                                 pm.connectAttr(target_curve_transform + '.'+source_attr, namespace + '_mtl:' + destination)
                             except Exception as exception:
