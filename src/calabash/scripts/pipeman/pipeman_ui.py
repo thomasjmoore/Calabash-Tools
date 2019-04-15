@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:\Users\guest1\Documents\maya\modules\calabash\scripts\pipeman\pipeman_ui.ui'
 #
-# Created: Tue Apr  9 15:42:17 2019
+# Created: Mon Apr 15 12:53:49 2019
 #      by: pyside2-uic  running on PySide2 2.0.0~alpha0
 #
 # WARNING! All changes made in this file will be lost!
@@ -44,6 +44,7 @@ class Ui_mainUI(object):
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
         self.pushButton_anim_makelive = QtWidgets.QPushButton(self.pipeman_anim)
+        self.pushButton_anim_makelive.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.pushButton_anim_makelive.setObjectName("pushButton_anim_makelive")
         self.horizontalLayout_8.addWidget(self.pushButton_anim_makelive)
         self.gridLayout_5.addLayout(self.horizontalLayout_8, 3, 1, 1, 1)
@@ -138,6 +139,7 @@ class Ui_mainUI(object):
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.pushButton_makelive = QtWidgets.QPushButton(self.pipeman_assets)
+        self.pushButton_makelive.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.pushButton_makelive.setObjectName("pushButton_makelive")
         self.horizontalLayout_3.addWidget(self.pushButton_makelive)
         self.gridLayout_4.addLayout(self.horizontalLayout_3, 3, 1, 1, 1)

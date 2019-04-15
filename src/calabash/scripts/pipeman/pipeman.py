@@ -78,12 +78,21 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.ui.treeWidget_versions.itemClicked.connect(self.showcomment_asset)
         self.ui.listWidget_shots.itemClicked.connect(self.pop_shotVersions)
         self.ui.pushButton_makelive.clicked.connect(self.makelive_assets)
+
+        self.ui.pushButton_makelive.customContextMenuRequested.connect(self.on_context_menu)
+        self.popMenu_assetlive = QtWidgets.QMenu(self)
+        self.popMenu_assetlive.addAction(QtWidgets.QAction('Make all latest Live', self))
+        self.popMenu_assetlive.triggered.connect(self.makelive_assets_all)
+
         self.ui.pushButton_anim_makelive.clicked.connect(self.makelive_shots)
         self.ui.pushButton_anim_openlatest.clicked.connect(self.open_latest_shot)
         self.ui.pushButton_asset_openlatest.clicked.connect(self.open_latest_asset)
 
         if not os.path.isfile(self.status_path):
             self.make_statusfile(self.status_path)
+
+    def on_context_menu(self, point):
+        self.popMenu_assetlive.exec_(self.ui.pushButton_makelive.mapToGlobal(point))
 
     def getSpots(self):
         spots = []
@@ -295,23 +304,56 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             json.dump(default_content, statusfile)
 
     def makelive_assets(self):
-        selected_asset = self.ui.treeWidget_assets.currentItem()
-        selected_version = self.ui.treeWidget_versions.currentItem()
-        asset_path = self.getAssets()[selected_asset.text(0)]['path']
+        asset = self.ui.treeWidget_assets.currentItem()
+        version = self.ui.treeWidget_versions.currentItem()
+        asset_path = self.getAssets()[asset.text(0)]['path']
+
         dev_dir = os.path.dirname(asset_path)
         type_dir = os.path.dirname(dev_dir)
-        if 'shd' in selected_version.text(0):
-            version_path = os.path.join(asset_path, 'shd', 'publish', selected_version.text(0))
-            shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}.mb'.format(selected_asset.text(0))))
-            self.update_status('asset', selected_asset.text(0), selected_version.text(0), 'shd')
-        elif 'mtl' in selected_version.text(0):
-            version_path = os.path.join(asset_path, 'shd', 'publish', selected_version.text(0))
-            shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}_mtl.mb'.format(selected_asset.text(0))))
-            self.update_status('asset', selected_asset.text(0), selected_version.text(0), 'mtl')
+        if 'shd' in version.text(0):
+            version_path = os.path.join(asset_path, 'shd', 'publish', version.text(0))
+            shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}.mb'.format(asset.text(0))))
+            self.update_status('asset', asset.text(0), version.text(0), 'shd')
+        elif 'mtl' in version.text(0):
+            version_path = os.path.join(asset_path, 'shd', 'publish', version.text(0))
+            shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}_mtl.mb'.format(asset.text(0))))
+            self.update_status('asset', asset.text(0), version.text(0), 'mtl')
         else:
-            version_path = os.path.join(asset_path, 'publish', selected_version.text(0))
-            shutil.copy2(version_path, os.path.join(type_dir, '{0}.mb'.format(selected_asset.text(0))))
-            self.update_status('asset', selected_asset.text(0), selected_version.text(0), 'default')
+            version_path = os.path.join(asset_path, 'publish', version.text(0))
+            shutil.copy2(version_path, os.path.join(type_dir, '{0}.mb'.format(asset.text(0))))
+            self.update_status('asset', asset.text(0), version.text(0), 'default')
+
+    def makelive_assets_all(self):
+        assets = self.getAssets()
+        for asset in assets:
+
+            asset_path = os.path.join(assets[asset]['path'], 'publish')
+            asset_shd_path = os.path.join(assets[asset]['path'], 'shd', 'publish')
+            latest_asset = fileUtils.getLatest(asset_path, asset, filename=True, none_return=True)
+            latest_shd = fileUtils.getLatest(asset_shd_path, asset, filename=True, stage='shd', none_return=True)
+            latest_mtl = fileUtils.getLatest(asset_shd_path, asset, filename=True, stage='mtl', none_return=True)
+            type_dir = os.path.join(self.assets_root, assets[asset]['type'])
+            print asset
+            print 'rig', latest_asset
+            print 'shd', latest_shd
+            print 'mtl', latest_mtl
+            print
+            if latest_asset:
+                version_path = os.path.join(asset_path, latest_asset)
+                print version_path
+                shutil.copy2(version_path, os.path.join(type_dir, '{0}.mb'.format(asset)))
+                self.update_status('asset', asset, latest_asset, 'default')
+            if latest_shd:
+                version_path = os.path.join(asset_shd_path, latest_shd)
+                print version_path
+                shutil.copy2(version_path, os.path.join(type_dir,  'renderable', '{0}.mb'.format(asset)))
+                self.update_status('asset', asset, latest_shd, 'shd')
+            if latest_mtl:
+                version_path = os.path.join(asset_shd_path, latest_mtl)
+                print version_path
+                shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}.mb'.format(asset)))
+                self.update_status('asset', asset, latest_mtl, 'mtl')
+
 
     def makelive_shots(self):
         selected_shot = self.ui.listWidget_shots.currentItem()
@@ -361,7 +403,10 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                     version_items.append(child)
         elif type == 'shot':
             for item in range(self.ui.treeWidget_animVersions.topLevelItemCount()):
-                version_items.append(self.ui.treeWidget_animVersions.topLevelItem(item))
+                toplvl_item = self.ui.treeWidget_animVersions.topLevelItem(item)
+                for version_index in range(toplvl_item.childCount()):
+                    version_item = toplvl_item.child(version_index)
+                    version_items.append(version_item)
         for item in version_items:
             item.setText(1, '')
             with open(self.status_path, 'r') as statusfile_read:
@@ -502,16 +547,16 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     def open_latest_asset(self):
 
         selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
+        assettype = self.getAssets()[selected_asset]['type']
+        # def getType():
+        #     assettype = ''
+        #     for dir in os.listdir(self.assets_root):
+        #         for item in os.listdir(os.path.join(self.assets_root, dir)):
+        #             if selected_asset in item:
+        #                 assettype = dir
+        #     return assettype
 
-        def getType():
-            assettype = ''
-            for dir in os.listdir(self.assets_root):
-                for item in os.listdir(os.path.join(self.assets_root, dir)):
-                    if selected_asset in item:
-                        assettype = dir
-            return assettype
-
-        sel_assetroot = os.path.join(self.assets_root, getType(), 'dev', selected_asset)
+        sel_assetroot = os.path.join(self.assets_root, assettype, 'dev', selected_asset)
         shd_path = os.path.join(sel_assetroot, 'shd')
         try:
             latest_assetver = fileUtils.getLatest(sel_assetroot, selected_asset)

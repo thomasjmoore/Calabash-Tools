@@ -48,6 +48,7 @@ def getLatest(path, basename, **kwargs):
     integer = False
     stage = ''
     parts = False
+    none_return = False
     for kwarg, value in kwargs.items():
 
         if kwarg == 'filename':
@@ -58,26 +59,35 @@ def getLatest(path, basename, **kwargs):
             stage = value
         elif kwarg == 'parts':
             parts = value
+        elif kwarg == 'none_return':
+            none_return = value
 
     versions_num = []
     versions_name = []
     multiversions = {}
-    if os.listdir(path):
-        for n in os.listdir(path):
-            if basename in n:
-                basename_full, ver, ext = n.split('.')
-                if stage:
-                    if stage in basename_full:
-                        versions_name.append(n)
-                        versions_num.append(ver)
-                        if '-' in basename_full:
-                            if basename_full in multiversions:
-                                multiversions[basename_full].append(n)
-                            else:
-                                multiversions[basename_full] = [n]
-                else:
-                    versions_name.append(n)
-                    versions_num.append(ver)
+    if os.path.exists(path):
+        if os.listdir(path):
+            for n in os.listdir(path):
+                if basename in n:
+
+                    try:
+                        basename_full, ver, ext = n.split('.')
+
+                        if stage:
+
+                            if stage in basename_full:
+                                versions_name.append(n)
+                                versions_num.append(ver)
+                                if '-' in basename_full:
+                                    if basename_full in multiversions:
+                                        multiversions[basename_full].append(n)
+                                    else:
+                                        multiversions[basename_full] = [n]
+                        else:
+                            versions_name.append(n)
+                            versions_num.append(ver)
+                    except:
+                        pass
 
     if len(versions_name) > 0:
         if filename:
@@ -94,6 +104,9 @@ def getLatest(path, basename, **kwargs):
             #print 'returning string:', sorted(versions_num)[-1]
             return sorted(versions_num)[-1]
     else:
+        if none_return:
+            return None
+
         if filename:
             return "{0}.001.ma".format(basename)
 
