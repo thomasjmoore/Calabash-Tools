@@ -30,6 +30,7 @@ def calabash_menu():
     shading_submenu = cmds.menuItem('shading_sub', p=calabash_menu, subMenu=True, label='Shading', tearOff=True, version="2017")
     xgen_submenu = cmds.menuItem('xgen_sub', p=calabash_menu, subMenu=True, label='XGen', tearOff=True)
     fx_submenu = cmds.menuItem('fx_sub', p=calabash_menu, subMenu=True, label='FX', tearOff=True)
+    publish_submenu = cmds.menuItem('pub_sub', p=calabash_menu, subMenu=True, label='Publish', tearOff=True)
     pipeman_submenu = cmds.menuItem(p=calabash_menu, label='Pipeline Manager', c='from pipeman import pipeman;reload(pipeman),pipeman.run()')
     #cmds.menuItem(p=rigging_submenu, divider=True, itl=True)
     #hatch_submenu = cmds.menuItem('hatch_sub', p=calabash_menu, subMenu=True, label='Hatchimals', tearOff=True)
@@ -50,9 +51,7 @@ def calabash_menu():
     # Animation Submenu
     cmds.menuItem(p=ani_submenu, label='Good Playblast', c='from goodPlayblast_c import playblast_utils as gu; reload(gu); pb = gu.Playblaster(); pb.playblast()', image="goodplayblast.png")
     cmds.menuItem(p=ani_submenu, optionBox=True, c='import goodPlayblast_c.playblast_view as gp; reload(gp); gp.launch()')
-    cmds.menuItem(p=ani_submenu, label='Publish Animation', c='from calabash import animUtils;reload(animUtils);animUtils.publishAnim()')
-    cmds.menuItem(p=ani_submenu, label='Create AutoCache', c='from calabash import animUtils; reload(animUtils); animUtils.autocache_gui.run()')
-    cmds.menuItem(p=ani_submenu, label='Publish Camera from animation', c='from calabash import animUtils; reload(animUtils); animUtils.ouroboros()')
+
 
     ###############################################################################
 
@@ -84,11 +83,13 @@ def calabash_menu():
 
     ###############################################################################
 
-
-    # Rigging Submenu
-    cmds.menuItem(p=rigging_submenu, label='Publish Selected Rig', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile()')
+    # Publish Submenu
+    cmds.menuItem(p=publish_submenu, label='Publish Selected Asset', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publishCurrentFile()')
+    cmds.menuItem(p=publish_submenu, label='Publish Animation', c='from calabash import animUtils;reload(animUtils);animUtils.publishAnim()')
+    cmds.menuItem(p=publish_submenu, label='Create AutoCache',  c='from calabash import animUtils; reload(animUtils); animUtils.autocache_gui.run()')
+    cmds.menuItem(p=publish_submenu, label='Publish Camera from animation', c='from calabash import animUtils; reload(animUtils); animUtils.ouroboros()')
     #cmds.menuItem(p=rigging_submenu, label='Publish Vray Shading', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_vray_rig()')
-    cmds.menuItem(p=rigging_submenu, label='Publish Groom', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_groom_rig()')
+    cmds.menuItem(p=publish_submenu, label='Publish Groom', c='from calabash import fileUtils;reload(fileUtils);fileUtils.publish_groom_rig()')
 
     cmds.menuItem(p=rigging_submenu, divider=True, itl=True)
     cmds.menuItem(p=rigging_submenu, label='Hide Joints', c='from calabash import rigUtils;reload(rigUtils);rigUtils.jointDisplay()')
