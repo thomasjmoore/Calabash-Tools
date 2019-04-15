@@ -2,14 +2,6 @@ from maya import cmds
 from pymel import core as pm
 import re
 
-"""
-bugs:
-if shape node isnt named the same as transform, material app fails
-fix: for each shape node connected to SG, get transform node instead
-
-shading switches with shape node inputs are not recorded
-fix: add if incommingConnection is type('mesh') check
-"""
 
 def rename_shading_groups():
     # Renames selected shading groups, or all in scene if none are selected
@@ -340,12 +332,12 @@ def apply_look():
                 else:
                     curvens_sorted[curve_ns] = {nodename: curve.longName()}
         for namespace in meshns_sorted:
-            #print 'Connecting meshes with namespace:', namespace
+            if debugMode: print 'Connecting meshes with namespace:', namespace
             target_meshes = meshns_sorted[namespace]
             make_assignments(namespace, target_meshes)
 
         for namespace in curvens_sorted:
-            #print 'Connecting curves with namespace:', namespace
+            if debugMode: print 'Connecting curves with namespace:', namespace
             target_curves = curvens_sorted[namespace]
 
             make_connections(namespace, target_curves, meshns_sorted[namespace])

@@ -303,15 +303,15 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         if 'shd' in selected_version.text(0):
             version_path = os.path.join(asset_path, 'shd', 'publish', selected_version.text(0))
             shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}.mb'.format(selected_asset.text(0))))
-            self.update_status('asset', selected_asset.text(), selected_version.text(0), 'shd')
+            self.update_status('asset', selected_asset.text(0), selected_version.text(0), 'shd')
         elif 'mtl' in selected_version.text(0):
             version_path = os.path.join(asset_path, 'shd', 'publish', selected_version.text(0))
             shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}_mtl.mb'.format(selected_asset.text(0))))
-            self.update_status('asset', selected_asset.text(), selected_version.text(0), 'mtl')
+            self.update_status('asset', selected_asset.text(0), selected_version.text(0), 'mtl')
         else:
             version_path = os.path.join(asset_path, 'publish', selected_version.text(0))
             shutil.copy2(version_path, os.path.join(type_dir, '{0}.mb'.format(selected_asset.text(0))))
-            self.update_status('asset', selected_asset.text(), selected_version.text(0), 'default')
+            self.update_status('asset', selected_asset.text(0), selected_version.text(0), 'default')
 
     def makelive_shots(self):
         selected_shot = self.ui.listWidget_shots.currentItem()
@@ -600,7 +600,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                     pass
 
     def showcomment_asset(self):
-        selected_asset = self.ui.treeWidget_assets.currentItem().text()
+        selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
         selected_version = self.ui.treeWidget_versions.currentItem().text(0)
         assets = self.getAssets()
         try:

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:\Users\guest1\Documents\maya\modules\calabash\scripts\pipeman\pipeman_ui.ui'
 #
-# Created: Fri Apr  5 15:48:28 2019
+# Created: Tue Apr  9 15:42:17 2019
 #      by: pyside2-uic  running on PySide2 2.0.0~alpha0
 #
 # WARNING! All changes made in this file will be lost!
@@ -165,7 +165,7 @@ class Ui_mainUI(object):
         self.gridLayout.addWidget(self.tabWidget_pipeman, 1, 0, 1, 1)
 
         self.retranslateUi(mainUI)
-        self.tabWidget_pipeman.setCurrentIndex(1)
+        self.tabWidget_pipeman.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(mainUI)
 
     def retranslateUi(self, mainUI):
