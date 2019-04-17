@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:\Users\guest1\Documents\maya\modules\calabash\scripts\pipeman\pipeman_ui.ui'
 #
-# Created: Mon Apr 15 12:53:49 2019
+# Created: Wed Apr 17 14:46:01 2019
 #      by: pyside2-uic  running on PySide2 2.0.0~alpha0
 #
 # WARNING! All changes made in this file will be lost!
@@ -177,6 +177,7 @@ class Ui_mainUI(object):
         self.pushButton_anim_openlatest.setText(QtWidgets.QApplication.translate("mainUI", "Open Latest", None, -1))
         self.pushButton_anim_makelive.setText(QtWidgets.QApplication.translate("mainUI", "Make Live", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("mainUI", "Versions", None, -1))
+        self.treeWidget_animVersions.setSortingEnabled(True)
         self.treeWidget_animVersions.headerItem().setText(0, QtWidgets.QApplication.translate("mainUI", "Version", None, -1))
         self.treeWidget_animVersions.headerItem().setText(1, QtWidgets.QApplication.translate("mainUI", "Status", None, -1))
         self.tabWidget_pipeman.setTabText(self.tabWidget_pipeman.indexOf(self.pipeman_anim), QtWidgets.QApplication.translate("mainUI", "Animation", None, -1))
@@ -184,6 +185,7 @@ class Ui_mainUI(object):
         self.treeWidget_assets.headerItem().setText(0, QtWidgets.QApplication.translate("mainUI", "Type", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("mainUI", "Versions", None, -1))
         self.pushButton_asset_openlatest.setText(QtWidgets.QApplication.translate("mainUI", "Open Latest", None, -1))
+        self.treeWidget_versions.setSortingEnabled(True)
         self.treeWidget_versions.headerItem().setText(0, QtWidgets.QApplication.translate("mainUI", "Version", None, -1))
         self.treeWidget_versions.headerItem().setText(1, QtWidgets.QApplication.translate("mainUI", "Status", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("mainUI", "Assets", None, -1))
