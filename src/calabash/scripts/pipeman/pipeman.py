@@ -365,28 +365,41 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         shot_path = self.getShots()[spot][shot]
 
         if '.abc' in selected_version.text(0):
-            cachename = '{0}_{1}'.format('_'.join(selected_version.text(0).split('_')[:-3]), shotroot)
+            cachename = '{0}'.format('_'.join(selected_version.text(0).split('_')[:-1]))
             live_path = os.path.join(shot_path, '{0}_cache.abc'.format(cachename))
             version_path = os.path.join(shot_path, 'anim', 'publish', 'cache', selected_version.text(0))
             shutil.copy2(version_path, live_path)
             self.update_status('shot', selected_shot.text(), selected_version.text(0), 'cache')
         else:
-            live_path = os.path.join(shot_path, '{0}_anim.ma'.format(shotroot))
+            live_path = os.path.join(shot_path, '{0}_anim.ma'.format('_'.join(selected_version.text(0).split('_')[:-1])))
             version_path = os.path.join(shot_path, 'anim', 'publish', selected_version.text(0))
             shutil.copy2(version_path, live_path)
             print refEdit.edit(live_path)
             self.update_status('shot', selected_shot.text(), selected_version.text(0), 'anim')
 
-    def update_status(self, type, name, version, shadestate):
+    def update_status(self, type, name, version, state):
 
 
         with open(self.status_path, 'r') as statusfile_read:
             stat_read = json.load(statusfile_read)
+            basename, ver, ext = version.split('.')
         # Try to edit asset status, if not found, create new entry
         try:
-            stat_read[type][name][shadestate] = version
+
+            stat_read[type][name][state][basename] = version
+
         except KeyError:
-            stat_read[type][name] = {shadestate:version}
+            if stat_read.has_key(type):
+                if stat_read[type].has_key(name):
+                    if stat_read[type][name].has_key(state):
+                            stat_read[type][name][state][basename] = version
+                    else:
+                        stat_read[type][name][state] = {basename:version}
+                else:
+                    stat_read[type][name] = {state:{basename:version}}
+            else:
+                stat_read[type] = {name:{state:{basename:version}}}
+
 
         with open(self.status_path, 'w') as statusfile_write:
             json.dump(stat_read, statusfile_write, indent=4)
@@ -409,6 +422,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                     version_items.append(version_item)
         for item in version_items:
             item.setText(1, '')
+            item_basename, item_ver, item_ext = item.text(0).split('.')
             with open(self.status_path, 'r') as statusfile_read:
                 stat_read = json.load(statusfile_read)
             try:
@@ -430,12 +444,12 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 pass
 
             try:
-                if stat_read[type][name]['anim'] == item.text(0):
+                if stat_read[type][name]['anim'][item_basename] == item.text(0):
                     item.setText(1, 'Live')
             except KeyError:
                 pass
             try:
-                if stat_read[type][name]['cache'] == item.text(0):
+                if stat_read[type][name]['cache'][item_basename] == item.text(0):
                     item.setText(1, 'Live')
             except KeyError:
                 pass
