@@ -202,15 +202,20 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
 
         for version in self.getVersions_shot(self.getShots()[spot][shot]):
-
+            basename, ver, ext = version.split('.')
+            shotname = '_'.join(basename.split('_')[:-1])
             if '.abc' in version.lower():
                 version_item = QtWidgets.QTreeWidgetItem(topItem_cache)
                 version_item.setText(0, version)
-                self.update_status('shot', selected_shot, version, 'cache')
+                if stat_read['shot'][shotname]['cache'][basename] == version_item.text(0):
+                    version_item.setText(1, 'Live')
+                #self.update_status('shot', selected_shot, version, 'cache')
             elif 'anim' in version.lower():
                 version_item = QtWidgets.QTreeWidgetItem(topItem_anim)
                 version_item.setText(0, version)
-                self.update_status('shot', selected_shot, version, 'anim')
+                if stat_read['shot'][shotname]['anim'][basename] == version_item.text(0):
+                    version_item.setText(1, 'Live')
+                #self.update_status('shot', selected_shot, version, 'anim')
             else:
                 version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_animVersions)
                 version_item.setText(0, version)
@@ -420,6 +425,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 for version_index in range(toplvl_item.childCount()):
                     version_item = toplvl_item.child(version_index)
                     version_items.append(version_item)
+
         for item in version_items:
             item.setText(1, '')
             item_basename, item_ver, item_ext = item.text(0).split('.')
