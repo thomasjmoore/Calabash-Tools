@@ -200,28 +200,21 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         self.ui.treeWidget_animVersions.addTopLevelItems(type_items)
 
+
         for version in self.getVersions_shot(self.getShots()[spot][shot]):
 
             if '.abc' in version.lower():
                 version_item = QtWidgets.QTreeWidgetItem(topItem_cache)
                 version_item.setText(0, version)
+                self.update_status('shot', selected_shot, version, 'cache')
             elif 'anim' in version.lower():
                 version_item = QtWidgets.QTreeWidgetItem(topItem_anim)
                 version_item.setText(0, version)
+                self.update_status('shot', selected_shot, version, 'anim')
             else:
                 version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_animVersions)
                 version_item.setText(0, version)
 
-            try:
-                if stat_read['shot'][selected_shot]['anim'] == version_item.text(0):
-                    version_item.setText(1, 'Live')
-            except KeyError:
-                pass
-            try:
-                if stat_read['shot'][selected_shot]['cache'] == version_item.text(0):
-                    version_item.setText(1, 'Live')
-            except KeyError:
-                pass
 
     def pop_assetlist(self):
         asset_types = set()
@@ -377,28 +370,35 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             print refEdit.edit(live_path)
             self.update_status('shot', selected_shot.text(), selected_version.text(0), 'anim')
 
-    def update_status(self, type, name, version, state):
+    def update_status(self, assetType, name, version, state):
 
 
         with open(self.status_path, 'r') as statusfile_read:
             stat_read = json.load(statusfile_read)
             basename, ver, ext = version.split('.')
         # Try to edit asset status, if not found, create new entry
+
         try:
 
-            stat_read[type][name][state][basename] = version
+            stat_read[assetType][name][state][basename] = version
 
-        except KeyError:
-            if stat_read.has_key(type):
-                if stat_read[type].has_key(name):
-                    if stat_read[type][name].has_key(state):
-                            stat_read[type][name][state][basename] = version
+        except:
+            if stat_read.has_key(assetType):
+                if stat_read[assetType].has_key(name):
+                    if stat_read[assetType][name].has_key(state):
+
+                        if type(stat_read[assetType][name][state]) == 'unicode':
+                            stat_read[assetType][name][state] = {stat_read[assetType][name][state]}
+
+                        stat_read[assetType][name][state][basename] = version
+
                     else:
-                        stat_read[type][name][state] = {basename:version}
+                        stat_read[assetType][name][state] = {}
+                        stat_read[assetType][name][state] = {basename:version}
                 else:
-                    stat_read[type][name] = {state:{basename:version}}
+                    stat_read[assetType][name] = {state:{basename:version}}
             else:
-                stat_read[type] = {name:{state:{basename:version}}}
+                stat_read[assetType] = {name:{state:{basename:version}}}
 
 
         with open(self.status_path, 'w') as statusfile_write:
@@ -406,7 +406,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         # Loop through current listed versions, clear status, if version matches value in shade state, mark as Live
         version_items = []
-        if type == 'asset':
+        if assetType == 'asset':
             for item in range(self.ui.treeWidget_versions.topLevelItemCount()):
                 #self.ui.treeWidget_versions.topLevelItem(item)
                 type_item = self.ui.treeWidget_versions.topLevelItem(item)
@@ -414,7 +414,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 for n in range(childcnt):
                     child = type_item.child(n)
                     version_items.append(child)
-        elif type == 'shot':
+        elif assetType == 'shot':
             for item in range(self.ui.treeWidget_animVersions.topLevelItemCount()):
                 toplvl_item = self.ui.treeWidget_animVersions.topLevelItem(item)
                 for version_index in range(toplvl_item.childCount()):
@@ -426,30 +426,30 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             with open(self.status_path, 'r') as statusfile_read:
                 stat_read = json.load(statusfile_read)
             try:
-                if stat_read[type][name]['default'] == item.text(0):
+                if stat_read[assetType][name]['default'] == item.text(0):
                     item.setText(1, 'Live')
             except KeyError:
                 pass
 
             try:
-                if stat_read[type][name]['shd'] == item.text(0):
+                if stat_read[assetType][name]['shd'] == item.text(0):
                     item.setText(1, 'Live')
             except KeyError:
                 pass
 
             try:
-                if stat_read[type][name]['mtl'] == item.text(0):
+                if stat_read[assetType][name]['mtl'] == item.text(0):
                     item.setText(1, 'Live')
             except KeyError:
                 pass
 
             try:
-                if stat_read[type][name]['anim'][item_basename] == item.text(0):
+                if stat_read[assetType][name]['anim'][item_basename] == item.text(0):
                     item.setText(1, 'Live')
             except KeyError:
                 pass
             try:
-                if stat_read[type][name]['cache'][item_basename] == item.text(0):
+                if stat_read[assetType][name]['cache'][item_basename] == item.text(0):
                     item.setText(1, 'Live')
             except KeyError:
                 pass
