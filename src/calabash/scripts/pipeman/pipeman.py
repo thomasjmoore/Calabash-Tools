@@ -432,19 +432,19 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             with open(self.status_path, 'r') as statusfile_read:
                 stat_read = json.load(statusfile_read)
             try:
-                if stat_read[assetType][name]['default'] == item.text(0):
+                if stat_read[assetType][name]['default'][item_basename] == item.text(0):
                     item.setText(1, 'Live')
             except KeyError:
                 pass
 
             try:
-                if stat_read[assetType][name]['shd'] == item.text(0):
+                if stat_read[assetType][name]['shd'][item_basename] == item.text(0):
                     item.setText(1, 'Live')
             except KeyError:
                 pass
 
             try:
-                if stat_read[assetType][name]['mtl'] == item.text(0):
+                if stat_read[assetType][name]['mtl'][item_basename] == item.text(0):
                     item.setText(1, 'Live')
             except KeyError:
                 pass
