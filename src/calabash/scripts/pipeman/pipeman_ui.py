@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:\Users\guest1\Documents\maya\modules\calabash\scripts\pipeman\pipeman_ui.ui'
 #
-# Created: Wed Apr 17 14:46:01 2019
+# Created: Mon Apr 29 16:45:29 2019
 #      by: pyside2-uic  running on PySide2 2.0.0~alpha0
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_mainUI(object):
     def setupUi(self, mainUI):
         mainUI.setObjectName("mainUI")
-        mainUI.resize(871, 359)
+        mainUI.resize(470, 398)
         self.gridLayout = QtWidgets.QGridLayout(mainUI)
         self.gridLayout.setObjectName("gridLayout")
         self.tabWidget_pipeman = QtWidgets.QTabWidget(mainUI)
@@ -164,10 +164,59 @@ class Ui_mainUI(object):
         self.horizontalLayout.addLayout(self.verticalLayout)
         self.gridLayout_3.addLayout(self.horizontalLayout, 0, 0, 1, 1)
         self.tabWidget_pipeman.addTab(self.pipeman_assets, "")
+        self.arborist = QtWidgets.QWidget()
+        self.arborist.setObjectName("arborist")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.arborist)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_11.setObjectName("horizontalLayout_11")
+        self.label_7 = QtWidgets.QLabel(self.arborist)
+        self.label_7.setObjectName("label_7")
+        self.horizontalLayout_11.addWidget(self.label_7)
+        self.lineEdit_arb_projPath = QtWidgets.QLineEdit(self.arborist)
+        self.lineEdit_arb_projPath.setText("")
+        self.lineEdit_arb_projPath.setObjectName("lineEdit_arb_projPath")
+        self.horizontalLayout_11.addWidget(self.lineEdit_arb_projPath)
+        self.pushButton_arb_projBrowse = QtWidgets.QPushButton(self.arborist)
+        self.pushButton_arb_projBrowse.setObjectName("pushButton_arb_projBrowse")
+        self.horizontalLayout_11.addWidget(self.pushButton_arb_projBrowse)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_11)
+        self.horizontalLayout_13 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_13.setObjectName("horizontalLayout_13")
+        self.label_5 = QtWidgets.QLabel(self.arborist)
+        self.label_5.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
+        self.label_5.setObjectName("label_5")
+        self.horizontalLayout_13.addWidget(self.label_5)
+        self.textEdit_arb_commands = QtWidgets.QTextEdit(self.arborist)
+        self.textEdit_arb_commands.setObjectName("textEdit_arb_commands")
+        self.horizontalLayout_13.addWidget(self.textEdit_arb_commands)
+        self.pushButton_arb_exe = QtWidgets.QPushButton(self.arborist)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.pushButton_arb_exe.sizePolicy().hasHeightForWidth())
+        self.pushButton_arb_exe.setSizePolicy(sizePolicy)
+        self.pushButton_arb_exe.setObjectName("pushButton_arb_exe")
+        self.horizontalLayout_13.addWidget(self.pushButton_arb_exe)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_13)
+        self.horizontalLayout_14 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_14.setObjectName("horizontalLayout_14")
+        self.textBrowser = QtWidgets.QTextBrowser(self.arborist)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.textBrowser.sizePolicy().hasHeightForWidth())
+        self.textBrowser.setSizePolicy(sizePolicy)
+        self.textBrowser.setMinimumSize(QtCore.QSize(0, 160))
+        self.textBrowser.setMaximumSize(QtCore.QSize(16777215, 125))
+        self.textBrowser.setObjectName("textBrowser")
+        self.horizontalLayout_14.addWidget(self.textBrowser)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_14)
+        self.tabWidget_pipeman.addTab(self.arborist, "")
         self.gridLayout.addWidget(self.tabWidget_pipeman, 1, 0, 1, 1)
 
         self.retranslateUi(mainUI)
-        self.tabWidget_pipeman.setCurrentIndex(0)
+        self.tabWidget_pipeman.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(mainUI)
 
     def retranslateUi(self, mainUI):
@@ -192,4 +241,24 @@ class Ui_mainUI(object):
         self.pushButton_makelive.setText(QtWidgets.QApplication.translate("mainUI", "Make Live", None, -1))
         self.label_6.setText(QtWidgets.QApplication.translate("mainUI", "Comment:", None, -1))
         self.tabWidget_pipeman.setTabText(self.tabWidget_pipeman.indexOf(self.pipeman_assets), QtWidgets.QApplication.translate("mainUI", "Assets", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("mainUI", "Project Destination:", None, -1))
+        self.lineEdit_arb_projPath.setPlaceholderText(QtWidgets.QApplication.translate("mainUI", "Z:/raid/3Dprojects/maya/projects", None, -1))
+        self.pushButton_arb_projBrowse.setText(QtWidgets.QApplication.translate("mainUI", "Browse", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("mainUI", "Commands:", None, -1))
+        self.pushButton_arb_exe.setText(QtWidgets.QApplication.translate("mainUI", "Execute", None, -1))
+        self.textBrowser.setHtml(QtWidgets.QApplication.translate("mainUI", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Each line is a command.  Each line must begin with a project name.</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Example:</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-style:italic;\">Create a project \'Starkist\', a spot \'SK_BPouch_shots\' with 5 shots, a character asset \'Charlie\', and add a shot to spot \'\'Chicken_shots</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starkist create project </p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starkist create spot SK_BPouch_shots 5</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starkist create asset character Charlie</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Starkist create shot Chicken_shots/sh080</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None, -1))
+        self.tabWidget_pipeman.setTabText(self.tabWidget_pipeman.indexOf(self.arborist), QtWidgets.QApplication.translate("mainUI", "Arborist", None, -1))
 

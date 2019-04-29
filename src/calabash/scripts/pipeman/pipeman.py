@@ -41,9 +41,11 @@ make multiple cache files live
 #import converted ui file.
 import pipeman_ui as ui_file
 import refEdit
+import arborist
 from calabash import fileUtils
 reload(ui_file)
 reload(refEdit)
+reload(arborist)
 reload(fileUtils)
 debug = False
 class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
@@ -87,6 +89,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.ui.pushButton_anim_makelive.clicked.connect(self.makelive_shots)
         self.ui.pushButton_anim_openlatest.clicked.connect(self.open_latest_shot)
         self.ui.pushButton_asset_openlatest.clicked.connect(self.open_latest_asset)
+        self.ui.pushButton_arb_exe.clicked.connect(self.run_arborist)
+        self.ui.pushButton_arb_projBrowse.clicked.connect(self.setarbProj)
 
         if not os.path.isfile(self.status_path):
             self.make_statusfile(self.status_path)
@@ -220,7 +224,6 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_animVersions)
                 version_item.setText(0, version)
 
-
     def pop_assetlist(self):
         asset_types = set()
         for asset in self.getAssets():
@@ -351,7 +354,6 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 print version_path
                 shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}.mb'.format(asset)))
                 self.update_status('asset', asset, latest_mtl, 'mtl')
-
 
     def makelive_shots(self):
         selected_shot = self.ui.listWidget_shots.currentItem()
@@ -678,7 +680,31 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         except:
             pass
 
+    def setarbProj(self):
+        arbproj_root = pm.windows.promptForFolder()
+        self.ui.lineEdit_arb_projPath.setText(arbproj_root)
 
+    def run_arborist(self):
+        projectDest = self.ui.lineEdit_arb_projPath.text()
+        commands = self.ui.textEdit_arb_commands.toPlainText().split('\n')
+        for line in commands:
+            projname = line.split(' ')[0]
+            projpath = os.path.join(projectDest, projname)
+            obj_type = line.split(' ')[2]
+            if obj_type == 'project':
+                arborist.createProject(projname, projectDest)
+            if obj_type == 'spot':
+                spotname = line.split(' ')[3]
+                shotcnt = int(line.split(' ')[4])
+                arborist.createSpot(projpath, spotname, shotcnt)
+            if obj_type == 'shot':
+                'starkist create shot sk_bpouch/sh051'
+                shot = line.split(' ')[3]
+                arborist.createShot(projpath, shot)
+            if obj_type == 'asset':
+                assettype = line.split(' ')[3]
+                assetname = line.split(' ')[4]
+                arborist.createAsset(projpath, assettype, assetname)
 ######## CONNECT UI ELEMENTS AND FUNCTIONS ABOVE HERE #########
 
     def deleteControl(self, control):
