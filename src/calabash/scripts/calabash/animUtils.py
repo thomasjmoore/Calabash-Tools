@@ -236,8 +236,8 @@ def ouroboros():
                     return '%03d' % (int(ver) + 1)
         else:
             return '001'
-
-    exp_basename = "{0}_cam".format(basename.replace('_anim', '').replace('_layout', ''))
+    basename = '_'.join(basename.split('_')[:-1])
+    exp_basename = "{0}_cam".format(basename)
 
     camversion_path = os.path.join(assetroot, 'cam')
     if not os.path.exists(camversion_path):

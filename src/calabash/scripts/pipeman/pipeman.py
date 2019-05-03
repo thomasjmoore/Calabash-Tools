@@ -63,7 +63,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.assets_root = os.path.join(self.scenes_root, 'assets')
         self.status_path = os.path.join(self.scenes_root, 'status.json')
         self.ui.tabWidget_pipeman.setCurrentIndex(0)
-        
+
         ######## CONNECT UI ELEMENTS AND FUNCTIONS BELOW HERE #########
 
         self.header_assets = self.ui.treeWidget_versions.header()
