@@ -284,21 +284,24 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 else:
                     version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_versions)
                     version_item.setText(0, version)
+                version_basename = '_'.join(version_item.text(0).split('.')[0].split('_')[:-1])
+                if len(version_basename) < 1:
+                    version_basename = version_item.text(0).split('.')[0].split('_')[0]
 
                 try:
-                    if stat_read['asset'][selected_asset]['default'] == version_item.text(0):
+                    if stat_read['asset'][selected_asset]['default'][version_basename] == version_item.text(0):
                         version_item.setText(1, 'Live')
                 except KeyError:
                     pass
 
                 try:
-                    if stat_read['asset'][selected_asset]['shd'] == version_item.text(0):
+                    if stat_read['asset'][selected_asset]['shd'][version_basename]  == version_item.text(0):
                         version_item.setText(1, 'Live')
                 except KeyError:
                     pass
 
                 try:
-                    if stat_read['asset'][selected_asset]['mtl'] == version_item.text(0):
+                    if stat_read['asset'][selected_asset]['mtl'][version_basename]  == version_item.text(0):
                         version_item.setText(1, 'Live')
                 except KeyError:
                     pass
