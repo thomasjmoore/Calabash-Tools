@@ -32,10 +32,14 @@ def versionUp(*args):
     #     cmds.error("Next version already exists. Action cancelled. Please save manually.")
 
     save = cmds.confirmDialog(message="Would you like to save the current file before creating new version?",
-                              title="Save file?", button=["Save", "Don't Save", "Cancel"], defaultButton="Save?",
+                              title="Save file?", button=["Save", "Don't Save", "Cancel"], defaultButton="Save",
                               cancelButton="Cancel")
     if save == "Save":
         pm.saveFile(force=True)
+        print 'increasing version!!!!!'
+    if save == "Don't Save":
+        print 'Not increasing version!!!!!!!!!!!'
+        return True
     if save =="Cancel":
         return None
 

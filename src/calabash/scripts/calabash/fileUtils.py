@@ -17,15 +17,17 @@ __all__ = [
 
 
 def get_location():
+    debug = True
     # Returns a dictionary of paths and names for asset dev
-    file_path = cmds.file(sceneName=True, q=True)
+
+    file_path = pm.system.sceneName()
     assetroot, filename = os.path.split(file_path)
     dept = ('default', assetroot)
     if os.path.split(assetroot)[1] == 'shd':
         shd_path = os.path.dirname(file_path)
         dept = ('shd', shd_path)
         assetroot, throwaway = os.path.split(shd_path)
-
+    if debug: print 'file path: {0}\nassetroot: {1}\nfilename: {2}'.format(file_path, assetroot, filename)
     publish_dir = os.path.join(assetroot, 'publish')
     dev_dir = os.path.dirname(assetroot)
     type_dir = os.path.dirname(dev_dir)
@@ -178,68 +180,84 @@ def publishCurrentFile():
 
     # If in shd scene: define mtl export params, version up, import refs with namespaces,
     # export materials, remove namespaces, export shaded rig, reload current scene to restore references
-    versionup = increaseVersion.versionUp()
-
-    if versionup:
-        result = pm.promptDialog(
-            title = 'Leave a comment',
-            message = '         What did you do?            ',
-            button = ['OK'],
-            defaultButton = 'OK',
-        )
-
-        comment = pm.promptDialog(query=True, text=True)
-
-        print 'Versioning up: ', (versionup)
-        if dept == 'shd':
-            basename = basename.replace('_shd', '')
-            shd_publish = os.path.join(deptpath, 'publish')
-            mtl_filename = '{0}_mtl.{1}.mb'.format(basename, ver)
-            print '#############'
-            print 'export mtl'
-            mtl_export_path = os.path.join(shd_publish, mtl_filename)
 
 
-            for node in sel:
-                if pm.referenceQuery(node, inr=True):
-                    refNode = pm.referenceQuery(node, rfn=True)
-                    fileRef = pm.FileReference(refnode=refNode)
-                    fileRef.importContents(removeNamespace=True)
-            pm.select(sel)
-            shading_utils.publish_mtl(mtl_export_path)
-            print '#############'
-            pm.select(sel)
-            # for node in sel:
-            #     ns, obj = node.split(':')
-            #     pm.namespace(rm=str(ns), mnr=True)
 
-            exp_ma = pm.exportSelected(os.path.join(shd_publish, filename),
-                                       constructionHistory=True,
-                                       channels=True,
-                                       constraints=True,
-                                       expressions=True,
-                                       shader=True,
-                                       preserveReferences=True,
-                                       type='mayaBinary'
-                                       )
-            print "Exported: %s" % (exp_ma)
-            revert_path = cmds.file(sceneName=True, q=True)
-            print 'Reverting: ', pm.system.openFile(revert_path, force=True)
-        else:
-            exp_ma = pm.exportSelected(os.path.join(publish_dir, filename),
-                                       constructionHistory=True,
-                                       channels=True,
-                                       constraints=True,
-                                       expressions=True,
-                                       shader=True,
-                                       preserveReferences=True,
-                                       type='mayaBinary'
-                                       )
-            print ("Exported: %s" % (exp_ma))
-            print'Versioning up: ', (versionup)
-        changelog(assetroot, filename.replace('.ma', '.mb'), comment)
+
+    result = pm.promptDialog(
+        title = 'Leave a comment',
+        message = '         What did you do?            ',
+        button = ['OK'],
+        defaultButton = 'OK',
+    )
+
+    comment = pm.promptDialog(query=True, text=True)
+
+    pm.saveFile(f=True)
+    if dept == 'shd':
+        basename = basename.replace('_shd', '')
+        shd_publish = os.path.join(deptpath, 'publish')
+        mtl_filename = '{0}_mtl.{1}.mb'.format(basename, ver)
+        print '#############'
+        print 'export mtl'
+        mtl_export_path = os.path.join(shd_publish, mtl_filename)
+
+
+        for node in sel:
+            if pm.referenceQuery(node, inr=True):
+                refNode = pm.referenceQuery(node, rfn=True)
+                fileRef = pm.FileReference(refnode=refNode)
+                fileRef.importContents(removeNamespace=True)
+        pm.select(sel)
+        shading_utils.publish_mtl(mtl_export_path)
+        print '#############'
+        pm.select(sel)
+        # for node in sel:
+        #     ns, obj = node.split(':')
+        #     pm.namespace(rm=str(ns), mnr=True)
+
+        exp_ma = pm.exportSelected(os.path.join(shd_publish, filename),
+                                   constructionHistory=True,
+                                   channels=True,
+                                   constraints=True,
+                                   expressions=True,
+                                   shader=True,
+                                   preserveReferences=True,
+                                   type='mayaBinary'
+                                   )
+        print "Exported: %s" % (exp_ma)
+        revert_path = cmds.file(sceneName=True, q=True)
+        print 'Reverting: ', pm.system.openFile(revert_path, force=True)
     else:
-        print 'Publishing Cancelled'
+
+        for asset in sel:
+            ref_nodes = set()
+            children = pm.listRelatives(asset, ad=True)
+            for child in children:
+                if pm.reference(child, isNodeReferenced=True):
+                    ref_node = pm.referenceQuery(child, rfn=True)
+                    ref_nodes.add(ref_node)
+            ref_nodes = list(ref_nodes)
+            for node in ref_nodes:
+                ref_file = pm.FileReference(refnode=node)
+                ref_file.importContents(removeNamespace=True)
+        pm.select(sel)
+        exp_ma = pm.exportSelected(os.path.join(publish_dir, filename),
+                                   constructionHistory=True,
+                                   channels=True,
+                                   constraints=True,
+                                   expressions=True,
+                                   shader=True,
+                                   preserveReferences=True,
+                                   type='mayaBinary'
+                                   )
+        print ("Exported: %s" % (exp_ma))
+        revert_path = cmds.file(sceneName=True, q=True)
+        print 'Reverting: ', pm.system.openFile(revert_path, force=True)
+
+
+    changelog(assetroot, filename.replace('.ma', '.mb'), comment)
+
     #
     # #shutil.copy2(exp_ma, os.path.join(nonvray_dir,non_ver))
     # shutil.copy2(exp_mb, os.path.join(nonvray_dir,non_ver_mb))
