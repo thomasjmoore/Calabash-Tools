@@ -17,7 +17,7 @@ __all__ = [
 
 
 def get_location():
-    debug = True
+    debug = False
     # Returns a dictionary of paths and names for asset dev
 
     file_path = pm.system.sceneName()

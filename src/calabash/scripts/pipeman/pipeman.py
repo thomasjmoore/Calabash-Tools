@@ -247,6 +247,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             asset_item.setText(0, asset)
 
     def pop_assetVersions(self):
+        debug = False
         selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
         with open(self.status_path, 'r') as statusfile_read:
             stat_read = json.load(statusfile_read)
@@ -284,10 +285,9 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 else:
                     version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_versions)
                     version_item.setText(0, version)
-                version_basename = '_'.join(version_item.text(0).split('.')[0].split('_')[:-1])
-                if len(version_basename) < 1:
-                    version_basename = version_item.text(0).split('.')[0].split('_')[0]
+                version_basename = version_item.text(0).split('.')[0]
 
+                if debug: print version_basename
                 try:
                     if stat_read['asset'][selected_asset]['default'][version_basename] == version_item.text(0):
                         version_item.setText(1, 'Live')
