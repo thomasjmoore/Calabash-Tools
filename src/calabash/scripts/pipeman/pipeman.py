@@ -206,6 +206,9 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         self.ui.treeWidget_animVersions.addTopLevelItems(type_items)
 
+        for item in type_items:
+            item.setExpanded(True)
+
 
         for version in self.getVersions_shot(self.getShots()[spot][shot]):
             basename, ver, ext = version.split('.')
@@ -236,6 +239,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             type_item = QtWidgets.QTreeWidgetItem()
             type_item.setText(0, itemtype)
             self.ui.treeWidget_assets.addTopLevelItem(type_item)
+            type_item.setExpanded(True)
         for asset in self.getAssets():
             asset_type = self.getAssets()[asset]['type']
             asset_type_item = self.ui.treeWidget_assets.findItems(asset_type, 0)[0]
@@ -262,6 +266,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         type_items.append(topItem_mtl)
 
         self.ui.treeWidget_versions.addTopLevelItems(type_items)
+        for item in type_items:
+            item.setExpanded(True)
         try:
             for version in self.getVersions_asset(self.getAssets()[selected_asset]['path']):
                 if debug: print 'version:', version
@@ -569,7 +575,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                     pass
 
     def open_latest_asset(self):
-
+        latest_shd = None
         selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
         assettype = self.getAssets()[selected_asset]['type']
         # def getType():
