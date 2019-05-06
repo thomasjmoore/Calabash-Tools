@@ -39,7 +39,6 @@ def versionUp(*args):
         print 'increasing version!!!!!'
     if save == "Don't Save":
         print 'Not increasing version!!!!!!!!!!!'
-        return True
     if save =="Cancel":
         return None
 
