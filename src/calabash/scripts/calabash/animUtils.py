@@ -1,4 +1,5 @@
 import pymel.core as pm
+import maya.cmds as cmds
 import pymel.mayautils as pu
 import os
 import re
@@ -243,10 +244,16 @@ def ouroboros():
     if not os.path.exists(camversion_path):
         os.mkdir(camversion_path)
     camversion = getLatest(camversion_path, exp_basename)
+    abc_vname = '{0}.{1}.abc'.format(exp_basename, camversion)
     exp_vname = '{0}.{1}.mb'.format(exp_basename, camversion)
+    abc_refname = '{0}.abc'.format(exp_basename)
     exp_refname = '{0}.mb'.format(exp_basename)
+    abc_vpath = os.path.join(assetroot, 'cam', abc_vname)
     cam_vpath = os.path.join(assetroot, 'cam', exp_vname)
+    abc_refpath = os.path.join(dev_dir, abc_refname)
     cam_refpath = os.path.join(dev_dir, exp_refname)
+    f_start = int(pm.playbackOptions(min=True, q=True))
+    f_end = int(pm.playbackOptions(max=True, q=True))
 
     print 'camversion_path:', camversion_path
     print 'camversion:', camversion
@@ -255,6 +262,12 @@ def ouroboros():
     print 'cam_vpath', cam_vpath
     print 'cam_refpath:', cam_refpath
     sel = pm.ls(sl=True)
+    command = '-fr {0} {1} ' \
+            '-worldspace ' \
+            '-file {2}'.format(f_start, f_end, abc_vpath)
+    print command
+    cmds.AbcExport(j=command)
+    shutil.copy2(abc_vpath, abc_refpath)
     for node in sel:
         if pm.referenceQuery(node, isNodeReferenced=True):
             print "This is a ref'd node, I'll import it without namespaces, export a version to anim/cams, and then export to shot root"

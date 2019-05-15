@@ -36,9 +36,6 @@ def versionUp(*args):
                               cancelButton="Cancel")
     if save == "Save":
         pm.saveFile(force=True)
-        print 'increasing version!!!!!'
-    if save == "Don't Save":
-        print 'Not increasing version!!!!!!!!!!!'
     if save =="Cancel":
         return None
 

@@ -11,17 +11,19 @@ def edit(animpath):
 
             line = rawline.split()[-1]
             line = re.sub('[";]+', '', line)
-            basename, filename = os.path.split(line)
+            filepath, filename = os.path.split(line)
 
-            basename = basename.split('/scenes/')[-1]
-
-            renderablepath = os.path.normpath(os.path.join('scenes', basename, 'renderable', filename))
-            renderablepath = renderablepath.replace('\\', '/')
+            basename = filepath.split('/scenes/')[-1]
 
 
-            newline = rawline.replace(line, renderablepath)
-            print(newline)
-            repathed.append(newline)
+            if os.path.exists(os.path.join(filepath, 'renderable', filename)):
+                renderablepath = os.path.normpath(os.path.join('scenes', basename, 'renderable', filename))
+                renderablepath = renderablepath.replace('\\', '/')
+                newline = rawline.replace(line, renderablepath)
+                print(newline)
+                repathed.append(newline)
+            else:
+                print(rawline)
         elif '//scenes' in rawline:
 
             line = rawline.split()[-1]
