@@ -166,16 +166,16 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         versions = []
         anim_publishpath = os.path.join(shot_path, 'anim', 'publish')
         cache_path = os.path.join(anim_publishpath, 'cache')
-        try:
-            for version in os.listdir(anim_publishpath):
-                if os.path.isfile(os.path.join(anim_publishpath, version)):
+        # try:
+        for version in os.listdir(anim_publishpath):
+            if os.path.isfile(os.path.join(anim_publishpath, version)):
+                versions.append(version)
+        if os.path.isdir(cache_path):
+            for version in os.listdir(cache_path):
+                if os.path.isfile(os.path.join(cache_path, version)):
                     versions.append(version)
-            if os.path.isdir(cache_path):
-                for version in os.listdir(cache_path):
-                    if os.path.isfile(os.path.join(cache_path, version)):
-                        versions.append(version)
-        except:
-            pass
+        # except:
+        #     pass
         return versions
 
     def pop_shotlist(self):
@@ -190,6 +190,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         selected_shot = self.ui.listWidget_shots.currentItem().text()
         spot = '_'.join(selected_shot.split('_')[:-1])
         shot = selected_shot.split('_')[-1]
+        print spot
+        print shot
 
         with open(self.status_path, 'r') as statusfile_read:
             stat_read = json.load(statusfile_read)
@@ -209,10 +211,10 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         for item in type_items:
             item.setExpanded(True)
 
-
         for version in self.getVersions_shot(self.getShots()[spot][shot]):
             basename, ver, ext = version.split('.')
-            shotname = '_'.join(basename.split('_')[:-1])
+            shotname = '_'.join(basename.split('_')[:2])
+
             if '.abc' in version.lower():
                 version_item = QtWidgets.QTreeWidgetItem(topItem_cache)
                 version_item.setText(0, version)
