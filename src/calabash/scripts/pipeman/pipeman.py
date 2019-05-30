@@ -63,6 +63,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.assets_root = os.path.join(self.scenes_root, 'assets')
         self.status_path = os.path.join(self.scenes_root, 'status.json')
         self.ui.tabWidget_pipeman.setCurrentIndex(0)
+        self.ui.lineEdit_arb_projPath.setText("Z:/raid/3Dprojects/maya/projects")
 
         ######## CONNECT UI ELEMENTS AND FUNCTIONS BELOW HERE #########
 
@@ -696,9 +697,10 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     def setarbProj(self):
         arbproj_root = pm.windows.promptForFolder()
         self.ui.lineEdit_arb_projPath.setText(arbproj_root)
-
+        self.ui.lineEdit_arb_projPath.setText("Z:/raid/3Dprojects/maya/projects")
     def run_arborist(self):
         projectDest = self.ui.lineEdit_arb_projPath.text()
+        #print 'projectDest: {0}'.format(projectDest)
         commands = self.ui.textEdit_arb_commands.toPlainText().split('\n')
         for line in commands:
             projname = line.split(' ')[0]
@@ -733,7 +735,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         # delete existing controls
         self.deleteControl(workspaceControlName)
         # show as floating window initially, last position and float state is retained between execution
-        self.show(dockable=True, floating=True)
+        #self.show(dockable=True, floating=True)
+        self.show(dockable=True)
         # not sure what e argument means
         pm.workspaceControl(workspaceControlName, e=True, ih=150)
 

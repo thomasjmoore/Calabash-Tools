@@ -14,10 +14,10 @@ __all__ = [
     'rename_hatch_rigs',
     #'publish_vray_rig'
 ]
-
+debug = True
 
 def get_location():
-    debug = False
+
     # Returns a dictionary of paths and names for asset dev
 
     file_path = pm.system.sceneName()
@@ -46,6 +46,7 @@ def ismultipart(path, basename):
                     return True
 
 def getLatest(path, basename, **kwargs):
+    if debug: print "path: {0}, basename: {1} kwargs: {2}".format(path, basename, kwargs)
     filename = False
     integer = False
     stage = ''
@@ -68,29 +69,32 @@ def getLatest(path, basename, **kwargs):
     versions_name = []
     multiversions = {}
     if os.path.exists(path):
+        if debug: print "listdir: {0}".format(os.listdir(path))
         if os.listdir(path):
             for n in os.listdir(path):
-                if basename in n:
+                if not 'Smedge' in n:
+                    if basename in n:
 
-                    try:
-                        basename_full, ver, ext = n.split('.')
+                        try:
+                            basename_full, ver, ext = n.split('.')
+                            if debug: print "basename_full: {0} ver: {1} ext: {2}".format(basename_full, ver, ext)
+                            if stage:
 
-                        if stage:
-
-                            if stage in basename_full:
+                                if stage in basename_full:
+                                    versions_name.append(n)
+                                    versions_num.append(ver)
+                                    if '-' in basename_full:
+                                        if basename_full in multiversions:
+                                            multiversions[basename_full].append(n)
+                                        else:
+                                            multiversions[basename_full] = [n]
+                            else:
                                 versions_name.append(n)
                                 versions_num.append(ver)
-                                if '-' in basename_full:
-                                    if basename_full in multiversions:
-                                        multiversions[basename_full].append(n)
-                                    else:
-                                        multiversions[basename_full] = [n]
-                        else:
-                            versions_name.append(n)
-                            versions_num.append(ver)
-                    except:
-                        pass
-
+                        except:
+                            pass
+    if debug: print "versions_num: {0}".format(versions_num)
+    if debug: print "versions_name: {0}".format(versions_name)
     if len(versions_name) > 0:
         if filename:
             if parts:
@@ -115,6 +119,7 @@ def getLatest(path, basename, **kwargs):
         elif integer:
             return 1
         else:
+            if debug: print '001'
             return '001'
 
 def changelog(assetroot, version, comment):

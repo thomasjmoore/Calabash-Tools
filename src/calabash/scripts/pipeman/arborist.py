@@ -3,7 +3,11 @@
 
  #  Arborist builds customized project directory and asset directory hierarchy trees
 
-
+"""
+feature:
+creates projectInfo file
+editproj addexisting spot spotname
+"""
 from collections import defaultdict
 import os
 import os.path
@@ -123,6 +127,8 @@ def createSpot(projpath, spotname, shotcount):
             shotname = 'sh{0}0'.format(('%02d' % shot))
             animpath = os.path.join(spotpath, shotname, 'anim', 'publish')
             renderpath = os.path.join(spotpath, shotname, 'render')
+            print animpath
+            print renderpath
             os.makedirs(animpath)
             os.makedirs(renderpath)
 
@@ -132,16 +138,19 @@ def createSpot(projpath, spotname, shotcount):
 def createShot(projpath, shotname):
     shotpath = os.path.join(projpath, 'scenes', shotname)
     if not os.path.exists(shotpath):
+        print shotpath
         os.makedirs(shotpath)
     else:
         print 'Shot: {0}, already exists! \n {1}'.format(shotname, shotpath)
 
 def createAsset(projpath, type, assetname):
+    #print 'projpath: {0}'.format(projpath)
     assetpath = os.path.join(projpath, 'scenes', 'assets', type, 'dev', assetname)
     if not os.path.exists(assetpath):
         assetdirs = ['publish', 'shd/publish']
         for dir in assetdirs:
             dirpath = os.path.join(assetpath, dir)
+            print dirpath
             os.makedirs(dirpath)
     else:
         print 'Asset: {0}, already exists! \n {1}'.format(assetname, assetpath)

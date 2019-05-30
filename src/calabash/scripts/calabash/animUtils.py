@@ -262,9 +262,12 @@ def ouroboros():
     print 'cam_vpath', cam_vpath
     print 'cam_refpath:', cam_refpath
     sel = pm.ls(sl=True)
+    cameras = pm.listRelatives(sel, ad=True, type='camera')
+    camera_trans = pm.listRelatives(cameras[0], p=True)[0]
     command = '-fr {0} {1} ' \
-            '-worldspace ' \
-            '-file {2}'.format(f_start, f_end, abc_vpath)
+              '-worldspace ' \
+              '-rt {3} ' \
+              '-file {2}'.format(f_start, f_end, abc_vpath, camera_trans)
     print command
     cmds.AbcExport(j=command)
     shutil.copy2(abc_vpath, abc_refpath)
