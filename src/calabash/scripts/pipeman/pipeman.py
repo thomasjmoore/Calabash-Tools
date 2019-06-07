@@ -1,4 +1,5 @@
 import pymel.core as pm
+import maya.mel as mel
 from PySide2 import QtCore, QtUiTools, QtWidgets
 from PySide2.QtGui import *
 from shiboken2 import wrapInstance
@@ -8,6 +9,9 @@ import os
 import json
 import shutil
 import re
+from collections import defaultdict
+
+
 
 #Convert Ui file from Designer to a python module
 # run this in script editor
@@ -15,7 +19,8 @@ import re
 import sys, pprint, os
 from pyside2uic import compileUi
 Ui_File = 'ui_file' #No Extension
-scripts_path = "Path To Ui file"
+userpath = os.path.expanduser('~')
+scripts_path = "{0}/maya/modules/calabash/scripts/pipeman".format(userpath)
 pyfile = open("{0}.py".format(os.path.join(scripts_path, Ui_File)), 'w')
 compileUi("{0}.ui".format(os.path.join(scripts_path, Ui_File)), pyfile, False, 4,False)
 pyfile.close()
@@ -57,13 +62,34 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.ui = ui_file.Ui_mainUI()
         self.ui.setupUi(self)
 
-        self.proj_path = pm.system.Workspace.getPath()
+        self.proj_path = pm.workspace.getPath()
+        self.proj_root = os.path.dirname(self.proj_path)
+        self.ui.lineEdit_arb_projPath.setText(self.proj_path)
+        self.comproot = ''
         self.scenes_root = os.path.join(self.proj_path, 'scenes')
+        self.images_root = os.path.join(self.proj_path, 'images')
         self.spots = self.getSpots()
         self.assets_root = os.path.join(self.scenes_root, 'assets')
         self.status_path = os.path.join(self.scenes_root, 'status.json')
-        self.ui.tabWidget_pipeman.setCurrentIndex(0)
-        self.ui.lineEdit_arb_projPath.setText("Z:/raid/3Dprojects/maya/projects")
+
+        #self.setProject()
+        self.apivers = pm.about(api=True)
+        self.mayaDir = str(self.apivers)[:4]
+        self.pmprefs = os.path.expanduser('~/maya/{0}/prefs/pipeman'.format(self.mayaDir))
+        self.userstate = os.path.join(self.pmprefs, 'userstate.json')
+        self.popmayaproj()
+        self.gondo_popshots()
+
+        if not os.path.isfile(self.status_path):
+            self.make_statusfile(self.status_path)
+        if os.path.isfile(self.userstate):
+            self.restorestate()
+        else:
+            self.make_userstate(self.userstate)
+        #self.make_userstate(self.userstate)
+
+        #self.ui.tabWidget_pipeman.setCurrentIndex(0)
+        #self.ui.lineEdit_arb_projPath.setText("Z:/raid/3Dprojects/maya/projects")
 
         ######## CONNECT UI ELEMENTS AND FUNCTIONS BELOW HERE #########
 
@@ -77,8 +103,9 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.header_anim.setStretchLastSection(False)
         self.header_anim.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
 
-        self.pop_assetlist()
-        self.pop_shotlist()
+        if os.path.exists(self.assets_root):
+            self.pop_assetlist()
+            self.pop_shotlist()
         self.ui.treeWidget_assets.itemClicked.connect(self.pop_assetVersions)
         self.ui.treeWidget_versions.itemClicked.connect(self.showcomment_asset)
         self.ui.listWidget_shots.itemClicked.connect(self.pop_shotVersions)
@@ -89,26 +116,406 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.popMenu_assetlive.addAction(QtWidgets.QAction('Make all latest Live', self))
         self.popMenu_assetlive.triggered.connect(self.makelive_assets_all)
 
+        self.ui.comboBox_mayaproject.customContextMenuRequested.connect(self.on_context_maya)
+        self.popMenu_maya = QtWidgets.QMenu(self)
+        self.popMenu_maya.addAction(QtWidgets.QAction('Set Maya projects location', self))
+        self.popMenu_maya.triggered.connect(self.set_mayaroot)
+
+        self.ui.comboBox_gondo_compproject.customContextMenuRequested.connect(self.on_context_comp)
+        self.popMenu_gcomp = QtWidgets.QMenu(self)
+        self.popMenu_gcomp.addAction(QtWidgets.QAction('Set Comp projects location', self))
+        self.popMenu_gcomp.triggered.connect(self.set_comproot)
+
         self.ui.pushButton_anim_makelive.clicked.connect(self.makelive_shots)
         self.ui.pushButton_anim_openlatest.clicked.connect(self.open_latest_shot)
         self.ui.pushButton_asset_openlatest.clicked.connect(self.open_latest_asset)
         self.ui.pushButton_arb_exe.clicked.connect(self.run_arborist)
         self.ui.pushButton_arb_projBrowse.clicked.connect(self.setarbProj)
 
-        if not os.path.isfile(self.status_path):
-            self.make_statusfile(self.status_path)
+        self.ui.pushButton_gondo_copy.clicked.connect(self.gcopy)
+        self.ui.pushButton_gondo_setlinks.clicked.connect(self.open_linksUI)
+
+        self.ui.comboBox_mayaproject.currentIndexChanged.connect(self.mayaproj_changed)
+        self.ui.comboBox_gondo_compproject.currentIndexChanged.connect(self.savestate)
+
+        self.ui.listWidget_gondo_shots.currentItemChanged.connect(self.gondo_poplayers)
+        self.ui.listWidget_gondo_layers.itemClicked.connect(self.gondo_popversions)
+
+        self.ui.treeWidget_gondo_versions.customContextMenuRequested.connect(self.on_context_gversions)
+        self.popMenu_gversions = QtWidgets.QMenu(self)
+        self.addToCopy = QtWidgets.QAction('Add to Copy List', self)
+        self.addToCopy.triggered.connect(self.addversion_selected)
+        self.copyMissing = QtWidgets.QAction('Show missing frames', self)
+        self.copyMissing.triggered.connect(self.showMissingframes)
+        self.popMenu_gversions.addAction(self.addToCopy)
+        self.popMenu_gversions.addAction(self.copyMissing)
+
+        self.ui.listWidget_gondo_copylist.customContextMenuRequested.connect(self.on_context_copylist)
+        self.popMenu_copylist = QtWidgets.QMenu(self)
+        self.popMenu_copylist.addAction(QtWidgets.QAction('Remove', self))
+        self.popMenu_copylist.triggered.connect(self.removeCommand)
+
+        self.ui.listWidget_gondo_layers.customContextMenuRequested.connect(self.on_context_glayers)
+        self.popMenu_glayers = QtWidgets.QMenu(self)
+        self.popMenu_glayers.addAction(QtWidgets.QAction('Add latest to Copy List', self))
+        self.popMenu_glayers.triggered.connect(self.addversion_latest)
+
+        self.ui.tabWidget_pipeman.currentChanged.connect(self.savestate)
+        self.ui.lineEdit_arb_projPath.textChanged.connect(self.savestate)
+
+    def mayaproj_changed(self):
+        self.setProject()
+        self.pop_shotlist()
+        self.pop_assetlist()
+        self.gondo_popshots()
+        self.savestate()
+        self.restorestate()
+
+    def open_linksUI(self):
+        import gondo_link as glink
+        reload(glink)
+        with open(self.userstate, 'r') as f:
+            userstate = json.load(f)
+        shots = []
+        shotdict = self.getShots()
+        for spot in shotdict:
+            for shot in shotdict[spot]:
+                shotname = spot + '/' + shot
+                shots.append(shotname)
+        comp_proj = self.ui.comboBox_gondo_compproject.currentText()
+        comp_root = userstate["gondo_comproot"]
+        glink_gui = glink.myGui(sorted(shots), comp_root, comp_proj, self.status_path)
+        glink_gui.run()
+
+    def setProject(self):
+        curProj_index = self.ui.comboBox_mayaproject.currentIndex()
+        curProj_text = self.ui.comboBox_mayaproject.itemText(curProj_index)
+        if debug: print "curProj_index:", curProj_index
+        if curProj_text:
+            targetProj = os.path.join(self.proj_root, curProj_text).replace('\\','/')
+            print 'Setting Project to: {0}'.format(targetProj)
+            mel.eval('setProject \"' + targetProj + '\"')
+            self.proj_path = pm.workspace.getPath()
+            self.proj_root = os.path.dirname(self.proj_path)
+            self.ui.lineEdit_arb_projPath.setText(self.proj_path)
+            self.scenes_root = os.path.join(self.proj_path, 'scenes')
+            self.images_root = os.path.join(self.proj_path, 'images')
+            self.spots = self.getSpots()
+            self.assets_root = os.path.join(self.scenes_root, 'assets')
+            self.status_path = os.path.join(self.scenes_root, 'status.json')
+        else:
+            print 'Select A Project'
+
+    def set_mayaroot(self):
+        mayaroot = pm.windows.promptForFolder()
+        self.proj_root = mayaroot
+        print self.proj_root
+        self.savestate()
+        self.popmayaproj()
+
+    def set_comproot(self):
+        comproot = pm.windows.promptForFolder()
+        print comproot
+        self.comproot = comproot
+        self.savestate()
+        self.gondo_popcompproj()
+
+    def make_userstate(self, userstate):
+        if not os.path.exists(self.pmprefs):
+            os.makedirs(self.pmprefs)
+        with open(userstate, 'w') as f:
+            defaults = {
+                'tabIndex':0,
+                'arb_projPath':'',
+                'gondo_current_mpindex':-1,
+                'gondo_current_mptext':'',
+                'gondo_comproot':'',
+                'gondo_current_cpindex':-1,
+                'gondo_current_cptext':'',
+                'arb_projPath':''
+            }
+            json.dump(defaults, f, indent=4)
+
+    def savestate(self):
+        if debug: print 'Saving State'
+        tabIndex = self.ui.tabWidget_pipeman.currentIndex()
+        arb_projPath = self.ui.lineEdit_arb_projPath.text()
+        gondo_current_mpindex = self.ui.comboBox_mayaproject.currentIndex()
+        gondo_current_mptext = self.ui.comboBox_mayaproject.itemText(gondo_current_mpindex)
+        gondo_current_cpindex = self.ui.comboBox_gondo_compproject.currentIndex()
+        gondo_current_cptext = self.ui.comboBox_gondo_compproject.itemText(gondo_current_cpindex)
+
+        with open(self.userstate, 'r') as f:
+            userstate = json.load(f)
+        userstate['tabIndex'] = tabIndex
+        userstate['arb_projPath'] = arb_projPath
+        userstate['gondo_current_mpindex'] = gondo_current_mpindex
+        userstate['gondo_current_mptext'] = gondo_current_mptext
+        userstate['gondo_comproot'] = self.comproot
+        userstate['gondo_current_cpindex'] = gondo_current_cpindex
+        userstate['gondo_current_cptext'] = gondo_current_cptext
+        userstate['arb_projPath'] = self.ui.lineEdit_arb_projPath.text()
+        with open(self.userstate, 'w') as f:
+            json.dump(userstate, f, indent=4)
+
+    def restorestate(self):
+        if debug: print 'Restoring State'
+        with open(self.userstate, 'r') as f:
+            userstate = json.load(f)
+            self.ui.tabWidget_pipeman.setCurrentIndex(userstate['tabIndex'])
+            self.ui.lineEdit_arb_projPath.setText(userstate['arb_projPath'])
+            current_gmpText = self.ui.comboBox_mayaproject.itemText(userstate['gondo_current_mpindex'])
+            if current_gmpText == userstate['gondo_current_mptext']:
+                self.ui.comboBox_mayaproject.setCurrentIndex(userstate['gondo_current_mpindex'])
+            else:
+                print 'Saved project does not match current index, setting to None'
+            self.comproot = userstate['gondo_comproot']
+            self.gondo_popcompproj()
+            current_cmpText = self.ui.comboBox_gondo_compproject.itemText(userstate['gondo_current_cpindex'])
+            comp_loopstate = True
+
+            for index in range(self.ui.comboBox_gondo_compproject.count()):
+                if current_gmpText.lower() == self.ui.comboBox_gondo_compproject.itemText(index).lower():
+                    self.ui.comboBox_gondo_compproject.setCurrentIndex(index)
+                    comp_loopstate = False
+                    break
+            if comp_loopstate:
+                if current_cmpText == userstate['gondo_current_cptext']:
+                    self.ui.comboBox_gondo_compproject.setCurrentIndex(userstate['gondo_current_cpindex'])
+                else:
+                    print 'Current_cmpText: {0}, userstate: {1}'.format(current_cmpText,
+                                                                        userstate['gondo_current_cptext'])
+                    print 'Saved project does not match current index, setting to None'
+
+    def popmayaproj(self):
+        self.ui.comboBox_mayaproject.clear()
+        projects = []
+        for project in os.listdir(self.proj_root):
+            if not re.match('\.', project):
+                projects.append(project)
+        self.ui.comboBox_mayaproject.addItem('')
+        self.ui.comboBox_mayaproject.addItems(sorted(projects))
+
+    def getCompprojects(self):
+        if self.comproot:
+            compprojects = []
+            for project in os.listdir(self.comproot):
+                if not re.match('\.', project):
+                    compprojects.append(project)
+            return compprojects
+        else:
+            return []
+
+    def gondo_popcompproj(self):
+        if debug: print 'Populating comp project list with root:', self.comproot
+        self.ui.comboBox_gondo_compproject.addItem('')
+        self.ui.comboBox_gondo_compproject.addItems(sorted(self.getCompprojects()))
+
+    def getRenDirs(self):
+        debug = False
+        imageDict = defaultdict(lambda: defaultdict(lambda: defaultdict(str)))
+        shotlist = []
+        for dir in os.listdir(self.images_root):
+            dirpath = os.path.join(self.images_root, dir)
+            if self.isSpot(dirpath):
+                for subdir in os.listdir(dirpath):
+                    if re.match('sh[0-9]+', subdir):
+                        subdirpath = os.path.join(dirpath, subdir)
+                        if os.path.isdir(subdirpath):
+                           shotlist.append((dir + '/' + subdir, subdirpath))
+            elif re.match('sh[0-9]+', dir):
+                if os.path.isdir(dirpath):
+                    shotlist.append((dir, dirpath))
+            else:
+                pass
+        for shot, shotdir in shotlist:
+            for versiondir in os.listdir(shotdir):
+                versionpath = os.path.join(shotdir, versiondir)
+                verNum = versiondir.split('.')[-1]
+                if os.path.isdir(versionpath):
+                    for layer in os.listdir(versionpath):
+                        layerpath = os.path.join(versionpath, layer)
+                        imageDict[shot][layer][verNum] = layerpath
+        if debug: print(json.dumps(imageDict, indent=4))
+        return imageDict
+
+    def gondo_popshots(self):
+        debug = False
+        if debug: print 'Populating images shot list for project:', self.proj_path
+        self.ui.listWidget_gondo_shots.clear()
+        gshots = self.getRenDirs().keys()
+        if debug: print gshots
+        for shot in gshots:
+            shot_item = QtWidgets.QListWidgetItem(self.ui.listWidget_gondo_shots)
+            shot_item.setText(shot)
+
+    def gondo_poplayers(self):
+        debug = False
+        self.ui.listWidget_gondo_layers.clear()
+        sel_shot = self.ui.listWidget_gondo_shots.currentItem().text()
+        glayers = self.getRenDirs()[sel_shot]
+        if debug: print sel_shot
+        if debug: print json.dumps(glayers, indent=4)
+
+        for layer in glayers.keys():
+            layer_item = QtWidgets.QListWidgetItem(self.ui.listWidget_gondo_layers)
+            layer_item.setText(layer)
+
+    def gondo_popversions(self):
+        debug = True
+        self.ui.treeWidget_gondo_versions.clear()
+        selected_shot = self.ui.listWidget_gondo_shots.currentItem().text()
+        selected_layers = self.ui.listWidget_gondo_layers.selectedItems()
+        if len(selected_layers) == 1:
+            layer = selected_layers[0].text()
+            for vers in self.getRenDirs()[selected_shot][layer]:
+                vers_path = self.getRenDirs()[selected_shot][layer][vers]
+                vers_item = QtWidgets.QTreeWidgetItem()
+                vers_item.setText(0, vers)
+                vers_item.setText(1, self.seqRange(vers_path))
+                if self.listMissingframes(vers_path):
+                    vers_item.setForeground(1, QBrush(QColor("red")))
+                self.ui.treeWidget_gondo_versions.addTopLevelItem(vers_item)
+            self.ui.treeWidget_gondo_versions.setSortingEnabled(True)
+            #elf.ui.treeWidget_gondo_versions.sortItems(0)
+
+    def seqRange(self, path):
+        seq = os.listdir(path)
+        seq_start = sorted(seq)[0].split('.')[-2]
+        seq_end = sorted(seq)[-1].split('.')[-2]
+        return('{0}-{1}'.format(seq_start, seq_end))
+
+    def missingFrames(self, path):
+        seq = os.listdir(path)
+        seq_len = len(seq)
+        seq_start = int(sorted(seq)[0].split('.')[-2])
+        seq_end = int(sorted(seq)[-1].split('.')[-2])
+        if seq_end - seq_start == seq_len -1:
+            return False
+        else:
+            return True
+
+    def showMissingframes(self):
+        selected_version = self.ui.treeWidget_gondo_versions.currentItem().text(0)
+        selected_shot = self.ui.listWidget_gondo_shots.currentItem().text()
+        selected_layer = self.ui.listWidget_gondo_layers.currentItem().text()
+        src = self.getRenDirs()[selected_shot][selected_layer][selected_version]
+        result = pm.promptDialog(
+            title='Missing frames',
+            message='Sequence: {0}_{1}_{2}'.format(selected_shot, selected_layer, selected_version),
+            text=self.listMissingframes(src),
+        )
+
+        if result:
+            pass
+
+    def listMissingframes(self, path):
+        seq = [x.split('.')[-2] for x in os.listdir(path)]
+        int_seq = [int(x) for x in seq]
+        full_int_seq = [x for x in range(int_seq[0], int_seq[-1] + 1)]
+        int_seq = set(int_seq)
+        str_seq = [str(x) for x in list(int_seq ^ set(full_int_seq))]
+        return ','.join(str_seq)
+
+    def getDest(self, shot, layer):
+        with open(self.status_path, 'r') as r:
+            status = json.load(r)
+        shotroot = status['complinks'][shot]
+        return os.path.join(shotroot, layer)
+
+    def addversion_selected(self):
+        debug = True
+        selected_version = self.ui.treeWidget_gondo_versions.currentItem().text(0)
+        selected_shot = self.ui.listWidget_gondo_shots.currentItem().text()
+        selected_layer = self.ui.listWidget_gondo_layers.currentItem().text()
+        src = self.getRenDirs()[selected_shot][selected_layer][selected_version]
+        dest = self.getDest(selected_shot, selected_layer)
+        self.addCommand(src, dest)
+
+    def addversion_latest(self):
+        selected_shot = self.ui.listWidget_gondo_shots.currentItem().text()
+        selected_layers = self.ui.listWidget_gondo_layers.selectedItems()
+
+
+        for item in selected_layers:
+            layer = item.text()
+            dest = self.getDest(selected_shot, layer)
+            latest_ver = sorted(self.getRenDirs()[selected_shot][layer].keys())[-1]
+            src = self.getRenDirs()[selected_shot][layer][latest_ver]
+            self.addCommand(src, dest)
+
+    def addCommand(self, src, dest):
+        command = '{0} >>> {1})'.format(src, dest)
+        copy_item = QtWidgets.QListWidgetItem(self.ui.listWidget_gondo_copylist)
+        copy_item.setFlags(copy_item.flags() | QtCore.Qt.ItemIsEditable)
+        copy_item.setText(command)
+
+    def removeCommand(self):
+        selected_commands = self.ui.listWidget_gondo_copylist.selectedItems()
+        for item in selected_commands:
+            row = self.ui.listWidget_gondo_copylist.row(item)
+            self.ui.listWidget_gondo_copylist.takeItem(row)
+
+    def gcopy(self):
+        def progress(copied, filecnt):
+            percentage = int(float(copied) / float(filecnt) * 100)
+
+            return percentage
+
+        def copydone(fsrc, fdst, copied):
+            print 'Done!'
+            print 'Copied {0} files from: \n Source: {1} \n Destination: {2}'.format(copied, fsrc, fdst)
+
+        def copyseq(src, dst):
+            if not os.path.exists(dst):
+                os.makedirs(dst)
+            filecnt = len(os.listdir(src))
+            prog_cnt = 0
+            for n, file in enumerate(os.listdir(src)):
+                prog_cnt += 1
+                filepath = os.path.join(src, file)
+                shutil.copy2(filepath, dst)
+                percentage = progress(n, filecnt)
+                if prog_cnt == 5:
+                    print 'Progress = {0}%'.format(percentage)
+                    prog_cnt = 0
+            copydone(src, dst, filecnt)
+        copylist_cnt = self.ui.listWidget_gondo_copylist.count()
+        commandlist = []
+        for n in range(copylist_cnt):
+            command = self.ui.listWidget_gondo_copylist.item(n).text()
+            commandlist.append(command)
+        for command in commandlist:
+            src, dst = command.split(' >>> ')
+            copyseq(src, dst)
+
+    def on_context_maya(self, point):
+        self.popMenu_maya.exec_(self.ui.comboBox_mayaproject.mapToGlobal(point))
+
+    def on_context_comp(self, point):
+        self.popMenu_gcomp.exec_(self.ui.comboBox_gondo_compproject.mapToGlobal(point))
 
     def on_context_menu(self, point):
         self.popMenu_assetlive.exec_(self.ui.pushButton_makelive.mapToGlobal(point))
 
+    def on_context_gversions(self, point):
+        self.popMenu_gversions.exec_(self.ui.treeWidget_gondo_versions.mapToGlobal(point))
+
+    def on_context_glayers(self, point):
+        self.popMenu_glayers.exec_(self.ui.listWidget_gondo_layers.mapToGlobal(point))
+
+    def on_context_copylist(self, point):
+        self.popMenu_copylist.exec_(self.ui.listWidget_gondo_copylist.mapToGlobal(point))
+
     def getSpots(self):
         spots = []
         for dir in os.listdir(self.scenes_root):
-            if 'shots' in dir:
-                spotname = dir.replace('_shots', '')
-                spotpath = os.path.join(self.scenes_root, dir)
-                spots.append((spotname, spotpath))
-        if debug: print 'spots: ', spots
+            dir_path = os.path.join(self.scenes_root, dir)
+            if not re.match('\.', dir) and os.path.isdir(dir_path):
+
+                if self.isSpot(dir_path):
+                    spots.append(dir)
+                if debug: print 'spots: ', spots
         return spots
 
     def getAssets(self):
@@ -116,15 +523,23 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         if debug: print 'assets_root:', self.assets_root
         assets = {}
-        for asset_type in os.listdir(self.assets_root):
-            asset_type_path = os.path.join(self.assets_root, asset_type)
+        try:
+            for asset_type in os.listdir(self.assets_root):
+                asset_type_path = os.path.join(self.assets_root, asset_type)
 
-            if os.path.isdir(asset_type_path):
-                if debug: print asset_type, os.path.isdir(asset_type_path)
-                for assetname in os.listdir(os.path.join(asset_type_path, 'dev')):
-                    asset_path = os.path.join(asset_type_path, 'dev', assetname)
-                    if os.path.isdir(asset_path):
-                        assets[assetname] = {'path':os.path.normpath(asset_path),"type":asset_type}
+                if os.path.isdir(asset_type_path):
+                    if debug: print asset_type, os.path.isdir(asset_type_path)
+                    try:
+                        for assetname in os.listdir(os.path.join(asset_type_path, 'dev')):
+                            asset_path = os.path.join(asset_type_path, 'dev', assetname)
+                            if os.path.isdir(asset_path):
+                                assets[assetname] = {'path':os.path.normpath(asset_path),"type":asset_type}
+                    except WindowsError as e:
+                        print 'No Dev Folder found!'
+                        print e
+        except WindowsError as e:
+            pass
+
         if debug: print 'assets:', assets
         return assets
 
@@ -150,17 +565,32 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             pass
         return versions
 
-    def getShots(self):
-        shots = {}
+    def isSpot(self, dir):
 
-        for spotname, spotpath in self.spots:
-            shots[spotname] = {}
-            if debug: print 'spotpath:', spotpath
-            for shot in os.listdir(spotpath):
-                if re.match('sh[0-9]+', shot):
-                    shotpath = os.path.join(spotpath, shot)
+        if filter(lambda x: re.match('sh[0-9]+', x), os.listdir(dir)):
+            return True
+        else:
+            return False
+
+    def getShots(self):
+        shots = defaultdict(lambda: defaultdict(str))
+
+        for dir in os.listdir(self.scenes_root):
+            dir_path = os.path.join(self.scenes_root, dir)
+            if not re.match('\.', dir) and os.path.isdir(dir_path):
+                if self.isSpot(dir_path):
+                    spotpath = dir_path
+                    for subdir in os.listdir(dir_path):
+                        if re.match('sh[0-9]+', subdir):
+                            shotpath = os.path.join(spotpath, subdir)
+                            if os.path.isdir(shotpath):
+                                shots[dir][subdir] = shotpath
+                elif re.match('sh[0-9]+', dir):
+                    spotpath = self.scenes_root
+                    shotpath = os.path.join(spotpath, subdir)
                     if os.path.isdir(shotpath):
-                        shots[spotname][shot] = shotpath
+                        shots[''][dir] = shotpath
+
         return shots
 
     def getVersions_shot(self, shot_path):
@@ -180,6 +610,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         return versions
 
     def pop_shotlist(self):
+        self.ui.listWidget_shots.clear()
         shotlist = self.getShots()
         for spot in shotlist:
             for shot in shotlist[spot]:
@@ -191,8 +622,6 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         selected_shot = self.ui.listWidget_shots.currentItem().text()
         spot = '_'.join(selected_shot.split('_')[:-1])
         shot = selected_shot.split('_')[-1]
-        print spot
-        print shot
 
         with open(self.status_path, 'r') as statusfile_read:
             stat_read = json.load(statusfile_read)
@@ -233,7 +662,9 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 version_item.setText(0, version)
 
     def pop_assetlist(self):
+        self.ui.treeWidget_assets.clear()
         asset_types = set()
+
         for asset in self.getAssets():
             asset_type = self.getAssets()[asset]['type']
             asset_types.add(asset_type)
@@ -312,11 +743,13 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             pass
 
     def make_statusfile(self, statusfile_path):
-        with open(statusfile_path, 'w') as statusfile:
-            default_content = {'asset':{},
-                               'shot':{}
-                               }
-            json.dump(default_content, statusfile)
+        if os.path.exists(statusfile_path):
+            with open(statusfile_path, 'w') as statusfile:
+                default_content = {'asset':{},
+                                   'shot':{},
+                                   'complinks':{}
+                                   }
+                json.dump(default_content, statusfile)
 
     def makelive_assets(self):
         asset = self.ui.treeWidget_assets.currentItem()
@@ -404,23 +837,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             stat_read[assetType][name][state][basename] = version
 
         except:
-            if stat_read.has_key(assetType):
-                if stat_read[assetType].has_key(name):
-                    if stat_read[assetType][name].has_key(state):
-
-                        if type(stat_read[assetType][name][state]) == 'unicode':
-                            stat_read[assetType][name][state] = {stat_read[assetType][name][state]}
-
-                        stat_read[assetType][name][state][basename] = version
-
-                    else:
-                        stat_read[assetType][name][state] = {}
-                        stat_read[assetType][name][state] = {basename:version}
-                else:
-                    stat_read[assetType][name] = {state:{basename:version}}
-            else:
-                stat_read[assetType] = {name:{state:{basename:version}}}
-
+            defdict = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(str))), stat_read)
+            defdict[assetType][name][state][basename] = version
 
         with open(self.status_path, 'w') as statusfile_write:
             json.dump(stat_read, statusfile_write, indent=4)
@@ -697,7 +1115,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     def setarbProj(self):
         arbproj_root = pm.windows.promptForFolder()
         self.ui.lineEdit_arb_projPath.setText(arbproj_root)
-        self.ui.lineEdit_arb_projPath.setText("Z:/raid/3Dprojects/maya/projects")
+        #self.ui.lineEdit_arb_projPath.setText("Z:/raid/3Dprojects/maya/projects")
     def run_arborist(self):
         projectDest = self.ui.lineEdit_arb_projPath.text()
         #print 'projectDest: {0}'.format(projectDest)

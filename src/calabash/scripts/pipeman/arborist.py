@@ -23,7 +23,7 @@ def createProject(projname, dest):
                              'scenes/assets',
                              'images',
                              'sourceimages',
-                             'sound'
+                             'sound',
                              'movies',
                              'cache/alembic',
                              'cache/nCache',
