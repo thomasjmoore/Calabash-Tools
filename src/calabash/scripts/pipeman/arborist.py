@@ -3,11 +3,6 @@
 
  #  Arborist builds customized project directory and asset directory hierarchy trees
 
-"""
-feature:
-creates projectInfo file
-editproj addexisting spot spotname
-"""
 from collections import defaultdict
 import os
 import os.path

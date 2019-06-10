@@ -30,9 +30,7 @@ import DoItMkr as DoIt
 reload(DoIt)
 
 '''
-"""
-Put autocache scripts in autocache folder under shotroot
-"""
+
 # import converted ui file.
 from pipeman import anim_autocache_ui as ui_file
 
@@ -221,6 +219,7 @@ def ouroboros():
 
 
     #planned feature: remove display layers
+    #remove imageplanes before export, remake imageplanes on rereference
 
     locdata = fileUtils.get_location()
     assetroot, filename = locdata['assetroot_filename']

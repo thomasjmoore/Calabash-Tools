@@ -35,14 +35,6 @@ import <module> as blah
 reload(blah)
 '''
 
-"""
-Wishlist:
-Make all latest live button
-make multiple cache files live
-    (compare basenames)
-
-"""
-
 #import converted ui file.
 import pipeman_ui as ui_file
 import refEdit

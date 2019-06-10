@@ -73,10 +73,25 @@ def check():
     update = check_version()
     if not update:
         print("Calabash Tools are up to date")
+        force_update = cmds.confirmDialog(title="Update,
+                                   message="Calabash Tools are up to date",
+                                   button=["Force Update", "Cancel"],
+                                   defaultButton="Force Update",
+                                   cancelButton="Cancel",
+                                   dismissString="Cancel")
+        
+        if force_update == 'Force Update':
+            zip_file = download()
+
+            if not zip_file:
+                cmds.warning("Download unsuccesful.")
+                return
+
+            install(zip_file)
         return
 
     cmds.warning("Update found")
-    update = cmds.confirmDialog(title="Update founnd",
+    update = cmds.confirmDialog(title="Update found",
                                    message="Install Update?",
                                    button=["Update", "Cancel"],
                                    defaultButton="Update",
