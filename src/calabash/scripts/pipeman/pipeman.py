@@ -566,11 +566,13 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         return versions
 
     def isSpot(self, dir):
-
-        if filter(lambda x: re.match('sh[0-9]+', x), os.listdir(dir)):
-            return True
-        else:
-            return False
+        debug = False
+        if debug: print dir
+        if os.path.isdir(dir):
+            if filter(lambda x: re.match('sh[0-9]+', x), os.listdir(dir)):
+                return True
+            else:
+                return False
 
     def getShots(self):
         shots = defaultdict(lambda: defaultdict(str))
