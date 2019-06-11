@@ -819,7 +819,9 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             self.update_status('shot', selected_shot.text(), selected_version.text(0), 'anim')
 
     def update_status(self, assetType, name, version, state):
-
+        debug = True
+        if debug:
+            print "AssetType: {0} \n name: {1} \n version: {2} \n state: {3}".format(assetType, name, version, state)
 
         with open(self.status_path, 'r') as statusfile_read:
             stat_read = json.load(statusfile_read)
@@ -831,8 +833,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             stat_read[assetType][name][state][basename] = version
 
         except:
-            defdict = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(str))), stat_read)
-            defdict[assetType][name][state][basename] = version
+            stat_read[assetType][name] = {state:{}}
+            stat_read[assetType][name][state][basename] = version
 
         with open(self.status_path, 'w') as statusfile_write:
             json.dump(stat_read, statusfile_write, indent=4)
