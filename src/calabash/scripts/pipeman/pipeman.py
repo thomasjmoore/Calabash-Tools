@@ -677,8 +677,14 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     def pop_assetVersions(self):
         debug = False
         selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
+
+        if not os.path.isfile(self.status_path):
+            print 'Status file not found!'
+            self.make_statusfile(self.status_path)
+
         with open(self.status_path, 'r') as statusfile_read:
             stat_read = json.load(statusfile_read)
+
         self.ui.treeWidget_versions.clear()
 
         type_items = []
@@ -737,13 +743,14 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             pass
 
     def make_statusfile(self, statusfile_path):
-        if os.path.exists(statusfile_path):
-            with open(statusfile_path, 'w') as statusfile:
-                default_content = {'asset':{},
-                                   'shot':{},
-                                   'complinks':{}
-                                   }
-                json.dump(default_content, statusfile)
+        print 'Making Status file: {0}'.format(statusfile_path)
+
+        with open(statusfile_path, 'w') as statusfile:
+            default_content = {'asset':{},
+                               'shot':{},
+                               'complinks':{}
+                               }
+            json.dump(default_content, statusfile)
 
     def makelive_assets(self):
         asset = self.ui.treeWidget_assets.currentItem()
@@ -764,6 +771,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             version_path = os.path.join(asset_path, 'publish', version.text(0))
             shutil.copy2(version_path, os.path.join(type_dir, '{0}.mb'.format(asset.text(0))))
             self.update_status('asset', asset.text(0), version.text(0), 'default')
+        self.pop_assetVersions()
 
     def makelive_assets_all(self):
         assets = self.getAssets()
@@ -905,13 +913,13 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         spot = '_'.join(selected_shot.split('_')[:-1])
         shot = selected_shot.split('_')[-1]
         shotroot = spot + '_' + shot
-        animpath = os.path.join(self.scenes_root, "{0}_shots".format(spot), shot, 'anim')
+        animpath = os.path.join(self.scenes_root, "{0}".format(spot), shot, 'anim')
         basename = shotroot
         basename_parts = []
         if fileUtils.ismultipart(animpath, basename):
             basename_parts = fileUtils.getLatest(animpath, basename, filename=True, stage='anim', parts=True)
         animver = fileUtils.getLatest(animpath, basename, filename=True, stage='anim')
-        renderpath = os.path.join(self.scenes_root, "{0}_shots".format(spot), shot, 'render')
+        renderpath = os.path.join(self.scenes_root, "{0}".format(spot), shot, 'render')
         basename_render = shotroot + '_render'
         latest_render = ''
         if os.path.exists(renderpath):
