@@ -753,6 +753,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             json.dump(default_content, statusfile)
 
     def makelive_assets(self):
+        debug = False
         asset = self.ui.treeWidget_assets.currentItem()
         version = self.ui.treeWidget_versions.currentItem()
         asset_path = self.getAssets()[asset.text(0)]['path']
@@ -760,16 +761,22 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         dev_dir = os.path.dirname(asset_path)
         type_dir = os.path.dirname(dev_dir)
         if 'shd' in version.text(0):
+            if debug: print 'Updating status of shd asset'
             version_path = os.path.join(asset_path, 'shd', 'publish', version.text(0))
             shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}.mb'.format(asset.text(0))))
+            if debug: print 'asset', asset.text(0), version.text(0), 'shd'
             self.update_status('asset', asset.text(0), version.text(0), 'shd')
         elif 'mtl' in version.text(0):
+            if debug: print 'Updating status of mtl asset'
             version_path = os.path.join(asset_path, 'shd', 'publish', version.text(0))
             shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}_mtl.mb'.format(asset.text(0))))
+            if debug: print 'asset', asset.text(0), version.text(0), 'mtl'
             self.update_status('asset', asset.text(0), version.text(0), 'mtl')
         else:
+            if debug: print 'Updating status of default asset'
             version_path = os.path.join(asset_path, 'publish', version.text(0))
             shutil.copy2(version_path, os.path.join(type_dir, '{0}.mb'.format(asset.text(0))))
+            if debug: print 'asset', asset.text(0), version.text(0), 'default'
             self.update_status('asset', asset.text(0), version.text(0), 'default')
         self.pop_assetVersions()
 
@@ -827,7 +834,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             self.update_status('shot', selected_shot.text(), selected_version.text(0), 'anim')
 
     def update_status(self, assetType, name, version, state):
-        debug = True
+        debug = False
         if debug:
             print "AssetType: {0} \n name: {1} \n version: {2} \n state: {3}".format(assetType, name, version, state)
 
@@ -840,9 +847,11 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
             stat_read[assetType][name][state][basename] = version
 
-        except:
-            stat_read[assetType][name] = {state:{}}
-            stat_read[assetType][name][state][basename] = version
+        except KeyError as kr_top:
+            try:
+                stat_read[assetType][name][state] = {basename:version}
+            except KeyError as kr_state:
+                stat_read[assetType][name] = {state:{basename:version}}
 
         with open(self.status_path, 'w') as statusfile_write:
             json.dump(stat_read, statusfile_write, indent=4)
