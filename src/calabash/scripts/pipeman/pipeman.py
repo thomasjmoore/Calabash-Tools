@@ -613,7 +613,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 shot_item.setText(shotname)
 
     def pop_shotVersions(self):
-        debug = True
+        debug = False
         selected_shot = self.ui.listWidget_shots.currentItem().text()
         spot = '_'.join(selected_shot.split('_')[:-1])
         shot = selected_shot.split('_')[-1]
@@ -639,7 +639,12 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         for version in self.getVersions_shot(self.getShots()[spot][shot]):
 
             basename, ver, ext = version.split('.')
-            shotname = '_'.join(basename.split('_')[:2])
+            def find_shotname(n):
+                strip_anim = '_'.join(n.split('_')[:2])
+                strip_part = '_'.join(strip_anim.split('-')[:1])
+                return strip_part
+
+            shotname = find_shotname(basename)
 
             if debug: print 'version: {0}, basename: {1}, shotname: {2}'.format(version, basename, shotname)
 
@@ -649,7 +654,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 try:
                     if stat_read['shot'][shotname]['cache'][basename] == version_item.text(0):
                         version_item.setText(1, 'Live')
-                except KeyError:
+                except KeyError as keyerror:
+                    print keyerror
                     pass
                 #self.update_status('shot', selected_shot, version, 'cache')
             elif 'anim' in version.lower():
@@ -658,7 +664,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 try:
                     if stat_read['shot'][shotname]['anim'][basename] == version_item.text(0):
                         version_item.setText(1, 'Live')
-                except KeyError:
+                except KeyError as keyerror:
+                    print keyerror
                     pass
                 #self.update_status('shot', selected_shot, version, 'anim')
             else:
@@ -735,19 +742,22 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 try:
                     if stat_read['asset'][selected_asset]['default'][version_basename] == version_item.text(0):
                         version_item.setText(1, 'Live')
-                except KeyError:
+                except KeyError as keyerror:
+                    print keyerror
                     pass
 
                 try:
                     if stat_read['asset'][selected_asset]['shd'][version_basename]  == version_item.text(0):
                         version_item.setText(1, 'Live')
-                except KeyError:
+                except KeyError as keyerror:
+                    print keyerror
                     pass
 
                 try:
                     if stat_read['asset'][selected_asset]['mtl'][version_basename]  == version_item.text(0):
                         version_item.setText(1, 'Live')
-                except KeyError:
+                except KeyError as keyerror:
+                    print keyerror
                     pass
         except KeyError:
             pass
