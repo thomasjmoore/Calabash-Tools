@@ -613,6 +613,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 shot_item.setText(shotname)
 
     def pop_shotVersions(self):
+        debug = True
         selected_shot = self.ui.listWidget_shots.currentItem().text()
         spot = '_'.join(selected_shot.split('_')[:-1])
         shot = selected_shot.split('_')[-1]
@@ -636,20 +637,29 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             item.setExpanded(True)
 
         for version in self.getVersions_shot(self.getShots()[spot][shot]):
+
             basename, ver, ext = version.split('.')
             shotname = '_'.join(basename.split('_')[:2])
+
+            if debug: print 'version: {0}, basename: {1}, shotname: {2}'.format(version, basename, shotname)
 
             if '.abc' in version.lower():
                 version_item = QtWidgets.QTreeWidgetItem(topItem_cache)
                 version_item.setText(0, version)
-                if stat_read['shot'][shotname]['cache'][basename] == version_item.text(0):
-                    version_item.setText(1, 'Live')
+                try:
+                    if stat_read['shot'][shotname]['cache'][basename] == version_item.text(0):
+                        version_item.setText(1, 'Live')
+                except KeyError:
+                    pass
                 #self.update_status('shot', selected_shot, version, 'cache')
             elif 'anim' in version.lower():
                 version_item = QtWidgets.QTreeWidgetItem(topItem_anim)
                 version_item.setText(0, version)
-                if stat_read['shot'][shotname]['anim'][basename] == version_item.text(0):
-                    version_item.setText(1, 'Live')
+                try:
+                    if stat_read['shot'][shotname]['anim'][basename] == version_item.text(0):
+                        version_item.setText(1, 'Live')
+                except KeyError:
+                    pass
                 #self.update_status('shot', selected_shot, version, 'anim')
             else:
                 version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_animVersions)
@@ -946,70 +956,76 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 cancelButton='Close',
                 dismissString='Close',
             )
+        else:
+            result = 'animation'
+        def multiversion_buttons():
+            multiversions = basename_parts.keys()
+            multiversions.append('Cancel')
+            return multiversions
 
-            if result == 'animation':
-                if basename_parts:
-                    print basename_parts.keys()
-                    result = pm.confirmDialog(
-                        title='Choose your own adventure!',
-                        message='Multiple parts were found, which scene do you want to open?',
-                        button=basename_parts.keys(),
-                        cancelButton='Close',
-                        dismissString='Close',
-                    )
-                    print result
+        if result == 'animation':
+            if basename_parts:
+                print basename_parts.keys()
+                result = pm.confirmDialog(
+                    title='Choose your own adventure!',
+                    message='Multiple parts were found, which scene do you want to open?',
+                    button=multiversion_buttons(),
+                    cancelButton='Close',
+                    dismissString='Close',
+                )
+                print result
 
-                    try:
-                        pm.openFile(os.path.join(animpath, result))
-                    except RuntimeError:
-                        print 'Opening:', basename_parts[result][-1]
-                        confirm = self.unsaved_confirm()
-
-                        if confirm == True:
-                            pm.saveFile()
-                            pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
-                        elif confirm == False:
-                            pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
-
-                else:
-                    try:
-                        pm.openFile(os.path.join(animpath, animver))
-                    except RuntimeError:
-                        confirm = self.unsaved_confirm()
-
-                        if confirm == True:
-                            pm.saveFile()
-                            pm.openFile(os.path.join(animpath, animver), force=True)
-                        elif confirm == False:
-                            pm.openFile(os.path.join(animpath, animver), force=True)
-                        else:
-                            pass
-            if result == 'Renderable':
                 try:
-                    pm.openFile(os.path.join(renderpath, latest_render))
+                    pm.openFile(os.path.join(animpath, result))
+                except RuntimeError:
+                    print 'Opening:', basename_parts[result][-1]
+                    confirm = self.unsaved_confirm()
+
+                    if confirm == True:
+                        pm.saveFile()
+                        pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
+                    elif confirm == False:
+                        pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
+
+            else:
+                try:
+                    pm.openFile(os.path.join(animpath, animver))
                 except RuntimeError:
                     confirm = self.unsaved_confirm()
 
                     if confirm == True:
                         pm.saveFile()
-                        pm.openFile(os.path.join(renderpath, latest_render), force=True)
+                        pm.openFile(os.path.join(animpath, animver), force=True)
                     elif confirm == False:
-                        pm.openFile(os.path.join(renderpath, latest_render), force=True)
+                        pm.openFile(os.path.join(animpath, animver), force=True)
                     else:
                         pass
-        else:
+        if result == 'Renderable':
             try:
-                pm.openFile(os.path.join(animpath, animver))
+                pm.openFile(os.path.join(renderpath, latest_render))
             except RuntimeError:
                 confirm = self.unsaved_confirm()
 
                 if confirm == True:
                     pm.saveFile()
-                    pm.openFile(os.path.join(animpath, animver), force=True)
+                    pm.openFile(os.path.join(renderpath, latest_render), force=True)
                 elif confirm == False:
-                    pm.openFile(os.path.join(animpath, animver), force=True)
+                    pm.openFile(os.path.join(renderpath, latest_render), force=True)
                 else:
                     pass
+        # else:
+        #     try:
+        #         pm.openFile(os.path.join(animpath, animver))
+        #     except RuntimeError:
+        #         confirm = self.unsaved_confirm()
+        #
+        #         if confirm == True:
+        #             pm.saveFile()
+        #             pm.openFile(os.path.join(animpath, animver), force=True)
+        #         elif confirm == False:
+        #             pm.openFile(os.path.join(animpath, animver), force=True)
+        #         else:
+        #             pass
 
     def open_latest_asset(self):
         latest_shd = None
