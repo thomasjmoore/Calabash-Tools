@@ -354,7 +354,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             layer_item.setText(layer)
 
     def gondo_popversions(self):
-        debug = True
+        debug = False
         self.ui.treeWidget_gondo_versions.clear()
         selected_shot = self.ui.listWidget_gondo_shots.currentItem().text()
         selected_layers = self.ui.listWidget_gondo_layers.selectedItems()
@@ -416,7 +416,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         return os.path.join(shotroot, layer)
 
     def addversion_selected(self):
-        debug = True
+        debug = False
         selected_version = self.ui.treeWidget_gondo_versions.currentItem().text(0)
         selected_shot = self.ui.listWidget_gondo_shots.currentItem().text()
         selected_layer = self.ui.listWidget_gondo_layers.currentItem().text()
@@ -937,92 +937,246 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         return result
 
     def open_latest_shot(self):
-
+        debug = False
         selected_shot = self.ui.listWidget_shots.currentItem().text()
         spot = '_'.join(selected_shot.split('_')[:-1])
         shot = selected_shot.split('_')[-1]
-        shotroot = spot + '_' + shot
-        animpath = os.path.join(self.scenes_root, "{0}".format(spot), shot, 'anim')
-        basename = shotroot
-        basename_parts = []
-        if fileUtils.ismultipart(animpath, basename):
-            basename_parts = fileUtils.getLatest(animpath, basename, filename=True, stage='anim', parts=True)
-        animver = fileUtils.getLatest(animpath, basename, filename=True, stage='anim')
-        renderpath = os.path.join(self.scenes_root, "{0}".format(spot), shot, 'render')
-        basename_render = shotroot + '_render'
-        latest_render = ''
-        if os.path.exists(renderpath):
-            if os.listdir(renderpath):
-                latest_renderver = fileUtils.getLatest(renderpath, basename_render)
-                for render_version in os.listdir(renderpath):
-                    if latest_renderver in render_version:
-                        latest_render = render_version
+        basename = spot + '_' + shot
 
-        if latest_render:
-            result = pm.confirmDialog(
+        animpath = os.path.join(self.scenes_root, "{0}".format(spot), shot, 'anim')
+        renderpath = os.path.join(self.scenes_root, "{0}".format(spot), shot, 'render')
+
+        parts_animation = fileUtils.getLatest(animpath, basename, filename=True, stage='anim', parts=True)
+        parts_render = fileUtils.getLatest(renderpath, basename, filename=True, stage='render', parts=True)
+
+        if debug: print 'parts_animation:', parts_animation, type(parts_animation), '\n', 'parts_render:', parts_render, type(parts_render)
+
+        stage_select = pm.confirmDialog(
                 title='Choose your own adventure!',
-                message='A renderable scene of this shot was found, which scene do you want to open?',
+                message='Which scene do you want to open?',
                 button=['animation', 'Renderable', 'Cancel'],
                 cancelButton='Close',
                 dismissString='Close',
             )
-        else:
-            result = 'animation'
-        def multiversion_buttons():
-            multiversions = basename_parts.keys()
-            multiversions.append('Cancel')
-            return multiversions
 
-        if result == 'animation':
-            if basename_parts:
-                print basename_parts.keys()
-                result = pm.confirmDialog(
+        def multipart_buttons(parts_list):
+
+            parts_list.append('Close')
+
+            return parts_list
+
+        if stage_select == 'animation':
+            if len(parts_animation)>1:
+                part_select = pm.confirmDialog(
+                        title='Choose your own adventure!',
+                        message='Multiple parts were found, which scene do you want to open?',
+                        button=multipart_buttons(parts_animation),
+                        cancelButton='Close',
+                        dismissString='Close',
+                    )
+
+                if part_select != 'Close':
+                    try:
+                        pm.openFile(os.path.join(animpath, part_select))
+                    except RuntimeError:
+                        print 'Opening:', part_select
+                        confirm = self.unsaved_confirm()
+
+                        if confirm == True:
+                            pm.saveFile()
+                            pm.openFile(os.path.join(animpath, part_select), force=True)
+                        elif confirm == False:
+                            pm.openFile(os.path.join(animpath, part_select), force=True)
+            elif len(parts_animation) < 1:
+                new_scene = pm.confirmDialog(
                     title='Choose your own adventure!',
-                    message='Multiple parts were found, which scene do you want to open?',
-                    button=multiversion_buttons(),
+                    message='An animation scene was not found, create an empty scene?',
+                    button=['Yes', 'No', 'Close'],
                     cancelButton='Close',
                     dismissString='Close',
                 )
-                print result
 
-                try:
-                    pm.openFile(os.path.join(animpath, result))
-                except RuntimeError:
-                    print 'Opening:', basename_parts[result][-1]
-                    confirm = self.unsaved_confirm()
+                if new_scene == 'Yes':
+                    savename = '{0}_{1}_render.001.ma'.format(animpath, basename)
+                    try:
+                        pm.newFile()
+                    except RuntimeError:
+                        confirm = self.unsaved_confirm()
 
-                    if confirm == True:
-                        pm.saveFile()
-                        pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
-                    elif confirm == False:
-                        pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
+                        if confirm == True:
+                            pm.saveFile()
+                            pm.newFile(force=True)
+                        elif confirm == False:
+                            pm.newFile(force=True)
+                    pm.saveAs(savename)
 
             else:
                 try:
-                    pm.openFile(os.path.join(animpath, animver))
+                    pm.openFile(os.path.join(animpath, parts_animation[0]))
                 except RuntimeError:
+                    print 'Opening:', parts_animation[0]
                     confirm = self.unsaved_confirm()
 
                     if confirm == True:
                         pm.saveFile()
-                        pm.openFile(os.path.join(animpath, animver), force=True)
+                        pm.openFile(os.path.join(animpath, parts_animation[0]), force=True)
                     elif confirm == False:
-                        pm.openFile(os.path.join(animpath, animver), force=True)
-                    else:
-                        pass
-        if result == 'Renderable':
-            try:
-                pm.openFile(os.path.join(renderpath, latest_render))
-            except RuntimeError:
-                confirm = self.unsaved_confirm()
+                        pm.openFile(os.path.join(animpath, parts_animation[0]), force=True)
 
-                if confirm == True:
-                    pm.saveFile()
-                    pm.openFile(os.path.join(renderpath, latest_render), force=True)
-                elif confirm == False:
-                    pm.openFile(os.path.join(renderpath, latest_render), force=True)
-                else:
-                    pass
+        elif stage_select == 'Renderable':
+            if len(parts_render) > 1:
+                part_select = pm.confirmDialog(
+                    title='Choose your own adventure!',
+                    message='Multiple parts were found, which scene do you want to open?',
+                    button=multipart_buttons(parts_render),
+                    cancelButton='Close',
+                    dismissString='Close',
+                )
+
+                if part_select != 'Close':
+                    try:
+                        pm.openFile(os.path.join(renderpath, part_select))
+                    except RuntimeError:
+                        print 'Opening:', part_select
+                        confirm = self.unsaved_confirm()
+
+                        if confirm == True:
+                            pm.saveFile()
+                            pm.openFile(os.path.join(renderpath, part_select), force=True)
+                        elif confirm == False:
+                            pm.openFile(os.path.join(renderpath, part_select), force=True)
+            elif len(parts_render) < 1:
+                new_scene = pm.confirmDialog(
+                    title='Choose your own adventure!',
+                    message='A Renderable scene was not found, create an empty scene?',
+                    button=['Yes', 'No', 'Close'],
+                    cancelButton='Close',
+                    dismissString='Close',
+                )
+
+                if new_scene == 'Yes':
+                    savename = '{0}_{1}_render.001.ma'.format(renderpath, basename)
+                    try:
+                        pm.newFile()
+                    except RuntimeError:
+                        confirm = self.unsaved_confirm()
+
+                        if confirm == True:
+                            pm.saveFile()
+                            pm.newFile(force=True)
+                        elif confirm == False:
+                            pm.newFile(force=True)
+                    pm.saveAs(savename)
+
+            else:
+                try:
+                    pm.openFile(os.path.join(renderpath, parts_render[0]))
+                except RuntimeError:
+                    print 'Opening:', parts_render[0]
+                    confirm = self.unsaved_confirm()
+
+                    if confirm == True:
+                        pm.saveFile()
+                        pm.openFile(os.path.join(renderpath, parts_render[0]), force=True)
+                    elif confirm == False:
+                        pm.openFile(os.path.join(renderpath, parts_render[0]), force=True)
+        else:
+            pass
+
+        # if fileUtils.ismultipart(animpath, basename):
+        #     basename_parts = fileUtils.getLatest(animpath, basename, filename=True, stage='anim', parts=True)
+        # animver = fileUtils.getLatest(animpath, basename, filename=True, stage='anim')
+        # renderpath = os.path.join(self.scenes_root, "{0}".format(spot), shot, 'render')
+        # basename_render = shotroot + '_render'
+        # latest_render = ''
+        # if os.path.exists(renderpath):
+        #     if os.listdir(renderpath):
+        #         latest_renderver = fileUtils.getLatest(renderpath, basename_render)
+        #         for render_version in os.listdir(renderpath):
+        #             if latest_renderver in render_version:
+        #                 latest_render = render_version
+
+        # if latest_render:
+        #     result = pm.confirmDialog(
+        #         title='Choose your own adventure!',
+        #         message='A renderable scene of this shot was found, which scene do you want to open?',
+        #         button=['animation', 'Renderable', 'Cancel'],
+        #         cancelButton='Close',
+        #         dismissString='Close',
+        #     )
+        # else:
+        #     result = 'animation'
+        # def multiversion_buttons():
+        #     multiversions = basename_parts.keys()
+        #     multiversions.append('Cancel')
+        #     return multiversions
+        #
+        # def openAnimation():
+        #
+        # def openRenderable():
+        #
+        # if basename_parts:
+        #     print basename_parts.keys()
+        #     parts_result = pm.confirmDialog(
+        #         title='Choose your own adventure!',
+        #         message='Multiple parts were found, which scene do you want to open?',
+        #         button=multiversion_buttons(),
+        #         cancelButton='Close',
+        #         dismissString='Close',
+        #     )
+        #     print parts_result
+        # else:
+        #     parts_result = False
+        #
+        # if parts_result:
+        #
+        # else:
+        #
+        #
+        #
+        #
+        #
+        #
+        # if result == 'animation':
+        #         try:
+        #             pm.openFile(os.path.join(animpath, result))
+        #         except RuntimeError:
+        #             print 'Opening:', basename_parts[result][-1]
+        #             confirm = self.unsaved_confirm()
+        #
+        #             if confirm == True:
+        #                 pm.saveFile()
+        #                 pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
+        #             elif confirm == False:
+        #                 pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
+        #
+        #     else:
+        #         try:
+        #             pm.openFile(os.path.join(animpath, animver))
+        #         except RuntimeError:
+        #             confirm = self.unsaved_confirm()
+        #
+        #             if confirm == True:
+        #                 pm.saveFile()
+        #                 pm.openFile(os.path.join(animpath, animver), force=True)
+        #             elif confirm == False:
+        #                 pm.openFile(os.path.join(animpath, animver), force=True)
+        #             else:
+        #                 pass
+        # if result == 'Renderable':
+        #
+        #     try:
+        #         pm.openFile(os.path.join(renderpath, latest_render))
+        #     except RuntimeError:
+        #         confirm = self.unsaved_confirm()
+        #
+        #         if confirm == True:
+        #             pm.saveFile()
+        #             pm.openFile(os.path.join(renderpath, latest_render), force=True)
+        #         elif confirm == False:
+        #             pm.openFile(os.path.join(renderpath, latest_render), force=True)
+        #         else:
+        #             pass
         # else:
         #     try:
         #         pm.openFile(os.path.join(animpath, animver))

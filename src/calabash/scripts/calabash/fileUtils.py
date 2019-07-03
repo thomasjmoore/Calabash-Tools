@@ -46,7 +46,8 @@ def ismultipart(path, basename):
                     return True
 
 def getLatest(path, basename, **kwargs):
-    if debug: print "path: {0}, basename: {1} kwargs: {2}".format(path, basename, kwargs)
+    debug = False
+    #if debug: print "path: {0}, basename: {1} kwargs: {2}".format(path, basename, kwargs)
     filename = False
     integer = False
     stage = ''
@@ -65,62 +66,83 @@ def getLatest(path, basename, **kwargs):
         elif kwarg == 'none_return':
             none_return = value
 
-    versions_num = []
+    #versions_num = []
     versions_name = []
-    multiversions = {}
-    if os.path.exists(path):
-        if debug: print "listdir: {0}".format(os.listdir(path))
-        if os.listdir(path):
-            for n in os.listdir(path):
-                if not 'Smedge' in n:
-                    if basename in n:
+    parts_list = []
+    def getParts():
+        if os.path.exists(path):
+            #if debug: print "listdir: {0}".format(os.listdir(path))
+            if os.listdir(path):
+                for n in os.listdir(path):
+                    if not 'Smedge' in n:
+                        if basename in n:
+                            if debug: print 'basename:', basename
+                            try:
+                                basename_full, ver, ext = n.split('.')
+                                # basename = spot_shot
+                                #basename_full = spot_shot-<optionalPart>_stage
+                                if stage:
 
-                        try:
-                            basename_full, ver, ext = n.split('.')
-                            if debug: print "basename_full: {0} ver: {1} ext: {2}".format(basename_full, ver, ext)
-                            if stage:
+                                    if stage in basename_full:
+                                        if not basename_full in parts_list:
+                                            if debug: print basename_full
+                                            parts_list.append(basename_full)
+                                        #versions_name.append(n)
+                                        # versions_num.append(ver)
+                                        # if '-' in basename_full:
+                                        #     basename_part = '_'.join(basename_full.split('_')[:-1])
+                                        #     if not basename_part in multiparts:
+                                        #         versions_name.append(basename_part)
+                                        #     else:
+                                        #         pass
+                            except:
+                                pass
 
-                                if stage in basename_full:
-                                    versions_name.append(n)
-                                    versions_num.append(ver)
-                                    if '-' in basename_full:
-                                        if basename_full in multiversions:
-                                            multiversions[basename_full].append(n)
-                                        else:
-                                            multiversions[basename_full] = [n]
-                            else:
-                                versions_name.append(n)
-                                versions_num.append(ver)
-                        except:
-                            pass
-    if debug: print "versions_num: {0}".format(versions_num)
-    if debug: print "versions_name: {0}".format(versions_name)
-    if len(versions_name) > 0:
-        if filename:
-            if parts:
-                return multiversions
-            else:
-                #print 'returning filename:', sorted(versions_name)[-1]
-                return sorted(versions_name)[-1]
+    def latest(basename_part):
+        versions = []
+        if os.path.exists(path):
+            #if debug: print "listdir: {0}".format(os.listdir(path))
+            if os.listdir(path):
+                for n in os.listdir(path):
+                    if basename_part in n:
+                        versions.append(n)
+        return sorted(versions)[-1]
 
-        elif integer:
-            #print 'returning int:', int(sorted(versions_num)[-1])
-            return int(sorted(versions_num)[-1])
-        else:
-            #print 'returning string:', sorted(versions_num)[-1]
-            return sorted(versions_num)[-1]
-    else:
-        if none_return:
-            return None
+    getParts()
+    for part in parts_list:
+        versions_name.append(latest(part))
 
-        if filename:
-            return "{0}.001.ma".format(basename)
+    #if debug: print "versions_num: {0}".format(versions_num)
+    #if debug: print "versions_name: {0}".format(versions_name)
 
-        elif integer:
-            return 1
-        else:
-            if debug: print '001'
-            return '001'
+    return versions_name
+
+    # if len(versions_name) > 0:
+    #     if filename:
+    #         if parts:
+    #             return multiversions
+    #         else:
+    #             #print 'returning filename:', sorted(versions_name)[-1]
+    #             return sorted(versions_name)[-1]
+    #
+    #     elif integer:
+    #         #print 'returning int:', int(sorted(versions_num)[-1])
+    #         return int(sorted(versions_num)[-1])
+    #     else:
+    #         #print 'returning string:', sorted(versions_num)[-1]
+    #         return sorted(versions_num)[-1]
+    # else:
+    #     if none_return:
+    #         return None
+    #
+    #     if filename:
+    #         return "{0}_{1}.001.ma".format(basename, stage)
+    #
+    #     elif integer:
+    #         return 1
+    #     else:
+    #         if debug: print '001'
+    #         return '001'
 
 def changelog(assetroot, version, comment):
     log = os.path.join(assetroot, 'changelog.json')
