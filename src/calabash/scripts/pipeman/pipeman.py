@@ -1083,115 +1083,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         else:
             pass
 
-        # if fileUtils.ismultipart(animpath, basename):
-        #     basename_parts = fileUtils.getLatest(animpath, basename, filename=True, stage='anim', parts=True)
-        # animver = fileUtils.getLatest(animpath, basename, filename=True, stage='anim')
-        # renderpath = os.path.join(self.scenes_root, "{0}".format(spot), shot, 'render')
-        # basename_render = shotroot + '_render'
-        # latest_render = ''
-        # if os.path.exists(renderpath):
-        #     if os.listdir(renderpath):
-        #         latest_renderver = fileUtils.getLatest(renderpath, basename_render)
-        #         for render_version in os.listdir(renderpath):
-        #             if latest_renderver in render_version:
-        #                 latest_render = render_version
-
-        # if latest_render:
-        #     result = pm.confirmDialog(
-        #         title='Choose your own adventure!',
-        #         message='A renderable scene of this shot was found, which scene do you want to open?',
-        #         button=['animation', 'Renderable', 'Cancel'],
-        #         cancelButton='Close',
-        #         dismissString='Close',
-        #     )
-        # else:
-        #     result = 'animation'
-        # def multiversion_buttons():
-        #     multiversions = basename_parts.keys()
-        #     multiversions.append('Cancel')
-        #     return multiversions
-        #
-        # def openAnimation():
-        #
-        # def openRenderable():
-        #
-        # if basename_parts:
-        #     print basename_parts.keys()
-        #     parts_result = pm.confirmDialog(
-        #         title='Choose your own adventure!',
-        #         message='Multiple parts were found, which scene do you want to open?',
-        #         button=multiversion_buttons(),
-        #         cancelButton='Close',
-        #         dismissString='Close',
-        #     )
-        #     print parts_result
-        # else:
-        #     parts_result = False
-        #
-        # if parts_result:
-        #
-        # else:
-        #
-        #
-        #
-        #
-        #
-        #
-        # if result == 'animation':
-        #         try:
-        #             pm.openFile(os.path.join(animpath, result))
-        #         except RuntimeError:
-        #             print 'Opening:', basename_parts[result][-1]
-        #             confirm = self.unsaved_confirm()
-        #
-        #             if confirm == True:
-        #                 pm.saveFile()
-        #                 pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
-        #             elif confirm == False:
-        #                 pm.openFile(os.path.join(animpath, basename_parts[result][-1]), force=True)
-        #
-        #     else:
-        #         try:
-        #             pm.openFile(os.path.join(animpath, animver))
-        #         except RuntimeError:
-        #             confirm = self.unsaved_confirm()
-        #
-        #             if confirm == True:
-        #                 pm.saveFile()
-        #                 pm.openFile(os.path.join(animpath, animver), force=True)
-        #             elif confirm == False:
-        #                 pm.openFile(os.path.join(animpath, animver), force=True)
-        #             else:
-        #                 pass
-        # if result == 'Renderable':
-        #
-        #     try:
-        #         pm.openFile(os.path.join(renderpath, latest_render))
-        #     except RuntimeError:
-        #         confirm = self.unsaved_confirm()
-        #
-        #         if confirm == True:
-        #             pm.saveFile()
-        #             pm.openFile(os.path.join(renderpath, latest_render), force=True)
-        #         elif confirm == False:
-        #             pm.openFile(os.path.join(renderpath, latest_render), force=True)
-        #         else:
-        #             pass
-        # else:
-        #     try:
-        #         pm.openFile(os.path.join(animpath, animver))
-        #     except RuntimeError:
-        #         confirm = self.unsaved_confirm()
-        #
-        #         if confirm == True:
-        #             pm.saveFile()
-        #             pm.openFile(os.path.join(animpath, animver), force=True)
-        #         elif confirm == False:
-        #             pm.openFile(os.path.join(animpath, animver), force=True)
-        #         else:
-        #             pass
-
     def open_latest_asset(self):
+        debug = True
         latest_shd = None
         selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
         assettype = self.getAssets()[selected_asset]['type']
@@ -1206,28 +1099,27 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         sel_assetroot = os.path.join(self.assets_root, assettype, 'dev', selected_asset)
         shd_path = os.path.join(sel_assetroot, 'shd')
         try:
-            latest_assetver = fileUtils.getLatest(sel_assetroot, selected_asset)
+            latest_assetver = fileUtils.getLatest(sel_assetroot, selected_asset, stage='rig')
+            latest_asset = latest_assetver[0]
+            if debug: print 'latest_assetver:', latest_assetver, type(latest_assetver)
             if os.path.exists(shd_path):
                 if os.listdir(shd_path):
-                    latest_shdver = fileUtils.getLatest(shd_path, selected_asset)
-                    for shd_version in os.listdir(shd_path):
-                        if latest_shdver in shd_version:
-                            latest_shd = shd_version
-                        else:
-                            pass
+                    latest_shdver = fileUtils.getLatest(shd_path, selected_asset, stage='shd')
+                    if debug: print 'latest_shdver:', latest_shdver, type(latest_shdver)
                 else:
                     print '{0} is empty'.format(shd_path)
             else:
                 print '{0} doesnt exist'.format(shd_path)
-            for asset_version in os.listdir(sel_assetroot):
-                if latest_assetver in asset_version:
-                    latest_asset = asset_version
-                else:
-                    pass
+            # for asset_version in os.listdir(sel_assetroot):
+            #     if latest_assetver in asset_version:
+            #         latest_asset = asset_version
+            #     else:
+            #         pass
         except WindowsError:
             return
 
-        if latest_shd:
+        if latest_shdver:
+            latest_shd = latest_shdver[0]
             result = pm.confirmDialog(
                 title='Choose your own adventure!',
                 message='A renderable version of this asset was found, which rig do you want to open?',

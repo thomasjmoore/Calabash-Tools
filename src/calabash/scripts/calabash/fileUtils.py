@@ -46,7 +46,7 @@ def ismultipart(path, basename):
                     return True
 
 def getLatest(path, basename, **kwargs):
-    debug = False
+    debug = True
     #if debug: print "path: {0}, basename: {1} kwargs: {2}".format(path, basename, kwargs)
     filename = False
     integer = False
@@ -71,7 +71,7 @@ def getLatest(path, basename, **kwargs):
     parts_list = []
     def getParts():
         if os.path.exists(path):
-            #if debug: print "listdir: {0}".format(os.listdir(path))
+            if debug: print "listdir: {0}".format(os.listdir(path))
             if os.listdir(path):
                 for n in os.listdir(path):
                     if not 'Smedge' in n:
@@ -87,14 +87,6 @@ def getLatest(path, basename, **kwargs):
                                         if not basename_full in parts_list:
                                             if debug: print basename_full
                                             parts_list.append(basename_full)
-                                        #versions_name.append(n)
-                                        # versions_num.append(ver)
-                                        # if '-' in basename_full:
-                                        #     basename_part = '_'.join(basename_full.split('_')[:-1])
-                                        #     if not basename_part in multiparts:
-                                        #         versions_name.append(basename_part)
-                                        #     else:
-                                        #         pass
                             except:
                                 pass
 
@@ -113,7 +105,7 @@ def getLatest(path, basename, **kwargs):
         versions_name.append(latest(part))
 
     #if debug: print "versions_num: {0}".format(versions_num)
-    #if debug: print "versions_name: {0}".format(versions_name)
+    if debug: print "versions_name: {0}".format(versions_name)
 
     return versions_name
 
