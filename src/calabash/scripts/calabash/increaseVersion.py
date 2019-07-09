@@ -10,12 +10,15 @@ reload(fileUtils)
 
 
 def versionUp(*args):
+    debug = True
     currentFile = cmds.file(location=True, query=True)
     path, file = os.path.split(currentFile)
     basename, ver, ext = file.split('.')
     fileNameSplit = file.split(".")
     curVer = fileNameSplit[-2]
-    latestVer = fileUtils.getLatest(path, basename, integer=True)
+    if debug: print fileUtils.getLatest(path, basename)
+    latestVer = int(fileUtils.getLatest(path, basename)[0].split('.')[1])
+    if debug: print latestVer
     newVer = '%03d' % (int(curVer) + 1)
 
     if int(newVer) <= latestVer:

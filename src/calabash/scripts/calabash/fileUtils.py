@@ -46,7 +46,7 @@ def ismultipart(path, basename):
                     return True
 
 def getLatest(path, basename, **kwargs):
-    debug = True
+    debug = False
     #if debug: print "path: {0}, basename: {1} kwargs: {2}".format(path, basename, kwargs)
     filename = False
     integer = False
@@ -87,6 +87,10 @@ def getLatest(path, basename, **kwargs):
                                         if not basename_full in parts_list:
                                             if debug: print basename_full
                                             parts_list.append(basename_full)
+                                else:
+                                    if not basename_full in parts_list:
+                                        if debug: print basename_full
+                                        parts_list.append(basename_full)
                             except:
                                 pass
 
