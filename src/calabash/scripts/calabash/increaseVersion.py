@@ -10,7 +10,7 @@ reload(fileUtils)
 
 
 def versionUp(*args):
-    debug = True
+    debug = False
     currentFile = cmds.file(location=True, query=True)
     path, file = os.path.split(currentFile)
     basename, ver, ext = file.split('.')

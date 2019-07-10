@@ -743,21 +743,21 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                     if stat_read['asset'][selected_asset]['default'][version_basename] == version_item.text(0):
                         version_item.setText(1, 'Live')
                 except KeyError as keyerror:
-                    print keyerror
+                    if debug: print keyerror
                     pass
 
                 try:
                     if stat_read['asset'][selected_asset]['shd'][version_basename]  == version_item.text(0):
                         version_item.setText(1, 'Live')
                 except KeyError as keyerror:
-                    print keyerror
+                    if debug: print keyerror
                     pass
 
                 try:
                     if stat_read['asset'][selected_asset]['mtl'][version_basename]  == version_item.text(0):
                         version_item.setText(1, 'Live')
                 except KeyError as keyerror:
-                    print keyerror
+                    if debug: print keyerror
                     pass
         except KeyError:
             pass
@@ -1084,7 +1084,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             pass
 
     def open_latest_asset(self):
-        debug = True
+        debug = False
         latest_shd = None
         selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
         assettype = self.getAssets()[selected_asset]['type']
@@ -1099,7 +1099,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         sel_assetroot = os.path.join(self.assets_root, assettype, 'dev', selected_asset)
         shd_path = os.path.join(sel_assetroot, 'shd')
         try:
-            latest_assetver = fileUtils.getLatest(sel_assetroot, selected_asset, stage='rig')
+            latest_assetver = fileUtils.getLatest(sel_assetroot, selected_asset)
             latest_asset = latest_assetver[0]
             if debug: print 'latest_assetver:', latest_assetver, type(latest_assetver)
             if os.path.exists(shd_path):
@@ -1107,8 +1107,10 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                     latest_shdver = fileUtils.getLatest(shd_path, selected_asset, stage='shd')
                     if debug: print 'latest_shdver:', latest_shdver, type(latest_shdver)
                 else:
+                    latest_shdver = None
                     print '{0} is empty'.format(shd_path)
             else:
+                latest_shdver = None
                 print '{0} doesnt exist'.format(shd_path)
             # for asset_version in os.listdir(sel_assetroot):
             #     if latest_assetver in asset_version:

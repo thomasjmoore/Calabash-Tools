@@ -158,7 +158,7 @@ def changelog(assetroot, version, comment):
 def publishCurrentFile():
 
 
-    debug = True  # False to disable variable printout
+    debug = False  # False to disable variable printout
     locdata = get_location()
     file_path = locdata['file_path']
 
