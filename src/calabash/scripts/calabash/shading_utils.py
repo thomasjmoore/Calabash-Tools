@@ -60,7 +60,14 @@ def get_ShaderGroups(asset):
 
     for mtl in asset_mtls:
         SG = pm.ls(mtl.listConnections(), type='shadingEngine')[0]
+        if pm.referenceQuery(SG, inr=True):
+
+            refNode = pm.referenceQuery(SG, rfn=True)
+            fileRef = pm.FileReference(refnode=refNode)
+            print 'SG: {0} is a referenced material, importing reference: {1}; {2}'.format(SG, refNode, fileRef)
+            fileRef.importContents(removeNamespace=True)
         SG_set.add(SG)
+
     return list(SG_set)
 
 def get_asset_name(asset):
@@ -291,18 +298,15 @@ def exportShaders(SGs, export_path):
     print '########################'
     expSel = cmds.file(export_path, f=True, es=True, exp=True, ch=False, chn=False, con=False, type='mayaBinary')
 
-
 def publish_mtl(export_path):
 
     assets = pm.ls(sl=1)
     for asset in assets:
 
         sg_to_publish = get_ShaderGroups(asset)
-
         write_assignments(sg_to_publish)
         write_connections(sg_to_publish)
         exportShaders(sg_to_publish, export_path)
-
 
 def apply_look():
     sel = pm.ls(sl=1)

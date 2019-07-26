@@ -15,7 +15,7 @@ def edit(animpath):
 
             basename = filepath.split('/scenes/')[-1]
 
-
+            if debug: print(os.path.join(filepath, 'renderable', filename))
             if os.path.exists(os.path.join(filepath, 'renderable', filename)):
                 renderablepath = os.path.normpath(os.path.join('scenes', basename, 'renderable', filename))
                 renderablepath = renderablepath.replace('\\', '/')
@@ -23,6 +23,7 @@ def edit(animpath):
                 print(newline)
                 repathed.append(newline)
             else:
+
                 print(rawline)
         elif '//scenes' in rawline:
 
@@ -41,6 +42,10 @@ def edit(animpath):
             repathed.append(newline)
 
         else:
+
             print(rawline)
 
     return repathed
+
+# animpath = r"Z:\raid\3Dprojects\maya\projects\Lucky_Chariot\scenes\trackedElements\sh00\anim\trackedElements_sh00-props_anim.021.ma"
+# edit(animpath)

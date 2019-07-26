@@ -56,7 +56,8 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         self.proj_path = pm.workspace.getPath()
         self.proj_root = os.path.dirname(self.proj_path)
-        self.ui.lineEdit_arb_projPath.setText(self.proj_path)
+        self.ui.lineEdit_arb_projPath.setText(os.path.dirname(self.proj_path))
+        print self.ui.lineEdit_arb_projPath.text()
         self.comproot = ''
         self.scenes_root = os.path.join(self.proj_path, 'scenes')
         self.images_root = os.path.join(self.proj_path, 'images')

@@ -126,6 +126,8 @@ def createSpot(projpath, spotname, shotcount):
             print renderpath
             os.makedirs(animpath)
             os.makedirs(renderpath)
+            print animpath
+            print renderpath
 
     else:
         print 'Spot: {0}, already exists! \n {1}'.format(spotname, spotpath)
@@ -135,6 +137,7 @@ def createShot(projpath, shotname):
     if not os.path.exists(shotpath):
         print shotpath
         os.makedirs(shotpath)
+        print shotpath
     else:
         print 'Shot: {0}, already exists! \n {1}'.format(shotname, shotpath)
 

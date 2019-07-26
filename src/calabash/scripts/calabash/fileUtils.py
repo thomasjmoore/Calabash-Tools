@@ -6,6 +6,7 @@ import shutil
 #import datetime
 import increaseVersion
 import shading_utils
+reload(shading_utils)
 import json
 import datetime
 
@@ -112,33 +113,6 @@ def getLatest(path, basename, **kwargs):
     if debug: print "versions_name: {0}".format(versions_name)
 
     return versions_name
-
-    # if len(versions_name) > 0:
-    #     if filename:
-    #         if parts:
-    #             return multiversions
-    #         else:
-    #             #print 'returning filename:', sorted(versions_name)[-1]
-    #             return sorted(versions_name)[-1]
-    #
-    #     elif integer:
-    #         #print 'returning int:', int(sorted(versions_num)[-1])
-    #         return int(sorted(versions_num)[-1])
-    #     else:
-    #         #print 'returning string:', sorted(versions_num)[-1]
-    #         return sorted(versions_num)[-1]
-    # else:
-    #     if none_return:
-    #         return None
-    #
-    #     if filename:
-    #         return "{0}_{1}.001.ma".format(basename, stage)
-    #
-    #     elif integer:
-    #         return 1
-    #     else:
-    #         if debug: print '001'
-    #         return '001'
 
 def changelog(assetroot, version, comment):
     log = os.path.join(assetroot, 'changelog.json')
