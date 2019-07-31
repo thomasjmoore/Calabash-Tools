@@ -5,47 +5,52 @@ import fileinput
 debug = False
 def edit(animpath):
     repathed = []
+    projectpath = animpath.split('scenes')[0]
+    print('Project Path:'), print(projectpath)
     for rawline in fileinput.input(animpath, inplace=not debug):
 
-        if '/assets/' in rawline:
+        if '-typ "maya' in rawline:
 
             line = rawline.split()[-1]
             line = re.sub('[";]+', '', line)
             filepath, filename = os.path.split(line)
+            filepath = filepath.replace('//', '')
+            if debug: print('filepath:', filepath)
+            assetpath = filepath.split('scenes')[-1]
+            if debug: print('assetpath:', assetpath)
 
-            basename = filepath.split('/scenes/')[-1]
 
-            if debug: print(os.path.join(filepath, 'renderable', filename))
-            if os.path.exists(os.path.join(filepath, 'renderable', filename)):
-                renderablepath = os.path.normpath(os.path.join('scenes', basename, 'renderable', filename))
+            #renderablepath = os.path.normpath(os.path.join('scenes', assetpath, 'renderable', filename))
+            renderablepath = 'scenes{0}/renderable/{1}'.format(assetpath, filename)
+            if os.path.exists('{0}/{1}'.format(projectpath, renderablepath)):
                 renderablepath = renderablepath.replace('\\', '/')
                 newline = rawline.replace(line, renderablepath)
                 print(newline)
-                repathed.append(newline)
+                repathed.append(renderablepath)
             else:
-
+                if debug: print('path does not exist', '{0}/{1}'.format(projectpath, renderablepath))
                 print(rawline)
         elif '//scenes' in rawline:
 
             line = rawline.split()[-1]
             line = re.sub('[";]+', '', line)
-            basename, filename = os.path.split(line)
+            assetpath, filename = os.path.split(line)
 
-            basename = basename.split('//')[-1]
+            assetpath = assetpath.split('//')[-1]
 
-            renderablepath = os.path.normpath(os.path.join(basename, filename))
+            renderablepath = os.path.normpath(os.path.join(assetpath, filename))
             renderablepath = renderablepath.replace('\\', '/')
 
 
             newline = rawline.replace(line, renderablepath)
-            print(newline)
+            if not debug: print(newline)
             repathed.append(newline)
 
         else:
 
-            print(rawline)
+            if not debug: print(rawline)
 
     return repathed
 
-# animpath = r"Z:\raid\3Dprojects\maya\projects\Lucky_Chariot\scenes\trackedElements\sh00\anim\trackedElements_sh00-props_anim.021.ma"
-# edit(animpath)
+# animpath = "C:/Users/guest1/Documents/maya/projects/Hatchimals_Season6/scenes/snowball/sh010/anim/publish/snowBall_sh010-2_anim.017.ma"
+# print(edit(animpath))
