@@ -1032,20 +1032,25 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 if 'changelog.json' in os.listdir(asset_root):
                     change_list.append(('modify', os.path.join(asset_root, 'changelog.json'), ''))
         shots = self.getShots()
-        for shot in shots:
-            type, shot_root = shots[shot]
-            publish_path = os.path.join(shot_root, 'anim', 'publish')
-            cache_path = os.path.join(publish_path, 'cache')
-            if os.path.exists(cache_path):
-                for item in os.listdir(cache_path):
-                    item_path = os.path.join(cache_path, item)
-                    change_list.append(('move', item_path, publish_path))
-                change_list.append(('remove', cache_path, ''))
-                if 'changelog.json' in os.listdir(asset_root):
-                    change_list.append(('modify', os.path.join(asset_root, 'changelog.json'), ''))
+        try:
+            for shot in shots:
 
-        retro = retrofit.myGui(change_list)
-        retro.run()
+                type, shot_root = shots[shot]
+                publish_path = os.path.join(shot_root, 'anim', 'publish')
+                cache_path = os.path.join(publish_path, 'cache')
+                if os.path.exists(cache_path):
+                    for item in os.listdir(cache_path):
+                        item_path = os.path.join(cache_path, item)
+                        change_list.append(('move', item_path, publish_path))
+                    change_list.append(('remove', cache_path, ''))
+                    if 'changelog.json' in os.listdir(asset_root):
+                        change_list.append(('modify', os.path.join(asset_root, 'changelog.json'), ''))
+
+            retro = retrofit.myGui(change_list)
+            retro.run()
+        except ValueError as valerr:
+            print valerr
+            pass
 
 ######## CONNECT UI ELEMENTS AND FUNCTIONS ABOVE HERE #########
 
