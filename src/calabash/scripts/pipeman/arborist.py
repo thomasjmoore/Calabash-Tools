@@ -3,6 +3,10 @@
 
  #  Arborist builds customized project directory and asset directory hierarchy trees
 
+# Future plans:
+# create asset checks if asset name == shotname,
+# if so put in anim folder
+
 from collections import defaultdict
 import os
 import os.path
@@ -145,7 +149,7 @@ def createAsset(projpath, type, assetname):
     #print 'projpath: {0}'.format(projpath)
     assetpath = os.path.join(projpath, 'scenes', 'assets', type, 'dev', assetname)
     if not os.path.exists(assetpath):
-        assetdirs = ['publish', 'shd/publish']
+        assetdirs = ['publish']
         for dir in assetdirs:
             dirpath = os.path.join(assetpath, dir)
             print dirpath

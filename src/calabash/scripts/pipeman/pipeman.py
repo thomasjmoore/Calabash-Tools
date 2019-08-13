@@ -10,7 +10,9 @@ import json
 import shutil
 import re
 from collections import defaultdict
-
+from functools import partial
+from __builtin__ import any as any
+import pprint
 
 
 #Convert Ui file from Designer to a python module
@@ -37,10 +39,12 @@ reload(blah)
 
 #import converted ui file.
 import pipeman_ui as ui_file
+import openAsset as oa
 import refEdit
 import arborist
 from calabash import fileUtils
 reload(ui_file)
+reload(oa)
 reload(refEdit)
 reload(arborist)
 reload(fileUtils)
@@ -55,17 +59,18 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.ui.setupUi(self)
 
         self.proj_path = pm.workspace.getPath()
+
         self.proj_root = os.path.dirname(self.proj_path)
-        self.ui.lineEdit_arb_projPath.setText(os.path.dirname(self.proj_path))
-        print self.ui.lineEdit_arb_projPath.text()
+        self.ui.lineEdit_arb_projPath.setText(self.proj_root)
+
         self.comproot = ''
+        self.publishDict = {}
         self.scenes_root = os.path.join(self.proj_path, 'scenes')
         self.images_root = os.path.join(self.proj_path, 'images')
         self.spots = self.getSpots()
         self.assets_root = os.path.join(self.scenes_root, 'assets')
         self.status_path = os.path.join(self.scenes_root, 'status.json')
 
-        #self.setProject()
         self.apivers = pm.about(api=True)
         self.mayaDir = str(self.apivers)[:4]
         self.pmprefs = os.path.expanduser('~/maya/{0}/prefs/pipeman'.format(self.mayaDir))
@@ -79,12 +84,6 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             self.restorestate()
         else:
             self.make_userstate(self.userstate)
-        #self.make_userstate(self.userstate)
-
-        #self.ui.tabWidget_pipeman.setCurrentIndex(0)
-        #self.ui.lineEdit_arb_projPath.setText("Z:/raid/3Dprojects/maya/projects")
-
-        ######## CONNECT UI ELEMENTS AND FUNCTIONS BELOW HERE #########
 
         self.header_assets = self.ui.treeWidget_versions.header()
         self.header_assets.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
@@ -96,18 +95,22 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.header_anim.setStretchLastSection(False)
         self.header_anim.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
 
-        if os.path.exists(self.assets_root):
-            self.pop_assetlist()
-            self.pop_shotlist()
-        self.ui.treeWidget_assets.itemClicked.connect(self.pop_assetVersions)
-        self.ui.treeWidget_versions.itemClicked.connect(self.showcomment_asset)
-        self.ui.listWidget_shots.itemClicked.connect(self.pop_shotVersions)
-        self.ui.pushButton_makelive.clicked.connect(self.makelive_assets)
+        self.header_asset_comments = self.ui.asset_comments.header()
+        self.header_asset_comments.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.header_asset_comments.setStretchLastSection(False)
+        self.header_asset_comments.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
 
-        self.ui.pushButton_makelive.customContextMenuRequested.connect(self.on_context_menu)
-        self.popMenu_assetlive = QtWidgets.QMenu(self)
-        self.popMenu_assetlive.addAction(QtWidgets.QAction('Make all latest Live', self))
-        self.popMenu_assetlive.triggered.connect(self.makelive_assets_all)
+        self.header_anim_comments = self.ui.anim_comments.header()
+        self.header_anim_comments.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.header_anim_comments.setStretchLastSection(False)
+        self.header_anim_comments.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+
+        self.ui.treeWidget_shots.itemClicked.connect(partial(self.pop_Versions, self.ui.treeWidget_shots))
+        self.ui.treeWidget_assets.itemClicked.connect(partial(self.pop_Versions, self.ui.treeWidget_assets))
+        self.ui.treeWidget_animVersions.itemClicked.connect(partial(self.showcomment, self.ui.treeWidget_animVersions))
+        self.ui.treeWidget_versions.itemClicked.connect(partial(self.showcomment, self.ui.treeWidget_versions))
+
+        self.ui.pushButton_makelive.clicked.connect(self.makelive_asset)
 
         self.ui.comboBox_mayaproject.customContextMenuRequested.connect(self.on_context_maya)
         self.popMenu_maya = QtWidgets.QMenu(self)
@@ -119,9 +122,9 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.popMenu_gcomp.addAction(QtWidgets.QAction('Set Comp projects location', self))
         self.popMenu_gcomp.triggered.connect(self.set_comproot)
 
-        self.ui.pushButton_anim_makelive.clicked.connect(self.makelive_shots)
-        self.ui.pushButton_anim_openlatest.clicked.connect(self.open_latest_shot)
-        self.ui.pushButton_asset_openlatest.clicked.connect(self.open_latest_asset)
+        self.ui.pushButton_anim_makelive.clicked.connect(self.makelive_shot)
+        self.ui.pushButton_anim_openlatest.clicked.connect(partial(self.open_latest, self.ui.treeWidget_shots))
+        self.ui.pushButton_asset_openlatest.clicked.connect(partial(self.open_latest, self.ui.treeWidget_assets))
         self.ui.pushButton_arb_exe.clicked.connect(self.run_arborist)
         self.ui.pushButton_arb_projBrowse.clicked.connect(self.setarbProj)
 
@@ -156,10 +159,13 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.ui.tabWidget_pipeman.currentChanged.connect(self.savestate)
         self.ui.lineEdit_arb_projPath.textChanged.connect(self.savestate)
 
+        self.pop_assets()
+        self.pop_shots()
+
     def mayaproj_changed(self):
         self.setProject()
-        self.pop_shotlist()
-        self.pop_assetlist()
+        self.pop_shots()
+        self.pop_assets()
         self.gondo_popshots()
         self.savestate()
         self.restorestate()
@@ -500,6 +506,61 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     def on_context_copylist(self, point):
         self.popMenu_copylist.exec_(self.ui.listWidget_gondo_copylist.mapToGlobal(point))
 
+    def get_subnames(self, filelist):
+        debug = False
+        if debug: print filelist
+        subnames = set()
+        for filename in filelist:
+            if len(filename.split('.')) == 3:
+                subname, version, ext = filename.split('.')
+                subnames.add(subname)
+        return list(subnames)
+
+    def getAssets(self):
+        # return dict of assettype:assetroot tuples
+        debug = False
+        print 'Getting Assets'
+        if debug: print 'assets_root:', self.assets_root
+        assets = {}
+
+        for asset_type in os.listdir(self.assets_root):
+
+            if os.path.isdir(os.path.join(self.assets_root, asset_type)):
+                if debug: print asset_type
+                typepath = os.path.join(self.assets_root, asset_type, 'dev')
+                if debug: print typepath
+                assetnames = [f for f in os.listdir(typepath) if os.path.isdir(os.path.join(typepath, f))]
+                if debug: print assetnames
+                for assetname in assetnames:
+                    asset_root = os.path.normpath(os.path.join(typepath, assetname)).replace('\\', '/')
+                    assets[assetname] = (asset_type,asset_root)
+
+        if debug: print 'assets:', assets
+        return assets
+
+    def getAssetsubnames(self, asset):
+        # return list of subname, path tuples
+        debug = False
+        if debug: print asset
+
+        assetsubnames = {}
+        asset_type, assetroot = self.getAssets()[asset]
+
+        files = [f for f in os.listdir(assetroot) if os.path.isfile(os.path.join(assetroot, f))]
+        for subname in self.get_subnames(files):
+            assetsubnames[subname] = assetroot
+
+        return assetsubnames
+
+    def isSpot(self, dir):
+        debug = False
+        if debug: print dir
+        if os.path.isdir(dir):
+            if filter(lambda x: re.match('sh[0-9]+', x), os.listdir(dir)):
+                return True
+            else:
+                return False
+
     def getSpots(self):
         spots = []
         for dir in os.listdir(self.scenes_root):
@@ -511,64 +572,9 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 if debug: print 'spots: ', spots
         return spots
 
-    def getAssets(self):
-        # return dict of assetname:assetPath pairs
-
-        if debug: print 'assets_root:', self.assets_root
-        assets = {}
-        try:
-            for asset_type in os.listdir(self.assets_root):
-                asset_type_path = os.path.join(self.assets_root, asset_type)
-
-                if os.path.isdir(asset_type_path):
-                    if debug: print asset_type, os.path.isdir(asset_type_path)
-                    try:
-                        for assetname in os.listdir(os.path.join(asset_type_path, 'dev')):
-                            asset_path = os.path.join(asset_type_path, 'dev', assetname)
-                            if os.path.isdir(asset_path):
-                                assets[assetname] = {'path':os.path.normpath(asset_path),"type":asset_type}
-                    except WindowsError as e:
-                        print 'No Dev Folder found!'
-                        print e
-        except WindowsError as e:
-            pass
-
-        if debug: print 'assets:', assets
-        return assets
-
-    def getVersions_asset(self, asset_path):
-        # return list of published model/rigs and renderable assets if shd found
-        versions = []
-        publish_base = os.path.join(asset_path, 'publish')
-        publish_shd = os.path.join(asset_path, 'shd', 'publish')
-        try:
-            for version in os.listdir(publish_base):
-                if os.path.isfile(os.path.join(publish_base, version)):
-                    versions.append(version)
-        except:
-            print 'No rig publish directory found!'
-            pass
-        try:
-            if os.path.isdir(publish_shd):
-                for shd_version in os.listdir(publish_shd):
-                    if os.path.isfile(os.path.join(publish_shd, shd_version)):
-                        versions.append(shd_version)
-        except:
-            print 'No shd publish directory found!'
-            pass
-        return versions
-
-    def isSpot(self, dir):
-        debug = False
-        if debug: print dir
-        if os.path.isdir(dir):
-            if filter(lambda x: re.match('sh[0-9]+', x), os.listdir(dir)):
-                return True
-            else:
-                return False
-
     def getShots(self):
-        shots = defaultdict(lambda: defaultdict(str))
+        debug = False
+        shots = {}
 
         for dir in os.listdir(self.scenes_root):
             dir_path = os.path.join(self.scenes_root, dir)
@@ -579,354 +585,304 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                         if re.match('sh[0-9]+', subdir):
                             shotpath = os.path.join(spotpath, subdir)
                             if os.path.isdir(shotpath):
-                                shots[dir][subdir] = shotpath
+                                shotname = dir + '_' + subdir
+                                shots[shotname] = shotpath
                 elif re.match('sh[0-9]+', dir):
                     spotpath = self.scenes_root
-                    shotpath = os.path.join(spotpath, subdir)
+                    shotpath = os.path.join(spotpath, dir)
                     if os.path.isdir(shotpath):
-                        shots[''][dir] = shotpath
+                        shots[dir] = shotpath
 
+        if debug: print shots
         return shots
 
-    def getVersions_shot(self, shot_path):
-        versions = []
-        anim_publishpath = os.path.join(shot_path, 'anim', 'publish')
-        cache_path = os.path.join(anim_publishpath, 'cache')
-        # try:
-        for version in os.listdir(anim_publishpath):
-            if os.path.isfile(os.path.join(anim_publishpath, version)):
-                versions.append(version)
-        if os.path.isdir(cache_path):
-            for version in os.listdir(cache_path):
-                if os.path.isfile(os.path.join(cache_path, version)):
-                    versions.append(version)
-        # except:
-        #     pass
-        return versions
-
-    def pop_shotlist(self):
-        self.ui.listWidget_shots.clear()
-        shotlist = self.getShots()
-        for spot in shotlist:
-            for shot in shotlist[spot]:
-                shotname = spot + '_' + shot
-                shot_item = QtWidgets.QListWidgetItem(self.ui.listWidget_shots)
-                shot_item.setText(shotname)
-
-    def pop_shotVersions(self):
+    def getShotsubnames(self, shot):
         debug = False
-        selected_shot = self.ui.listWidget_shots.currentItem().text()
-        spot = '_'.join(selected_shot.split('_')[:-1])
-        shot = selected_shot.split('_')[-1]
+        # return subname, path tuples
+        shotsubnames = {}
+        shotroot = self.getShots()[shot]
+        animdir = os.path.join(shotroot, 'anim')
+        rendir = os.path.join(shotroot, 'render')
 
-        with open(self.status_path, 'r') as statusfile_read:
-            stat_read = json.load(statusfile_read)
-        self.ui.treeWidget_animVersions.clear()
+        animfiles = [f for f in os.listdir(animdir) if os.path.isfile(os.path.join(animdir, f))]
+        renfiles = [f for f in os.listdir(rendir) if os.path.isfile(os.path.join(rendir, f))]
+        for subname in self.get_subnames(animfiles):
 
-        type_items = []
-        topItem_anim = QtWidgets.QTreeWidgetItem()
-        topItem_anim.setText(0, 'Animation')
-        type_items.append(topItem_anim)
+            shotsubnames[subname] = animdir
 
-        topItem_cache = QtWidgets.QTreeWidgetItem()
-        topItem_cache.setText(0, 'Cache')
-        type_items.append(topItem_cache)
+        if renfiles:
+            for subname in self.get_subnames(renfiles):
+                shotsubnames[subname] = rendir
 
-        self.ui.treeWidget_animVersions.addTopLevelItems(type_items)
+        return shotsubnames
 
-        for item in type_items:
-            item.setExpanded(True)
-
-        for version in self.getVersions_shot(self.getShots()[spot][shot]):
-
-            basename, ver, ext = version.split('.')
-            def find_shotname(n):
-                strip_anim = '_'.join(n.split('_')[:2])
-                strip_part = '_'.join(strip_anim.split('-')[:1])
-                return strip_part
-
-            shotname = find_shotname(basename)
-
-            if debug: print 'version: {0}, basename: {1}, shotname: {2}'.format(version, basename, shotname)
-
-            if '.abc' in version.lower():
-                version_item = QtWidgets.QTreeWidgetItem(topItem_cache)
-                version_item.setText(0, version)
-                try:
-                    if stat_read['shot'][shotname]['cache'][basename] == version_item.text(0):
-                        version_item.setText(1, 'Live')
-                except KeyError as keyerror:
-                    print keyerror
-                    pass
-                #self.update_status('shot', selected_shot, version, 'cache')
-            elif 'anim' in version.lower():
-                version_item = QtWidgets.QTreeWidgetItem(topItem_anim)
-                version_item.setText(0, version)
-                try:
-                    if stat_read['shot'][shotname]['anim'][basename] == version_item.text(0):
-                        version_item.setText(1, 'Live')
-                except KeyError as keyerror:
-                    print keyerror
-                    pass
-                #self.update_status('shot', selected_shot, version, 'anim')
+    def getversions(self, subnames, *args):
+        # return version, path tuples
+        debug = False
+        publish = ''
+        for key in args:
+            if key == 'p':
+                print 'Getting Published Versions'
+                publish = 'publish'
             else:
-                version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_animVersions)
-                version_item.setText(0, version)
+                print 'Getting Working Versions'
 
-    def pop_assetlist(self):
-        self.ui.treeWidget_assets.clear()
-        asset_types = set()
+        version_dict = {}
 
-        for asset in self.getAssets():
-            asset_type = self.getAssets()[asset]['type']
-            asset_types.add(asset_type)
-        asset_types = list(asset_types)
-        for itemtype in asset_types:
-            type_item = QtWidgets.QTreeWidgetItem()
-            type_item.setText(0, itemtype)
-            self.ui.treeWidget_assets.addTopLevelItem(type_item)
-            type_item.setExpanded(True)
-        for asset in self.getAssets():
-            asset_type = self.getAssets()[asset]['type']
-            asset_type_item = self.ui.treeWidget_assets.findItems(asset_type, 0)[0]
-            asset_item = QtWidgets.QTreeWidgetItem(asset_type_item)
-            asset_item.setText(0, asset)
+        for subname in subnames:
+            try:
+                subname_path = os.path.join(subnames[subname], publish)
+                if debug: print subname_path
 
-    def pop_assetVersions(self):
+                files = [f for f in os.listdir(subname_path) if os.path.isfile(os.path.join(subname_path, f))]
+
+                if debug: print 'Files:', files
+                for f in files:
+                    path = os.path.join(subname_path, f)
+                    if subname in f:
+                        if not subname in version_dict.keys():
+                            version_dict[subname] = {f:{'path':path}}
+                        else:
+                            version_dict[subname][f] = {'path':path}
+
+            except WindowsError as winErr:
+                print winErr
+                continue
+
+        return version_dict
+
+    def pop_shots(self):
         debug = False
-        selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
+        spot_dict = {}
+        self.ui.treeWidget_shots.clear()
+        shots = self.getShots()
+        for shotname in shots:
 
-        if not os.path.isfile(self.status_path):
-            print 'Status file not found!'
+            spot = '_'.join(shotname.split('_')[:-1])
+            if spot:
+                if not spot in spot_dict:
+                    spot_item = QtWidgets.QTreeWidgetItem()
+                    spot_item.setText(0, spot)
+
+                    spot_dict[spot] = spot_item
+
+                shot_item = QtWidgets.QTreeWidgetItem(spot_dict[spot])
+                shot_item.setText(0, shotname)
+                if debug: print shot_item, shot_item.text(0)
+
+                for item in spot_dict:
+                    self.ui.treeWidget_shots.addTopLevelItem(spot_dict[item])
+                    spot_dict[item].setExpanded(True)
+            else:
+                shot_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_shots)
+                shot_item.setText(0, shotname)
+        if debug: print pprint.pprint(spot_dict)
+
+    def pop_assets(self):
+        debug = False
+        self.ui.treeWidget_assets.clear()
+        asset_dict = {}
+        if debug: print '#pop_assets#'
+        assets = self.getAssets()
+        for assetname in assets:
+            if debug: print assetname
+            asset_type, path = assets[assetname]
+            if debug: print asset_type
+            shddir_check = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f)) and f == 'shd']
+
+            if shddir_check:
+                print 'OLD PROJECT DETECTED!!!!!!!!'
+                self.retrofit()
+                break
+            if not asset_type in asset_dict:
+                type_item = QtWidgets.QTreeWidgetItem()
+                type_item.setText(0, asset_type)
+                asset_dict[asset_type] = type_item
+            asset_item = QtWidgets.QTreeWidgetItem(asset_dict[asset_type])
+            asset_item.setText(0,assetname)
+        if debug: print pprint.pprint(asset_dict)
+        for item in asset_dict:
+            self.ui.treeWidget_assets.addTopLevelItem(asset_dict[item])
+            asset_dict[item].setExpanded(True)
+
+    def pop_Versions(self, tree, *args):
+        debug = False
+
+        try:
+            currentSelection = tree.currentItem()
+            if currentSelection.childCount() < 1:
+                if tree == self.ui.treeWidget_shots:
+                    self.publishDict = self.getversions(self.getShotsubnames(currentSelection.text(0)), 'p')
+                    if debug: '#pop_versions#', pprint.pprint(self.publishDict)
+                    self.update_statusfile()
+                    self.buildVersionTree(self.ui.treeWidget_animVersions, self.publishDict)
+
+
+                elif tree == self.ui.treeWidget_assets:
+                    # print 'Getting Asset Versions'
+                    # print currentSelection.text(0)
+                    self.publishDict = self.getversions(self.getAssetsubnames(currentSelection.text(0)), 'p')
+                    if debug: '#pop_versions#', pprint.pprint(self.publishDict)
+                    self.update_statusfile()
+                    self.buildVersionTree(self.ui.treeWidget_versions, self.publishDict)
+
+
+        except AttributeError as attrErr:
+            print attrErr
+            print 'Nothing Selected'
+            pass
+
+    def buildVersionTree(self, tree, versionDict):
+        tree_dict = {}
+        tree.clear()
+        with open(self.status_path, 'r') as statread:
+            statread = json.load(statread)
+            for subname in versionDict:
+                type = subname.split('_')[-1]
+                if not type in tree_dict:
+                    type_item = QtWidgets.QTreeWidgetItem()
+                    type_item.setText(0, type)
+                    tree_dict[type] = {'type':type_item}
+                subname_item = QtWidgets.QTreeWidgetItem(tree_dict[type]['type'])
+                subname_item.setText(0,subname)
+                tree_dict[type][subname] = subname_item
+                for version in versionDict[subname]:
+                    version_item = QtWidgets.QTreeWidgetItem(subname_item)
+                    version_item.setText(0, version)
+                    if statread[subname][version]['live']:
+                        status = 'Live'
+                    else:
+                        status = ''
+                    version_item.setText(1, status)
+            for type in tree_dict:
+                tree.addTopLevelItem(tree_dict[type]['type'])
+                for subname in tree_dict[type]:
+                    tree_dict[type][subname].setExpanded(True)
+
+    def makelive(self, assetsubname, version, src, dst):
+        # copy src to dst, return dst path
+        shutil.copy2(src, dst)
+        print 'Setting {0} to Live'.format(version)
+        self.update_assetStatus(assetsubname, version, True)
+        #print 'makelive:', dst
+
+        return dst
+
+    def makelive_asset(self):
+        debug = False
+        pop = False
+        for item in self.ui.treeWidget_versions.selectedItems():
+            if item.childCount() < 1:
+                pop = True
+                asset = self.ui.treeWidget_assets.currentItem()
+                asset_type = asset.parent()
+                asset_version = item
+                asset_subname = asset_version.parent()
+                if 'shd' in asset_subname.text(0) or 'mtl' in asset_subname.text(0):
+                    state = 'renderable'
+                    if 'mtl' in asset_subname.text(0):
+                        live_name = asset_subname.text(0) + '.mb'
+                    else:
+                        live_name = asset.text(0) + '.mb'
+                else:
+                    state = ''
+                    live_name = asset.text(0) + '.mb'
+
+                if debug: pprint.pprint(self.publishDict)
+                src = self.publishDict[asset_subname.text(0)][asset_version.text(0)]['path']
+                dst = os.path.join(self.assets_root, asset_type.text(0), state, live_name)
+                if debug: print 'source:', src
+                if debug: print 'Destination:', dst
+                print '\n#\nResult:', self.makelive(asset_subname.text(0), asset_version.text(0), src, dst)
+
+        if pop: self.pop_Versions(self.ui.treeWidget_assets)
+
+    def makelive_shot(self):
+        debug = True
+        pop = False
+        for item in self.ui.treeWidget_animVersions.selectedItems():
+
+            if item.childCount() < 1:
+                pop = True
+                spot = self.ui.treeWidget_shots.currentItem().parent().text(0)
+                shot = self.ui.treeWidget_shots.currentItem().text(0).split('_')[-1]
+                shot_version = item
+                shot_subname = shot_version.parent()
+                shot_type = shot_subname.parent()
+                if '.abc' in shot_version.text(0):
+                    live_name = shot_subname.text(0) + '.abc'
+                else:
+                    live_name = shot_subname.text(0) + '.mb'
+
+                src = self.publishDict[shot_subname.text(0)][shot_version.text(0)]['path']
+                dst = os.path.join(self.scenes_root, spot, shot, live_name)
+
+                if debug: print 'source:', src
+                if debug: print 'Destination:', dst
+                #if debug: pprint.pprint(self.assetDict)
+
+                if 'anim' in shot_subname.text(0):
+                    mklive = self.makelive(shot_subname.text(0), shot_version.text(0), src, dst)
+                    print '\n#\nResult:', mklive
+                    remapped = refEdit.edit(mklive)
+                    print '\nPaths remapped:'
+                    for org, result in remapped:
+                        print 'Original: {0} \nRemapped: {1}\n'.format(org, result)
+                else:
+                    print '\n#\nResult:', self.makelive(shot_subname.text(0), shot_version.text(0), src, dst)
+
+        if pop: self.pop_Versions(self.ui.treeWidget_shots)
+
+    def update_assetStatus(self, assetsubname, version, live):
+        with open(self.status_path, 'r') as statread:
+            statread = json.load(statread)
+        for statversion in statread[assetsubname]:
+            statread[assetsubname][statversion]['live'] = False
+
+        statread[assetsubname][version]['live'] = live
+
+        with open(self.status_path, 'w') as statwrite:
+            json.dump(statread, statwrite, indent=4)
+
+    def update_statusfile(self):
+        debug = False
+        if not os.path.exists(self.status_path):
             self.make_statusfile(self.status_path)
 
-        with open(self.status_path, 'r') as statusfile_read:
-            stat_read = json.load(statusfile_read)
+        with open(self.status_path, 'r') as statread:
+            statread = json.load(statread)
 
-        self.ui.treeWidget_versions.clear()
+        if debug: print 'publish dict:', pprint.pprint(self.publishDict)
+        print '#########'
+        if debug: print 'statread', pprint.pprint(statread)
 
-        type_items = []
-        topItem_rig = QtWidgets.QTreeWidgetItem()
-        topItem_rig.setText(0, 'Rig')
-        type_items.append(topItem_rig)
+        for subname in self.publishDict:
+            if debug: print 'Checking if {0} in status.log'.format(subname)
+            if not subname in statread:
+                if debug: print '{0} not in status.log, adding...'.format(subname)
+                statread[subname] = self.publishDict[subname]
+                for version in statread[subname]:
+                    statread[subname][version]['live'] = False
+            else:
+                for version in self.publishDict[subname]:
 
-        topItem_shd = QtWidgets.QTreeWidgetItem()
-        topItem_shd.setText(0, 'Shd')
-        type_items.append(topItem_shd)
+                    if not version in statread[subname]:
+                        if debug: print '{0} not found in status.log'.format(version)
+                        statread[subname][version] = self.publishDict[subname][version]
+                        if debug: print 'New Entry:', pprint.pprint(statread[subname][version])
+                        statread[subname][version]['live'] = False
 
-        topItem_mtl = QtWidgets.QTreeWidgetItem()
-        topItem_mtl.setText(0, 'Mtl')
-        type_items.append(topItem_mtl)
-
-        self.ui.treeWidget_versions.addTopLevelItems(type_items)
-        for item in type_items:
-            item.setExpanded(True)
-        try:
-            for version in self.getVersions_asset(self.getAssets()[selected_asset]['path']):
-                if debug: print 'version:', version
-
-                if 'rig' in version.lower():
-                    version_item = QtWidgets.QTreeWidgetItem(topItem_rig)
-                    version_item.setText(0, version)
-                elif 'shd' in version.lower():
-                    version_item = QtWidgets.QTreeWidgetItem(topItem_shd)
-                    version_item.setText(0, version)
-                elif 'mtl' in version.lower():
-                    version_item = QtWidgets.QTreeWidgetItem(topItem_mtl)
-                    version_item.setText(0, version)
-                else:
-                    version_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_versions)
-                    version_item.setText(0, version)
-                version_basename = version_item.text(0).split('.')[0]
-
-                if debug: print version_basename
-                try:
-                    if stat_read['asset'][selected_asset]['default'][version_basename] == version_item.text(0):
-                        version_item.setText(1, 'Live')
-                except KeyError as keyerror:
-                    if debug: print keyerror
-                    pass
-
-                try:
-                    if stat_read['asset'][selected_asset]['shd'][version_basename]  == version_item.text(0):
-                        version_item.setText(1, 'Live')
-                except KeyError as keyerror:
-                    if debug: print keyerror
-                    pass
-
-                try:
-                    if stat_read['asset'][selected_asset]['mtl'][version_basename]  == version_item.text(0):
-                        version_item.setText(1, 'Live')
-                except KeyError as keyerror:
-                    if debug: print keyerror
-                    pass
-        except KeyError:
-            pass
+        if debug: print 'Result:'
+        if debug: pprint.pprint(statread)
+        with open(self.status_path, 'w') as statwrite:
+            json.dump(statread, statwrite, indent=4)
 
     def make_statusfile(self, statusfile_path):
         print 'Making Status file: {0}'.format(statusfile_path)
 
         with open(statusfile_path, 'w') as statusfile:
-            default_content = {'asset':{},
-                               'shot':{},
-                               'complinks':{}
-                               }
+            default_content = {}
             json.dump(default_content, statusfile)
-
-    def makelive_assets(self):
-        debug = False
-        asset = self.ui.treeWidget_assets.currentItem()
-        version = self.ui.treeWidget_versions.currentItem()
-        asset_path = self.getAssets()[asset.text(0)]['path']
-
-        dev_dir = os.path.dirname(asset_path)
-        type_dir = os.path.dirname(dev_dir)
-        if 'shd' in version.text(0):
-            if debug: print 'Updating status of shd asset'
-            version_path = os.path.join(asset_path, 'shd', 'publish', version.text(0))
-            shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}.mb'.format(asset.text(0))))
-            if debug: print 'asset', asset.text(0), version.text(0), 'shd'
-            self.update_status('asset', asset.text(0), version.text(0), 'shd')
-        elif 'mtl' in version.text(0):
-            if debug: print 'Updating status of mtl asset'
-            version_path = os.path.join(asset_path, 'shd', 'publish', version.text(0))
-            shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}_mtl.mb'.format(asset.text(0))))
-            if debug: print 'asset', asset.text(0), version.text(0), 'mtl'
-            self.update_status('asset', asset.text(0), version.text(0), 'mtl')
-        else:
-            if debug: print 'Updating status of default asset'
-            version_path = os.path.join(asset_path, 'publish', version.text(0))
-            shutil.copy2(version_path, os.path.join(type_dir, '{0}.mb'.format(asset.text(0))))
-            if debug: print 'asset', asset.text(0), version.text(0), 'default'
-            self.update_status('asset', asset.text(0), version.text(0), 'default')
-        self.pop_assetVersions()
-
-    def makelive_assets_all(self):
-        assets = self.getAssets()
-        for asset in assets:
-
-            asset_path = os.path.join(assets[asset]['path'], 'publish')
-            asset_shd_path = os.path.join(assets[asset]['path'], 'shd', 'publish')
-            latest_asset = fileUtils.getLatest(asset_path, asset, filename=True, none_return=True)
-            latest_shd = fileUtils.getLatest(asset_shd_path, asset, filename=True, stage='shd', none_return=True)
-            latest_mtl = fileUtils.getLatest(asset_shd_path, asset, filename=True, stage='mtl', none_return=True)
-            type_dir = os.path.join(self.assets_root, assets[asset]['type'])
-            print asset
-            print 'rig', latest_asset
-            print 'shd', latest_shd
-            print 'mtl', latest_mtl
-            print
-            if latest_asset:
-                version_path = os.path.join(asset_path, latest_asset)
-                print version_path
-                shutil.copy2(version_path, os.path.join(type_dir, '{0}.mb'.format(asset)))
-                self.update_status('asset', asset, latest_asset, 'default')
-            if latest_shd:
-                version_path = os.path.join(asset_shd_path, latest_shd)
-                print version_path
-                shutil.copy2(version_path, os.path.join(type_dir,  'renderable', '{0}.mb'.format(asset)))
-                self.update_status('asset', asset, latest_shd, 'shd')
-            if latest_mtl:
-                version_path = os.path.join(asset_shd_path, latest_mtl)
-                print version_path
-                shutil.copy2(version_path, os.path.join(type_dir, 'renderable', '{0}.mb'.format(asset)))
-                self.update_status('asset', asset, latest_mtl, 'mtl')
-
-    def makelive_shots(self):
-        selected_shot = self.ui.listWidget_shots.currentItem()
-        selected_version = self.ui.treeWidget_animVersions.currentItem()
-        spot = '_'.join(selected_shot.text().split('_')[:-1])
-        shot = selected_shot.text().split('_')[-1]
-        shotroot = spot + '_' + shot
-
-        shot_path = self.getShots()[spot][shot]
-
-        if '.abc' in selected_version.text(0):
-            cachename = '{0}'.format('_'.join(selected_version.text(0).split('_')[:-1]))
-            live_path = os.path.join(shot_path, '{0}_cache.abc'.format(cachename))
-            version_path = os.path.join(shot_path, 'anim', 'publish', 'cache', selected_version.text(0))
-            shutil.copy2(version_path, live_path)
-            self.update_status('shot', selected_shot.text(), selected_version.text(0), 'cache')
-        else:
-            live_path = os.path.join(shot_path, '{0}_anim.ma'.format('_'.join(selected_version.text(0).split('_')[:-1])))
-            version_path = os.path.join(shot_path, 'anim', 'publish', selected_version.text(0))
-            shutil.copy2(version_path, live_path)
-            print refEdit.edit(live_path)
-            self.update_status('shot', selected_shot.text(), selected_version.text(0), 'anim')
-
-    def update_status(self, assetType, name, version, state):
-        debug = False
-        if debug:
-            print "AssetType: {0} \n name: {1} \n version: {2} \n state: {3}".format(assetType, name, version, state)
-
-        with open(self.status_path, 'r') as statusfile_read:
-            stat_read = json.load(statusfile_read)
-            basename, ver, ext = version.split('.')
-        # Try to edit asset status, if not found, create new entry
-
-        try:
-
-            stat_read[assetType][name][state][basename] = version
-
-        except KeyError as kr_top:
-            try:
-                stat_read[assetType][name][state] = {basename:version}
-            except KeyError as kr_state:
-                stat_read[assetType][name] = {state:{basename:version}}
-
-        with open(self.status_path, 'w') as statusfile_write:
-            json.dump(stat_read, statusfile_write, indent=4)
-
-        # Loop through current listed versions, clear status, if version matches value in shade state, mark as Live
-        version_items = []
-        if assetType == 'asset':
-            for item in range(self.ui.treeWidget_versions.topLevelItemCount()):
-                #self.ui.treeWidget_versions.topLevelItem(item)
-                type_item = self.ui.treeWidget_versions.topLevelItem(item)
-                childcnt = type_item.childCount()
-                for n in range(childcnt):
-                    child = type_item.child(n)
-                    version_items.append(child)
-        elif assetType == 'shot':
-            for item in range(self.ui.treeWidget_animVersions.topLevelItemCount()):
-                toplvl_item = self.ui.treeWidget_animVersions.topLevelItem(item)
-                for version_index in range(toplvl_item.childCount()):
-                    version_item = toplvl_item.child(version_index)
-                    version_items.append(version_item)
-
-        for item in version_items:
-            item.setText(1, '')
-            item_basename, item_ver, item_ext = item.text(0).split('.')
-            with open(self.status_path, 'r') as statusfile_read:
-                stat_read = json.load(statusfile_read)
-            try:
-                if stat_read[assetType][name]['default'][item_basename] == item.text(0):
-                    item.setText(1, 'Live')
-            except KeyError:
-                pass
-
-            try:
-                if stat_read[assetType][name]['shd'][item_basename] == item.text(0):
-                    item.setText(1, 'Live')
-            except KeyError:
-                pass
-
-            try:
-                if stat_read[assetType][name]['mtl'][item_basename] == item.text(0):
-                    item.setText(1, 'Live')
-            except KeyError:
-                pass
-
-            try:
-                if stat_read[assetType][name]['anim'][item_basename] == item.text(0):
-                    item.setText(1, 'Live')
-            except KeyError:
-                pass
-            try:
-                if stat_read[assetType][name]['cache'][item_basename] == item.text(0):
-                    item.setText(1, 'Live')
-            except KeyError:
-                pass
 
     def unsaved_confirm(self):
         result = pm.confirmBox(
@@ -937,268 +893,86 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         )
         return result
 
-    def open_latest_shot(self):
-        debug = False
-        selected_shot = self.ui.listWidget_shots.currentItem().text()
-        spot = '_'.join(selected_shot.split('_')[:-1])
-        shot = selected_shot.split('_')[-1]
-        basename = spot + '_' + shot
+    def open_latest(self, tree, *args):
+        debug = True
 
-        animpath = os.path.join(self.scenes_root, "{0}".format(spot), shot, 'anim')
-        renderpath = os.path.join(self.scenes_root, "{0}".format(spot), shot, 'render')
+        try:
+            asset = tree.currentItem()
+            if asset.childCount() < 1:
+                if tree == self.ui.treeWidget_shots:
+                    workingDict = self.getversions(self.getShotsubnames(asset.text(0)))
+                    if debug: 'WorkingDict:', pprint.pprint(workingDict)
 
-        parts_animation = fileUtils.getLatest(animpath, basename, filename=True, stage='anim', parts=True)
-        parts_render = fileUtils.getLatest(renderpath, basename, filename=True, stage='render', parts=True)
+                elif tree == self.ui.treeWidget_assets:
+                    workingDict = self.getversions(self.getAssetsubnames(asset.text(0)))
+                    if debug: 'WorkingDict:', pprint.pprint(workingDict)
+                    for subname in workingDict:
+                        print'Sorted:', sorted(workingDict[subname])[-1]
+                latest = {}
+                for subname in workingDict:
 
-        if debug: print 'parts_animation:', parts_animation, type(parts_animation), '\n', 'parts_render:', parts_render, type(parts_render)
+                    latest_version = sorted(workingDict[subname])[-1]
+                    version_path = workingDict[subname][latest_version]['path']
+                    latest[subname] = version_path
 
-        stage_select = pm.confirmDialog(
-                title='Choose your own adventure!',
-                message='Which scene do you want to open?',
-                button=['animation', 'Renderable', 'Cancel'],
-                cancelButton='Close',
-                dismissString='Close',
-            )
-
-        def multipart_buttons(parts_list):
-
-            parts_list.append('Close')
-
-            return parts_list
-
-        if stage_select == 'animation':
-            if len(parts_animation)>1:
-                part_select = pm.confirmDialog(
-                        title='Choose your own adventure!',
-                        message='Multiple parts were found, which scene do you want to open?',
-                        button=multipart_buttons(parts_animation),
-                        cancelButton='Close',
-                        dismissString='Close',
-                    )
-
-                if part_select != 'Close':
+                if len(latest) > 1:
+                    oa_gui = oa.myGui(latest)
+                    oa_gui.run()
+                else:
                     try:
-                        pm.openFile(os.path.join(animpath, part_select))
-                    except RuntimeError:
-                        print 'Opening:', part_select
+                        if debug: print '#open_latest# latest.dict():', latest
+                        if debug: print '#open_latest# latest.values()', latest.values()
+                        path = latest[latest.keys()[0]]
+                        print 'Opening:', path
+                        pm.openFile(path)
+                    except RuntimeError as rte:
+                        print rte
                         confirm = self.unsaved_confirm()
-
                         if confirm == True:
+
                             pm.saveFile()
-                            pm.openFile(os.path.join(animpath, part_select), force=True)
-                        elif confirm == False:
-                            pm.openFile(os.path.join(animpath, part_select), force=True)
-            elif len(parts_animation) < 1:
-                new_scene = pm.confirmDialog(
-                    title='Choose your own adventure!',
-                    message='An animation scene was not found, create an empty scene?',
-                    button=['Yes', 'No', 'Close'],
-                    cancelButton='Close',
-                    dismissString='Close',
-                )
+                            pm.openFile(path, force=True)
+                        else:
+                            pm.openFile(path, force=True)
 
-                if new_scene == 'Yes':
-                    savename = '{0}_{1}_render.001.ma'.format(animpath, basename)
-                    try:
-                        pm.newFile()
-                    except RuntimeError:
-                        confirm = self.unsaved_confirm()
-
-                        if confirm == True:
-                            pm.saveFile()
-                            pm.newFile(force=True)
-                        elif confirm == False:
-                            pm.newFile(force=True)
-                    pm.saveAs(savename)
-
-            else:
-                try:
-                    pm.openFile(os.path.join(animpath, parts_animation[0]))
-                except RuntimeError:
-                    print 'Opening:', parts_animation[0]
-                    confirm = self.unsaved_confirm()
-
-                    if confirm == True:
-                        pm.saveFile()
-                        pm.openFile(os.path.join(animpath, parts_animation[0]), force=True)
-                    elif confirm == False:
-                        pm.openFile(os.path.join(animpath, parts_animation[0]), force=True)
-
-        elif stage_select == 'Renderable':
-            if len(parts_render) > 1:
-                part_select = pm.confirmDialog(
-                    title='Choose your own adventure!',
-                    message='Multiple parts were found, which scene do you want to open?',
-                    button=multipart_buttons(parts_render),
-                    cancelButton='Close',
-                    dismissString='Close',
-                )
-
-                if part_select != 'Close':
-                    try:
-                        pm.openFile(os.path.join(renderpath, part_select))
-                    except RuntimeError:
-                        print 'Opening:', part_select
-                        confirm = self.unsaved_confirm()
-
-                        if confirm == True:
-                            pm.saveFile()
-                            pm.openFile(os.path.join(renderpath, part_select), force=True)
-                        elif confirm == False:
-                            pm.openFile(os.path.join(renderpath, part_select), force=True)
-            elif len(parts_render) < 1:
-                new_scene = pm.confirmDialog(
-                    title='Choose your own adventure!',
-                    message='A Renderable scene was not found, create an empty scene?',
-                    button=['Yes', 'No', 'Close'],
-                    cancelButton='Close',
-                    dismissString='Close',
-                )
-
-                if new_scene == 'Yes':
-                    savename = '{0}_{1}_render.001.ma'.format(renderpath, basename)
-                    try:
-                        pm.newFile()
-                    except RuntimeError:
-                        confirm = self.unsaved_confirm()
-
-                        if confirm == True:
-                            pm.saveFile()
-                            pm.newFile(force=True)
-                        elif confirm == False:
-                            pm.newFile(force=True)
-                    pm.saveAs(savename)
-
-            else:
-                try:
-                    pm.openFile(os.path.join(renderpath, parts_render[0]))
-                except RuntimeError:
-                    print 'Opening:', parts_render[0]
-                    confirm = self.unsaved_confirm()
-
-                    if confirm == True:
-                        pm.saveFile()
-                        pm.openFile(os.path.join(renderpath, parts_render[0]), force=True)
-                    elif confirm == False:
-                        pm.openFile(os.path.join(renderpath, parts_render[0]), force=True)
-        else:
+        except AttributeError as attrErr:
+            print attrErr
+            print 'Nothing Selected'
             pass
 
-    def open_latest_asset(self):
+    def showcomment(self, tree, *args):
         debug = False
-        latest_shd = None
-        selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
-        assettype = self.getAssets()[selected_asset]['type']
-        # def getType():
-        #     assettype = ''
-        #     for dir in os.listdir(self.assets_root):
-        #         for item in os.listdir(os.path.join(self.assets_root, dir)):
-        #             if selected_asset in item:
-        #                 assettype = dir
-        #     return assettype
 
-        sel_assetroot = os.path.join(self.assets_root, assettype, 'dev', selected_asset)
-        shd_path = os.path.join(sel_assetroot, 'shd')
-        try:
-            latest_assetver = fileUtils.getLatest(sel_assetroot, selected_asset)
-            latest_asset = latest_assetver[0]
-            if debug: print 'latest_assetver:', latest_assetver, type(latest_assetver)
-            if os.path.exists(shd_path):
-                if os.listdir(shd_path):
-                    latest_shdver = fileUtils.getLatest(shd_path, selected_asset, stage='shd')
-                    if debug: print 'latest_shdver:', latest_shdver, type(latest_shdver)
-                else:
-                    latest_shdver = None
-                    print '{0} is empty'.format(shd_path)
-            else:
-                latest_shdver = None
-                print '{0} doesnt exist'.format(shd_path)
-            # for asset_version in os.listdir(sel_assetroot):
-            #     if latest_assetver in asset_version:
-            #         latest_asset = asset_version
-            #     else:
-            #         pass
-        except WindowsError:
-            return
-
-        if latest_shdver:
-            latest_shd = latest_shdver[0]
-            result = pm.confirmDialog(
-                title='Choose your own adventure!',
-                message='A renderable version of this asset was found, which rig do you want to open?',
-                button=['Non-Renderable', 'Renderable', 'Cancel'],
-                cancelButton='Close',
-                dismissString='Close',
-            )
-            if result == 'Non-Renderable':
-                try:
-
-                    pm.openFile(os.path.join(sel_assetroot, latest_asset))
-                except RuntimeError:
-
-                    confirm = self.unsaved_confirm()
-
-                    if confirm == True:
-
-                        pm.saveFile()
-                        pm.openFile(os.path.join(sel_assetroot, latest_asset), force=True)
-                    elif confirm == False:
-
-                        pm.openFile(os.path.join(sel_assetroot, latest_asset), force=True)
-                    else:
-                        pass
-
-            elif result == 'Renderable':
-                try:
-
-                    pm.openFile(os.path.join(shd_path, latest_shd))
-                except RuntimeError:
-
-                    confirm = self.unsaved_confirm()
-
-                    if confirm == True:
-
-                        pm.saveFile()
-                        pm.openFile(os.path.join(shd_path, latest_shd), force=True)
-                    elif confirm == False:
-
-                        pm.openFile(os.path.join(shd_path, latest_shd), force=True)
-                    else:
-                        pass
-            else:
-                return
-
-        else:
+        selecteditem = tree.currentItem()
+        if selecteditem.childCount() < 1:
+            version = selecteditem
+            subname = selecteditem.parent()
+            version_path = self.publishDict[subname.text(0)][version.text(0)]['path']
+            if debug: print 'version_path:', version_path
+            asset_publish = os.path.dirname(version_path)
+            asset_root = os.path.dirname(asset_publish)
+            if debug: print 'asset_root:', asset_root
+            changelog = os.path.join(asset_root, 'changelog.json')
             try:
+                with open(changelog, 'r') as changelog_read:
+                    log = json.load(changelog_read)
+                if tree == self.ui.treeWidget_versions:
+                    comments = self.ui.asset_comments
+                elif tree == self.ui.treeWidget_animVersions:
+                    comments = self.ui.anim_comments
+                comments.clear()
+                if debug: print 'Asset Comments:', pprint.pprint(log[subname.text(0)])
 
-                pm.openFile(os.path.join(sel_assetroot, latest_asset))
-            except RuntimeError:
-
-                confirm = self.unsaved_confirm()
-
-                if confirm == True:
-
-                    pm.saveFile()
-                    pm.openFile(os.path.join(sel_assetroot, latest_asset), force=True)
-                elif confirm == False:
-
-                    pm.openFile(os.path.join(sel_assetroot, latest_asset), force=True)
-                else:
-                    pass
-
-    def showcomment_asset(self):
-        selected_asset = self.ui.treeWidget_assets.currentItem().text(0)
-        selected_version = self.ui.treeWidget_versions.currentItem().text(0)
-        assets = self.getAssets()
-        try:
-            if selected_asset in assets:
-                asset_changelog = os.path.join(assets[selected_asset]['path'], 'changelog.json')
-                if os.path.exists(asset_changelog):
-                    with open(asset_changelog, 'r') as log_read:
-                        log = json.load(log_read)
-                    self.ui.comment_asset.setText(log[selected_version]['comment'])
-        except:
-            pass
+                for vers in log[subname.text(0)]:
+                    vers_item = QtWidgets.QTreeWidgetItem(comments)
+                    vers_item.setExpanded(True)
+                    vers_item.setText(0, vers)
+                    for timestamp, comment in log[subname.text(0)][vers]:
+                        log_item = QtWidgets.QTreeWidgetItem(vers_item)
+                        log_item.setText(2, timestamp)
+                        log_item.setText(1, comment)
+            except:
+                pass
 
     def setarbProj(self):
         arbproj_root = pm.windows.promptForFolder()
@@ -1226,6 +1000,53 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 assettype = line.split(' ')[3]
                 assetname = line.split(' ')[4]
                 arborist.createAsset(projpath, assettype, assetname)
+
+    def retrofit(self):
+        debug = False
+        import retrofit as retrofit
+        reload(retrofit)
+        #popup window notifying the current project is old and should be fixed
+        #button to open new window showing planned changes
+        #Continue/cancel buttons
+        #for each asset, move contents of shd to root
+        #modify changelog.json:
+        #for each version, make subtype key = version = [[timestamp, comment]]
+        #for each shot, move contents of anim/publish/cache to anim/publish
+
+        change_list = []
+        if debug: print '#retrofit#'
+        assets = self.getAssets()
+        if debug: print assets
+        for asset in assets:
+            type, asset_root = assets[asset]
+            if debug: print type
+            if debug: print asset_root
+            shddir_check = [f for f in os.listdir(asset_root) if os.path.isdir(os.path.join(asset_root, f)) and f == 'shd']
+            if shddir_check:
+                shddir = os.path.join(asset_root, shddir_check[0])
+                for item in os.listdir(shddir):
+                    if item != '.mayaSwatches':
+                        item_path = os.path.join(shddir, item)
+                        change_list.append(('move', item_path, asset_root))
+                change_list.append(('remove', shddir, ''))
+                if 'changelog.json' in os.listdir(asset_root):
+                    change_list.append(('modify', os.path.join(asset_root, 'changelog.json'), ''))
+        shots = self.getShots()
+        for shot in shots:
+            type, shot_root = shots[shot]
+            publish_path = os.path.join(shot_root, 'anim', 'publish')
+            cache_path = os.path.join(publish_path, 'cache')
+            if os.path.exists(cache_path):
+                for item in os.listdir(cache_path):
+                    item_path = os.path.join(cache_path, item)
+                    change_list.append(('move', item_path, publish_path))
+                change_list.append(('remove', cache_path, ''))
+                if 'changelog.json' in os.listdir(asset_root):
+                    change_list.append(('modify', os.path.join(asset_root, 'changelog.json'), ''))
+
+        retro = retrofit.myGui(change_list)
+        retro.run()
+
 ######## CONNECT UI ELEMENTS AND FUNCTIONS ABOVE HERE #########
 
     def deleteControl(self, control):
@@ -1252,4 +1073,5 @@ def run():
     myWin.run()
 
 def test():
-    return 'hello World!'
+    test_item = QtWidgets.QTreeWidgetItem(myWin.ui.treeWidget_shots)
+    test_item.setText(0,'blah')

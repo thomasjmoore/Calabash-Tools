@@ -46,7 +46,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     shot_name = filename.split('.')[0].replace('_anim', '')
     anim_dir = os.path.join(shot_dir, 'anim').replace('\\', '/')
-    cache_dir = os.path.join(shot_dir, 'anim', 'publish', 'cache').replace('\\', '/')
+    cache_dir = os.path.join(anim_dir, 'publish').replace('\\', '/')
     light_dir = os.path.join(shot_dir, 'render')
     DoIt_fileName = 'autocache_{0}'.format(shot_name)
     DoIt_dir = os.path.join(shot_dir)
@@ -203,12 +203,22 @@ def publishAnim():
     # basename, ver, ext = filename.split('.')
     # nonver = '{0}.{1}'.format(basename, ext)
     publish_dir = os.path.join(animroot, 'publish')
-    pm.system.saveFile(force=True)
+    result = pm.promptDialog(
+            title='Leave a comment',
+            message='         What did you do?            ',
+            button=['OK'],
+            defaultButton='OK',
+    )
+
+    comment = pm.promptDialog(query=True, text=True)
+    #pm.system.saveFile(force=True)
     if not os.path.exists(publish_dir):
         os.mkdir(publish_dir)
-    shutil.copy2(file_path, os.path.join(publish_dir, filename))
+    if increaseVersion.versionUp():
+        shutil.copy2(file_path, os.path.join(publish_dir, filename))
 
-    increaseVersion.versionUp()
+
+    fileUtils.changelog(animroot, filename, comment)
 
 def ouroboros():
     """

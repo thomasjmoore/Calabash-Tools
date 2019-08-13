@@ -10,11 +10,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pipeman/pipeman.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="924">
-              <caret line="424" column="60" selection-start-line="424" selection-start-column="60" selection-end-line="424" selection-end-column="60" />
+            <state relative-caret-position="778">
+              <caret line="637" selection-start-line="637" selection-end-line="637" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -22,56 +22,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/calabash/shading_utils.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="684">
-              <caret line="168" column="81" lean-forward="true" selection-start-line="168" selection-start-column="4" selection-end-line="168" selection-end-column="81" />
-              <folding>
-                <element signature="e#0#21#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch.py">
+        <entry file="file://$PROJECT_DIR$/pipeman/arborist.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="77" selection-start-column="77" selection-end-column="77" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pipeman/anim_autocache.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="23" selection-start-column="23" selection-end-column="23" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/calabash/fileUtils.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="544">
-              <caret line="50" column="9" selection-start-line="50" selection-start-column="9" selection-end-line="50" selection-end-column="9" />
-              <folding>
-                <element signature="e#0#21#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/calabash/animUtils.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="544">
-              <caret line="32" column="56" selection-start-line="32" selection-start-column="56" selection-end-line="32" selection-end-column="56" />
-              <folding>
-                <element signature="e#0#23#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="948">
+              <caret line="151" column="30" selection-start-line="151" selection-start-column="30" selection-end-line="151" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -89,41 +44,56 @@
     <findStrings>
       <find>butto</find>
       <find>color</find>
+      <find>listWidget_shots</find>
+      <find>latest</find>
+      <find>'project path:'</find>
+      <find>update</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/pipeman/refEdit.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/projectTree.txt" />
-        <option value="$PROJECT_DIR$/pipeman/arborist.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch_1.py" />
         <option value="Z:/raid/3Dprojects/maya/projects/Starkist_RedCarpet/scenes/status.json" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/arborist_scratch.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/Ouroboros.py" />
         <option value="$PROJECT_DIR$/calabash/calabash_menu.py" />
         <option value="$USER_HOME$/Desktop/ctools_temp/src/calabash/scripts/version.md" />
-        <option value="$PROJECT_DIR$/pipeman/anim_autocache.py" />
         <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.py" />
         <option value="$PROJECT_DIR$/version.md" />
-        <option value="$PROJECT_DIR$/calabash/fileUtils.py" />
-        <option value="$PROJECT_DIR$/calabash/animUtils.py" />
-        <option value="$PROJECT_DIR$/pipeman/pipeman.py" />
         <option value="$PROJECT_DIR$/calabash/shading_utils.py" />
+        <option value="$PROJECT_DIR$/pipeman/anim_autocache.py" />
+        <option value="$USER_HOME$/Dropbox/Work/maya/projects/cbtools/scenes/test/sh010/autocache/autocache_test_sh010-2.py" />
+        <option value="$USER_HOME$/Dropbox/Work/maya/projects/cbtools/scenes/test/sh010/autocache/autocache_test_sh010-1.py" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/vrscenes" />
+        <option value="$PROJECT_DIR$/pipeman/refEdit.py" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/pipeman_makelive-old.py" />
+        <option value="$USER_HOME$/Dropbox/Work/maya/projects/cbtools/scenes/status.json" />
+        <option value="$PROJECT_DIR$/pipeman/openAsset.py" />
+        <option value="$USER_HOME$/Dropbox/Work/maya/projects/cbtools/scenes/assets/character/dev/basic_ball/changelog.json" />
+        <option value="$PROJECT_DIR$/calabash/animUtils.py" />
+        <option value="$PROJECT_DIR$/calabash/increaseVersion.py" />
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/calabash_projectRetrofit.py" />
+        <option value="$PROJECT_DIR$/calabash/fileUtils.py" />
+        <option value="$USER_HOME$/Google Drive/Scripts/maya/cbtools/src/calabash/scripts/pipeman/retrofit.py" />
+        <option value="$PROJECT_DIR$/pipeman/retrofit.py" />
+        <option value="$PROJECT_DIR$/pipeman/arborist.py" />
+        <option value="$PROJECT_DIR$/pipeman/pipeman.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="2154" />
-    <option name="y" value="-411" />
-    <option name="width" value="617" />
-    <option name="height" value="1040" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="1713" />
+    <option name="width" value="1734" />
+    <option name="height" value="1407" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -154,14 +124,16 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python&#10;TEXT" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Google Drive/Scripts/maya/cbtools/src/calabash/scripts/pipeman" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\young\Google Drive\Scripts\maya\cbtools\src\calabash\scripts\pipeman" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\guest1\Documents\maya\modules\calabash\scripts\pipeman" />
     </key>
@@ -242,14 +214,14 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="-411" width="1096" height="1896" extended-state="6" />
+    <frame x="1713" y="0" width="1734" height="1407" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18809074" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14622642" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32988507" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32933652" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.56078434" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
@@ -265,58 +237,13 @@
     </layout>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../../../projects/CalabashToolsProj/scenes/sh01/sh01_anim.mb" />
     <entry file="file://$PROJECT_DIR$/../../../projects/CalabashToolsProj/scenes/sh01/ctp_sh01_anim.ma" />
     <entry file="file://$PROJECT_DIR$/../../../projects/CalabashToolsProj/scenes/ctp_shots/sh01/anim/publish/elefly_ctp_sh01_anim.abc" />
-    <entry file="file://$PROJECT_DIR$/pipeman/anim_autocache_ui.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1046">
-          <caret line="125" column="13" selection-start-line="125" selection-start-column="13" selection-end-line="125" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../../projects/CalabashToolsProj/scenes/ctp_shots/sh01/DoIt_ctp_sh01.py" />
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/projectTree.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="493">
-          <caret line="29" column="45" selection-start-line="29" selection-start-column="45" selection-end-line="29" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pipeman/arborist.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="629">
-          <caret line="39" selection-start-line="39" selection-end-line="39" />
-          <folding>
-            <element signature="e#264#299#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://Z:/raid/3Dprojects/maya/projects/Starkist_RedCarpet/scenes/status.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" column="41" selection-start-line="16" selection-start-column="41" selection-end-line="16" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/Ouroboros.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret selection-end-line="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/arborist_scratch.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
-          <caret line="32" column="25" lean-forward="true" selection-start-line="32" selection-start-column="25" selection-end-line="32" selection-end-column="25" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/projectTree.txt" />
+    <entry file="file://Z:/raid/3Dprojects/maya/projects/Starkist_RedCarpet/scenes/status.json" />
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/Ouroboros.py" />
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/arborist_scratch.py" />
     <entry file="file://$PROJECT_DIR$/calabash/calabash_menu.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="901">
@@ -327,43 +254,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../projects/CalabashToolsProj/scenes/status.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" column="1" selection-start-line="17" selection-start-column="1" selection-end-line="17" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pipeman/refEdit.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="23" column="19" lean-forward="true" selection-start-line="23" selection-start-column="19" selection-end-line="23" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#37#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Desktop/ctools_temp/src/calabash/scripts/version.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor>
-            <caret column="2" selection-start-column="2" selection-end-column="2" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="77" selection-start-column="77" selection-end-column="77" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../projects/CalabashToolsProj/scenes/ctp_shots/sh01/autocache_ctp_sh01.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../projects/CalabashToolsProj/scenes/status.json" />
+    <entry file="file://$USER_HOME$/Desktop/ctools_temp/src/calabash/scripts/version.md" />
+    <entry file="file://$PROJECT_DIR$/../../../projects/CalabashToolsProj/scenes/ctp_shots/sh01/autocache_ctp_sh01.py" />
     <entry file="file://$PROJECT_DIR$/version.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -374,47 +267,47 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/calabash/increaseVersion.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="578">
-          <caret line="37" column="16" selection-start-line="37" selection-start-column="16" selection-end-line="37" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Program Files/Autodesk/Maya2018/scripts/startup/incrementalSaveScene.mel">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/calabash/fileUtils.py">
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/CalabashToolsProj/scenes/status.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/cbtools/scenes/test/sh010/autocache/autocache_test_sh010.py" />
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
-          <caret line="50" column="9" selection-start-line="50" selection-start-column="9" selection-end-line="50" selection-end-column="9" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
+        <state>
+          <caret column="9" selection-start-column="9" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/anim_autocache (1).py" />
+    <entry file="file://$PROJECT_DIR$/pipeman/anim_autocache_ui (1).py" />
+    <entry file="file://$PROJECT_DIR$/pipeman/anim_autocache_ui.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="795">
+          <caret line="125" lean-forward="true" selection-start-line="125" selection-end-line="125" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/cbtools/scenes/test/sh010/autocache/autocache_test_sh010-2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="169" lean-forward="true" selection-start-line="7" selection-start-column="169" selection-end-line="7" selection-end-column="169" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/cbtools/scenes/test/sh010/autocache/autocache_test_sh010-1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="169" selection-start-line="7" selection-start-column="169" selection-end-line="7" selection-end-column="169" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pipeman/anim_autocache.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="23" selection-start-column="23" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pipeman/pipeman.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="924">
-          <caret line="424" column="60" selection-start-line="424" selection-start-column="60" selection-end-line="424" selection-end-column="60" />
-          <folding>
-            <element signature="e#0#23#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/calabash/animUtils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
-          <caret line="32" column="56" selection-start-line="32" selection-start-column="56" selection-end-line="32" selection-end-column="56" />
+        <state relative-caret-position="578">
+          <caret line="74" column="122" selection-start-line="74" selection-start-column="122" selection-end-line="74" selection-end-column="122" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
@@ -423,10 +316,185 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/calabash/shading_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="684">
-          <caret line="168" column="81" lean-forward="true" selection-start-line="168" selection-start-column="4" selection-end-line="168" selection-end-column="81" />
+        <state relative-caret-position="812">
+          <caret line="253" column="48" selection-start-line="253" selection-start-column="48" selection-end-line="253" selection-end-column="48" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/default/cache/vrscenes/vrscene_rsLayerTest_char.vrscene">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-5984" />
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/default/cache/vrscenes/vrscene_rsLayerTest_char_nodes.vrscene">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="25" lean-forward="true" selection-start-column="25" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/default/cache/vrscenes/vrscene_rsLayerTest_char_materials.vrscene">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/vrscenes">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="49" selection-start-column="49" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/refEdit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="782">
+          <caret line="46" column="33" selection-start-line="46" selection-start-column="33" selection-end-line="46" selection-end-column="33" />
+          <folding>
+            <element signature="e#0#37#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/cbtools/scenes/status.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="23" column="1" lean-forward="true" selection-start-line="23" selection-start-column="1" selection-end-line="23" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/anim_autocache_ui.ui">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/openAsset_ui.ui">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/gondo_link_ui.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/openAsset_ui.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/gondo_link.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="574">
+          <caret line="47" column="29" selection-start-line="47" selection-start-column="29" selection-end-line="47" selection-end-column="29" />
+          <folding>
+            <element signature="e#1749#2100#0" />
+            <element signature="e#2145#4096#0" />
+            <element signature="e#4144#4305#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/gondo_link_ui.ui">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/pipeman_makelive-old.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5423">
+          <caret line="319" column="20" selection-start-line="319" selection-start-column="20" selection-end-line="319" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Google Drive/Scripts/maya/cbtools/src/calabash/scripts/pipeman/pipeman.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="829">
+          <caret line="1166" column="28" lean-forward="true" selection-start-line="1158" selection-start-column="20" selection-end-line="1166" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/openAsset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="846">
+          <caret line="79" lean-forward="true" selection-start-line="79" selection-end-line="79" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/calabash/animUtils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="731">
+          <caret line="217" column="8" selection-start-line="217" selection-start-column="8" selection-end-line="217" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/calabash/increaseVersion.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="748">
+          <caret line="48" column="4" selection-start-line="48" selection-start-column="4" selection-end-line="48" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/calabash_projectRetrofit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" column="39" selection-start-line="3" selection-start-column="39" selection-end-line="3" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Google Drive/Scripts/maya/snippets/DockableUi_Maya_2018.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="12" column="18" lean-forward="true" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Google Drive/Scripts/maya/cbtools/src/calabash/scripts/pipeman/retrofit.py" />
+    <entry file="file://$PROJECT_DIR$/pipeman/retrofit_ui.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/calabash/fileUtils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1033">
+          <caret line="141" column="8" selection-start-line="141" selection-start-column="8" selection-end-line="141" selection-end-column="8" />
+          <folding>
+            <element signature="e#0#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/cbtools/scenes/assets/character/dev/basic_ball/changelog.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="558" selection-start-column="558" selection-end-column="558" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/CalabashToolsProj/scenes/assets/characters/dev/elefly/changelog.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$USER_HOME$/Dropbox/Work/maya/projects/leanwbt/scenes/assets/products/dev/PCAP_0000/changelog.json">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/retrofit.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="48" column="107" selection-start-line="48" selection-start-column="107" selection-end-line="48" selection-end-column="107" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/arborist.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="948">
+          <caret line="151" column="30" selection-start-line="151" selection-start-column="30" selection-end-line="151" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pipeman/pipeman.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="778">
+          <caret line="637" selection-start-line="637" selection-end-line="637" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
           </folding>
         </state>
       </provider>

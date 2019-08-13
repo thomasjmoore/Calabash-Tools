@@ -5,44 +5,86 @@ import re
 """
        
 """
+def starPrint(str):
+    print '\n*************************************'
+    print str
+    print '\n*************************************'
 def export_anim(scene_name, anim_dir, cache_dir, targets, frame_range):
-    path = os.path.join(anim_dir, current_version(anim_dir, scene_name, 'file_name'))
-    frame_start, frame_end = frame_range
-    version = scene_name
-    pm.openFile(path, f=True)
-    print '\n*************************************'
-    print pm.sceneName()
-    print '\n*************************************'
-    for item in targets.keys():
-
-        target, target_ns, target_dag = targets[item]
-
-        for item in targets:
-            for mesh in pm.listRelatives(item, ad=True, type=['mesh', 'nurbsCurve']):
-                mesh = pm.PyNode(mesh)
-                #mesh_transform = pm.PyNode(pm.listRelatives(mesh, p=True)[0])
-                if len(mesh.namespaceList()) > 0:
-                    if not pm.hasAttr(mesh, 'namespace'):
-                        pm.addAttr(mesh, ln='namespace', dt='string')
-
-                    pm.setAttr(mesh.longName() + '.namespace', ':'.join(mesh.namespaceList()))
-
-        command = '-fr {0} {1}' \
-                  ' -uvWrite ' \
-                  '-worldSpace ' \
-                  '-ro ' \
-                  '-sn 0 ' \
-                  '-wv ' \
-                  '-attr color -attr Color -attr namespace -attr material -attr Material ' \
-                  '-root {2} -file {3}'.format(frame_start, frame_end, target_dag, os.path.join(cache_dir, '{0}_{1}_anim.{2}.abc'.format(
-            target_ns,
-			scene_name,
-            current_version(anim_dir, scene_name, 'number'))))
+    try:
+        path = os.path.join(anim_dir, current_version(anim_dir, scene_name, 'file_name'))
+        frame_start, frame_end = frame_range
+        version = scene_name
+        pm.openFile(path, f=True)
         print '\n*************************************'
-        print command
+        print pm.sceneName()
         print '\n*************************************'
+        for item in targets.keys():
+            geogrps = []
 
-        cmds.AbcExport(j=command)
+            target, target_ns, target_dag = targets[item]
+            starPrint('Processing item: {0}'.format(item))
+            null = pm.group(name=target_ns + ':null', empty=True)
+            exattrs = []
+
+            for d in pm.listRelatives(item, ad=True):
+                for attr in pm.listAttr(d, ud=True):
+                    if re.match('shd_', attr):
+                        exattrs.append(d + '.' + attr)
+
+            starPrint('Extra attributes for {0}: {1}'.format(item, exattrs))
+
+            for exattr in exattrs:
+                attrType = pm.getAttr(exattr, type=True)
+                # starPrint('exattr: {0}, target_ns: {1}'.format(exattr, target_ns))
+                nullattr = 'exattr_' + exattr.replace('.', '__').replace(target_ns + ':', '')
+                # starPrint('nullattr: {0}'.format(nullattr))
+                pm.addAttr(null, ln=nullattr, type=attrType, k=1)
+                pm.connectAttr(exattr, null + '.' + nullattr)
+
+            for child in pm.listRelatives(item, c=True):
+                name = child.longName()
+                meshes = pm.listRelatives(child, ad=True, type='mesh')
+                # starPrint("name: {0}, meshes: {1}".format(name, meshes))
+
+                if meshes:
+                    # starPrint('Geo Found!: {0}'.format(name))
+                    geogrps.append(name)
+                    for mesh in meshes:
+                        mesh = pm.PyNode(mesh)
+                        # mesh_transform = pm.PyNode(pm.listRelatives(mesh, p=True)[0])
+                        if len(mesh.namespaceList()) > 0:
+                            if not pm.hasAttr(mesh, 'namespace'):
+                                pm.addAttr(mesh, ln='namespace', dt='string')
+
+                            pm.setAttr(mesh.longName() + '.namespace', ':'.join(mesh.namespaceList()))
+            pm.addAttr(null, ln='namespace', dt='string')
+            pm.setAttr(null.longName() + '.namespace', target_ns)
+            # starPrint('namespacelist: {0}'.format(mesh.namespaceList()))
+            # starPrint('namespace: {0}'.format(pm.getAttr(mesh + '.namespace')))
+            starPrint('null, {0} created with attributes: {1}'.format(null.name(), pm.listAttr(null, ud=True)))
+            # starPrint("Geo Groups: {0}".format(geogrps))
+            rootstr = '{0} -root {1}'.format(null.longName(), ' -root '.join(geogrps))
+
+            command = '-fr {0} {1}' \
+                      ' -uvWrite ' \
+                      '-worldSpace ' \
+                      '-ro ' \
+                      '-sn 0 ' \
+                      '-wv ' \
+                      '-atp exattr_ -atp namespace ' \
+                      '-root {2} -file {3}'.format(frame_start, frame_end, rootstr, os.path.join(cache_dir, '{0}_{1}_cache.{2}.abc'.format(
+                target_ns,
+                scene_name,
+                current_version(anim_dir, scene_name, 'number'))))
+            print '\n*************************************'
+            print command
+            print '\n*************************************'
+
+            cmds.AbcExport(j=command)
+
+            return 0
+    except Exception as exception:
+        return exception
 
 def current_version(path, scene_name, option):
     existing_files = []
@@ -69,5 +111,10 @@ def run(dict_input):
     cache_dir = dict_input['cache_dir']
     targets = dict_input['targets']
     frame_range = dict_input['frame_range']
-    export_anim(scene_name, anim_dir, cache_dir, targets, frame_range)
+    export = export_anim(scene_name, anim_dir, cache_dir, targets, frame_range)
+    if export:
+        print export
+    else:
+        starPrint('Export successful!')
+    raw_input('Press enter to exit')
     #update_anim(scene_name, light_dir, cache_dir, targets)

@@ -38,11 +38,16 @@ def versionUp(*args):
                               title="Save file?", button=["Save", "Don't Save", "Cancel"], defaultButton="Save",
                               cancelButton="Cancel")
     if save == "Save":
+        print 'Saving before versioning up'
         pm.saveFile(force=True)
-    if save =="Cancel":
+    elif save =="Cancel":
+        print 'Cancelling anim publish'
         return None
+    else:
+        print 'Skipping save before versioning'
 
     pm.saveAs(new_file_path, f=True)
+
 
     # that slash replace might not work on mac
     mel.eval('addRecentFile("%s", "mayaAscii")'%(new_file_path.replace("\\","/")))

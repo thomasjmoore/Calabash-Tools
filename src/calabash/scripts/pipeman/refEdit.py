@@ -6,7 +6,7 @@ debug = False
 def edit(animpath):
     repathed = []
     projectpath = animpath.split('scenes')[0]
-    print('Project Path:'), print(projectpath)
+    if debug: print('Project Path:'), print(projectpath)
     for rawline in fileinput.input(animpath, inplace=not debug):
 
         if '-typ "maya' in rawline:
@@ -26,7 +26,7 @@ def edit(animpath):
                 renderablepath = renderablepath.replace('\\', '/')
                 newline = rawline.replace(line, renderablepath)
                 print(newline)
-                repathed.append(renderablepath)
+                repathed.append((line, renderablepath))
             else:
                 if debug: print('path does not exist', '{0}/{1}'.format(projectpath, renderablepath))
                 print(rawline)
@@ -44,7 +44,7 @@ def edit(animpath):
 
             newline = rawline.replace(line, renderablepath)
             if not debug: print(newline)
-            repathed.append(newline)
+            repathed.append((line, renderablepath))
 
         else:
 

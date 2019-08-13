@@ -117,32 +117,43 @@ def getLatest(path, basename, **kwargs):
 def changelog(assetroot, version, comment):
     log = os.path.join(assetroot, 'changelog.json')
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    subname, ver, ext = version.split('.')
     if not os.path.exists(log):
         with open(log, 'w') as log_init:
             log_body = {}
             json.dump(log_body, log_init)
 
-    log_entry = {'timestamp': timestamp, 'comment': comment}
+    log_entry = [timestamp,comment]
     with open(log, 'r') as log_read:
         log_body = json.load(log_read)
     with open(log, 'w') as log_write:
-        log_body[version] = log_entry
+        try:
+            log_body[subname][version].append(log_entry)
+        except KeyError:
+            try:
+                log_body[subname][version] = [log_entry]
+            except KeyError:
+                log_body[subname] = {version:[log_entry]}
+
+        # if not subname in log_body:
+        #     log_body[subname] = [log_entry]
+        # else:
+        #     log_body[subname].append(log_entry)
         json.dump(log_body, log_write)
 
 def publishCurrentFile():
 
 
     debug = False  # False to disable variable printout
-    locdata = get_location()
-    file_path = locdata['file_path']
 
-    assetroot, filename = locdata['assetroot_filename']
-    publish_dir = locdata['publish_dir']
+    file_path = pm.sceneName()
+    filename = file_path.split('/')[-1]
+    assetroot = os.path.dirname(file_path)
+    type_dir = os.path.dirname(assetroot)
+    publish_dir = os.path.join(assetroot, 'publish')
+    dept = filename.split('.')[0].split('_')[-1]
+    basename, ver, ext = filename.split('.')
 
-    dev_dir = locdata['dev_dir']
-    type_dir = locdata['type_dir']
-    dept, deptpath = locdata['dept']
-    basename, ver, ext = locdata['basename_ver_ext']
 
     sel = pm.ls(sl=True)
 
@@ -150,11 +161,10 @@ def publishCurrentFile():
         return
 
     if debug:
-        print 'filepath', file_path
+
         print 'assetroot', assetroot
         print 'publish_dir', publish_dir
         print 'filename', filename
-        print 'dev_dir', dev_dir
         print 'Type_dir', type_dir
         print 'basename: {0}, ver: {1} ext: {2}'.format(basename, ver, ext)
         print 'dept:', dept
@@ -193,11 +203,10 @@ def publishCurrentFile():
     pm.saveFile(f=True)
     if dept == 'shd':
         basename = basename.replace('_shd', '')
-        shd_publish = os.path.join(deptpath, 'publish')
         mtl_filename = '{0}_mtl.{1}.mb'.format(basename, ver)
         print '#############'
         print 'export mtl'
-        mtl_export_path = os.path.join(shd_publish, mtl_filename)
+        mtl_export_path = os.path.join(publish_dir, mtl_filename)
 
 
         for node in sel:
@@ -213,7 +222,7 @@ def publishCurrentFile():
         #     ns, obj = node.split(':')
         #     pm.namespace(rm=str(ns), mnr=True)
 
-        exp_ma = pm.exportSelected(os.path.join(shd_publish, filename),
+        exp_ma = pm.exportSelected(os.path.join(publish_dir, filename),
                                    constructionHistory=True,
                                    channels=True,
                                    constraints=True,

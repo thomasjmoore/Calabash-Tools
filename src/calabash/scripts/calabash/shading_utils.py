@@ -81,10 +81,13 @@ def get_asset_name(asset):
     return asset_name
 
 def get_asset_look_SGs(asset_name):
+    debugMode = True
     SGs = pm.ls(type='shadingEngine')
     target_SGs = []
     for SG in SGs:
+        if debugMode: print 'Searching: {0} for {1}_mtl'.format(str(SG), asset_name)
         if re.search(asset_name + '_mtl', str(SG)):
+            if debugMode: print 'Target SG found:', SG
             target_SGs.append(SG)
 
     return target_SGs
@@ -222,37 +225,43 @@ def write_connections(SGs):
             add_attr(SG, 'control_' + str(cnt), connection)
             cnt+=1
 
-def make_connections(namespace, target_curves, meshes):
+def make_connections(namespace, target_nulls, meshes):
+    debugMode = True
+    if debugMode: print 'target_nulls:', target_nulls
     target_SGs = get_asset_look_SGs(namespace)
     #print target_curves
+    if debugMode: print target_SGs
     for SG in target_SGs:
+        if debugMode: print SG
         for attr in SG.listAttr():
-
+            #if debugMode: print 'Searching:', attr
             if re.search('control_', str(attr)):
 
                 type, source, destination = pm.getAttr(attr).split(', ')
                 if ':' in destination:
                     destination = destination.split(':')[-1]
-                source_ctl = source.split('.')[0]
-                source_attr = source.split('.')[-1]
+                source_attr = source.replace('.', '__')
 
-                for curve in target_curves:
+                for null in target_nulls:
+                    if debugMode: print 'target Null:', target_nulls[null]
+                    if type == 'transform':
+                        #target_curve_noShape = re.sub(r'\|([a-z]+):{0}.([a-z]+)$'.format(curve), '',target_curves[curve], flags=re.IGNORECASE)
+                        #print target_curve_noShape
 
-                    if source_ctl in curve:
-                        if type == 'transform':
-                            #target_curve_noShape = re.sub(r'\|([a-z]+):{0}.([a-z]+)$'.format(curve), '',target_curves[curve], flags=re.IGNORECASE)
-                            #print target_curve_noShape
 
-                            target_curve_transform = pm.listRelatives(target_curves[curve], p=True)[0]
-                            #print 'Connecting {0} to {1}'.format(target_curve_transform + '.' + source_attr, namespace + '_mtl:' + destination)
-                            try:
-                                pm.connectAttr(target_curve_transform + '.'+source_attr, namespace + '_mtl:' + destination)
-                            except Exception as exception:
-                                #     print 'FAILED'
-                                print exception
+                        #print 'Connecting {0} to {1}'.format(target_curve_transform + '.' + source_attr, namespace + '_mtl:' + destination)
+                        try:
+                            src = '{0}.exattr_{1}'.format(target_nulls[null], source_attr)
+                            dst = '{0}_mtl:{1}'.format(namespace, destination)
+                            print 'Connecting: {0} >>> {1}'.format(src, dst)
+                            pm.connectAttr(src, dst)
 
-                        if type == 'expression':
-                            source.setString(namespace + '_mtl:' + destination)
+                        except Exception as exception:
+                            #     print 'FAILED'
+                            print exception
+
+                    if type == 'expression':
+                        source.setString(namespace + '_mtl:' + destination)
                 if type == 'shape':
                     print 'Connecting {0} to {1}'.format(meshes[source_ctl] + '.' + source_attr,
                                                          namespace + '_mtl:' + destination)
@@ -263,6 +272,7 @@ def make_connections(namespace, target_curves, meshes):
                     except Exception as exception:
                         #     print 'FAILED'
                         print exception
+
 
 def exportShaders(SGs, export_path):
     network_to_export = []
@@ -310,10 +320,11 @@ def publish_mtl(export_path):
 
 def apply_look():
     sel = pm.ls(sl=1)
+    debugMode = True
     for item in sel:
-
+        if debugMode: print 'item: ', item
         meshns_sorted = {}
-        curvens_sorted = {}
+        # curvens_sorted = {}
         for mesh in pm.listRelatives(item, ad=True, type='mesh'):
             mesh = pm.PyNode(mesh)
             #mesh = pm.PyNode(pm.listRelatives(mesh, p=True)[0])
@@ -324,27 +335,41 @@ def apply_look():
                     meshns_sorted[mesh_ns][nodename] = mesh.longName()
                 else:
                     meshns_sorted[mesh_ns] = {nodename: mesh.longName()}
-        for curve in pm.listRelatives(item, ad=True, type='nurbsCurve'):
-            curve = pm.PyNode(curve)
-            #curve = pm.PyNode(pm.listRelatives(curve, p=True)[0])
-            if pm.hasAttr(curve, 'namespace'):
-                curve_ns = curve.getAttr('namespace')
+        nulls = {}
 
-                nodename = curve.shortName().split(':')[-1]
-                if curve_ns in curvens_sorted:
-                    curvens_sorted[curve_ns][nodename] = curve.longName()
-                else:
-                    curvens_sorted[curve_ns] = {nodename: curve.longName()}
+        for node in pm.listRelatives(item, c=True):
+            if debugMode: print 'node:', node
+            if 'null' in node.name():
+                if debugMode: print 'null:', node
+                if pm.hasAttr(node, 'namespace'):
+                    null_ns = node.getAttr('namespace')
+                    nullname = node.shortName().split(':')[-1]
+                    if null_ns in nulls:
+                        nulls[null_ns][nullname] = node.longName()
+                    else:
+                        nulls[null_ns] = {nullname: node.longName()}
+        if debugMode: print 'Nulls:', nulls
+        # for curve in pm.listRelatives(item, ad=True, type='nurbsCurve'):
+        #     curve = pm.PyNode(curve)
+        #     #curve = pm.PyNode(pm.listRelatives(curve, p=True)[0])
+        #     if pm.hasAttr(curve, 'namespace'):
+        #         curve_ns = curve.getAttr('namespace')
+        #
+        #         nodename = curve.shortName().split(':')[-1]
+        #         if curve_ns in curvens_sorted:
+        #             curvens_sorted[curve_ns][nodename] = curve.longName()
+        #         else:
+        #             curvens_sorted[curve_ns] = {nodename: curve.longName()}
         for namespace in meshns_sorted:
             if debugMode: print 'Connecting meshes with namespace:', namespace
             target_meshes = meshns_sorted[namespace]
             make_assignments(namespace, target_meshes)
 
-        for namespace in curvens_sorted:
-            if debugMode: print 'Connecting curves with namespace:', namespace
-            target_curves = curvens_sorted[namespace]
+        for namespace in nulls:
+            if debugMode: print 'Connecting null with namespace:', namespace
+            target_nulls = nulls[namespace]
 
-            make_connections(namespace, target_curves, meshns_sorted[namespace])
+            make_connections(namespace, target_nulls, meshns_sorted[namespace])
 
 
 
