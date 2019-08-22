@@ -812,7 +812,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 if '.abc' in shot_version.text(0):
                     live_name = shot_subname.text(0) + '.abc'
                 else:
-                    live_name = shot_subname.text(0) + '.mb'
+                    live_name = shot_subname.text(0) + '.ma'
 
                 src = self.publishDict[shot_subname.text(0)][shot_version.text(0)]['path']
                 dst = os.path.join(self.scenes_root, spot, shot, live_name)
