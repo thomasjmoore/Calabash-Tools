@@ -139,9 +139,21 @@ def createSpot(projpath, spotname, shotcount):
 def createShot(projpath, shotname):
     shotpath = os.path.join(projpath, 'scenes', shotname)
     if not os.path.exists(shotpath):
-        print shotpath
         os.makedirs(shotpath)
         print shotpath
+        animpath = os.path.join(shotpath, 'anim',)
+        renderpath = os.path.join(shotpath, 'render')
+        os.makedirs(animpath)
+        os.makedirs(os.path.join(animpath, 'publish'))
+        print animpath
+        os.makedirs(renderpath)
+        print renderpath
+        animscene_path = os.path.join(animpath, shotname.replace('/', '_') + '_anim.001.ma')
+        renderscene_path = os.path.join(renderpath, shotname.replace('/', '_') + '_render.001.ma')
+        open(animscene_path, 'a').close()
+        print animscene_path
+        open(renderscene_path, 'a').close()
+        print renderscene_path
     else:
         print 'Shot: {0}, already exists! \n {1}'.format(shotname, shotpath)
 
@@ -154,7 +166,11 @@ def createAsset(projpath, type, assetname):
             dirpath = os.path.join(assetpath, dir)
             print dirpath
             os.makedirs(dirpath)
+
+
+
     else:
         print 'Asset: {0}, already exists! \n {1}'.format(assetname, assetpath)
-
+    newscene_path = os.path.join(assetpath, assetname + '_rig.001.ma')
+    open(newscene_path, 'a').close()
 

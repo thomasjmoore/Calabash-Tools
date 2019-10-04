@@ -761,6 +761,9 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def makelive(self, assetsubname, version, src, dst):
         # copy src to dst, return dst path
+        dst_path = os.path.dirname(dst)
+        if not os.path.exists(dst_path):
+            os.makedirs(dst_path)
         shutil.copy2(src, dst)
         print 'Setting {0} to Live'.format(version)
         self.update_assetStatus(assetsubname, version, True)
