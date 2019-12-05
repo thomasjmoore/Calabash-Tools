@@ -16,6 +16,12 @@ def versionUp(*args):
     basename, ver, ext = file.split('.')
     fileNameSplit = file.split(".")
     curVer = fileNameSplit[-2]
+    vCurToken = ''
+    if 'v' in curVer:
+        vCurToken = 'v'
+        curVer = int(curVer.split('v')[1])
+    else:
+        curVer = int(curVer)
     if debug: print fileUtils.getLatest(path, basename)
     latestVer = fileUtils.getLatest(path, basename)[0].split('.')[1]
     vToken = ''
@@ -25,13 +31,15 @@ def versionUp(*args):
     else:
         latestVer = int(latestVer)
     if debug: print latestVer
-    newVer = '%03d' % (int(curVer) + 1)
+    newVerInt = '%03d' % (int(curVer) + 1)
+    newVer = newVerInt
 
     if int(newVer) <= latestVer:
         nextVerInt = '%03d' % (latestVer + 1)
         nextVer = '{0}{1}'.format(vToken, nextVerInt)
         print 'new version, {0}, is less than or equal to the latest, {1} \n next version is {2}'.format(int(newVer), latestVer, nextVer)
         newVer = nextVer
+    newVer = '{0}{1}'.format(vCurToken, newVerInt)
     newfile = ".".join((fileNameSplit[0], newVer, fileNameSplit[-1]))
     new_file_path = os.path.join(path, newfile)
 
