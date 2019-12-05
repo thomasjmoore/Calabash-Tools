@@ -17,12 +17,19 @@ def versionUp(*args):
     fileNameSplit = file.split(".")
     curVer = fileNameSplit[-2]
     if debug: print fileUtils.getLatest(path, basename)
-    latestVer = int(fileUtils.getLatest(path, basename)[0].split('.')[1])
+    latestVer = fileUtils.getLatest(path, basename)[0].split('.')[1]
+    vToken = ''
+    if 'v' in latestVer:
+        vToken = 'v'
+        latestVer = int(latestVer.split('v')[1])
+    else:
+        latestVer = int(latestVer)
     if debug: print latestVer
     newVer = '%03d' % (int(curVer) + 1)
 
     if int(newVer) <= latestVer:
-        nextVer = '%03d' % (latestVer + 1)
+        nextVerInt = '%03d' % (latestVer + 1)
+        nextVer = '{0}{1}'.format(vToken, nextVerInt)
         print 'new version, {0}, is less than or equal to the latest, {1} \n next version is {2}'.format(int(newVer), latestVer, nextVer)
         newVer = nextVer
     newfile = ".".join((fileNameSplit[0], newVer, fileNameSplit[-1]))
