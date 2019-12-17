@@ -1,5 +1,5 @@
 from pymel import core as pm
-
+import maya.cmds as cmds
 # TBS for the modern era
 
 
@@ -15,6 +15,10 @@ def tbs():
             continue
 
         transform = p.getParent()
+
+        cmds.vray("addAttributesFromGroup", p, "vray_particle_export_attributes", 1)
+        pm.setAttr(p + ".vrayPPExportRGB", 1)
+
 
         if not pm.objExists("{}.radiusPP".format(p)):
             pm.addAttr(p, ln="radiusPP", dt="doubleArray")
@@ -67,14 +71,33 @@ def tbs():
         p.radiusScale[1].radiusScale_FloatValue.set(0)
         p.radiusScaleRandomize.set(.25)
 
-        # expression
+        # Old Expressions
+        """
         pm.dynExpression(p,
                          s=".noiseMod = rand(2);\nseed(.particleId);\nfloat $twinkle = ((noise(.age * .twinkleSpeed * .noiseMod) + 1) * .twinkle) / 2;\n\nif (.percentBig && .particleId % floor(100/.percentBig) == 0 && !.isChild)\n{\n    .isBig = 1;\n    .lifespanPP = .lifespanBig + rand(0 - .lifespanBigRand,.lifespanBigRand);\n    .rgbPP = <<1 - $twinkle, 0, 0 >>;\n}\nelse\n{\n   .isBig = 0;\n   .lifespanPP = .lifespanSmall + rand(0 - .lifespanSmallRand,.lifespanSmallRand);\n   .rgbPP = <<0, 0, 1 - $twinkle >>;\n}",
                          c=True)
         pm.dynExpression(p,
-                         s="seed(.particleId);\nfloat $twinkle = ((noise(.age * .twinkleSpeed * .noiseMod) + 1) * .twinkle) / 2;\n\nif (.isBig){\n    .rgbPP = <<1 - $twinkle, 0, 0 >>;\n}\nelse {\n    .rgbPP = <<0, 0, 1 - $twinkle>>;\n}" ,
+                         s="seed(.particleId);\nfloat $twinkle = ((noise(.age * .twinkleSpeed * .noiseMod) + 1) * .twinkle) / 2;\n\nif (.isBig){\n    .rgbPP = <<1 - $twinkle, 0, 0 >>;\n}\nelse {\n    .rgbPP = <<0, 0, 1 - $twinkle>>;\n}",
                          rbd=True)
+        """
+        # expression
+        pm.dynExpression(p,
+                         s=".noiseMod = rand(2);\nseed(.particleId);\nfloat $twinkle = ((noise(.age * .twinkleSpeed * .noiseMod) + 1) * .twinkle) / 2;\n\nif (.percentBig && .particleId % floor(100/.percentBig) == 0 && !.isChild)\n{\n    .isBig = 1;\n    .lifespanPP = .lifespanBig + rand(0 - .lifespanBigRand,.lifespanBigRand);\n    .rgbPP = <<1 - $twinkle, 0, 0 >>;\n}\nelse if ( .particleId % 2 == 0)\n{\n    .isBig = 0;\n    .lifespanPP = .lifespanSmall + rand(0 - .lifespanSmallRand,.lifespanSmallRand);\n    .rgbPP = <<0, 1 - $twinkle, 0 >>;\n}\nelse\n{\n   .isBig = 0;\n   .lifespanPP = .lifespanSmall + rand(0 - .lifespanSmallRand,.lifespanSmallRand);\n   .rgbPP = <<0, 0, 1 - $twinkle >>;\n}",
+                         c=True)
+        pm.dynExpression(p,
+                         s="seed(.particleId);\nfloat $twinkle = ((noise(.age * .twinkleSpeed * .noiseMod) + 1) * .twinkle) / 2;\n\nif (.isBig){\n    .rgbPP = <<1 - $twinkle, 0, 0 >>;\n}\nelse if ( .particleId % 2 == 0)\n{\n    .rgbPP = <<0, 1 - $twinkle, 0>>;\n}\nelse {\n    .rgbPP = <<0, 0, 1 - $twinkle>>;\n}" ,
+                         rbd=True)
+        pm.setAttr(p + ".particleRenderType", 3)
+        pm.setAttr(p + ".pointSize", 1)
+        # Get particle shader and turn off specular
+        pm.hyperShade(smn=True)
+        mat = None
+        for shader in pm.ls(sl=1):
+            # print pm.nodeType(shader)
+            if pm.nodeType(shader) == "blinn":
+                mat = pm.PyNode(shader)
 
+        mat.setAttr("specularColor", (0, 0, 0))
 
 def check_selection():
     # Check to make sure at least one nParticle system is selected
