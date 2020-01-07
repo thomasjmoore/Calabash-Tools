@@ -529,11 +529,13 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                 if debug: print asset_type
                 typepath = os.path.join(self.assets_root, asset_type, 'dev')
                 if debug: print typepath
-                assetnames = [f for f in os.listdir(typepath) if os.path.isdir(os.path.join(typepath, f))]
-                if debug: print assetnames
-                for assetname in assetnames:
-                    asset_root = os.path.normpath(os.path.join(typepath, assetname)).replace('\\', '/')
-                    assets[assetname] = (asset_type,asset_root)
+                if os.path.isdir(typepath):
+
+                    assetnames = [f for f in os.listdir(typepath) if os.path.isdir(os.path.join(typepath, f))]
+                    if debug: print assetnames
+                    for assetname in assetnames:
+                        asset_root = os.path.normpath(os.path.join(typepath, assetname)).replace('\\', '/')
+                        assets[assetname] = (asset_type,asset_root)
 
         if debug: print 'assets:', assets
         return assets
