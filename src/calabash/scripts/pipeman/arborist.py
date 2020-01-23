@@ -120,24 +120,27 @@ workspace -fr "furAttrMap" "renderData/fur/furAttrMap";
 def createSpot(projpath, spotname, shotcount):
 
     spotpath = os.path.join(projpath, 'scenes', spotname)
+    print spotpath
     if not os.path.exists(spotpath):
+        os.makedirs(spotpath)
         for shot in range(shotcount):
             shot += 1
             shotname = 'sh{0}0'.format(('%02d' % shot))
-            animpath = os.path.join(spotpath, shotname, 'anim', 'publish')
-            renderpath = os.path.join(spotpath, shotname, 'render')
-            print animpath
-            print renderpath
-            os.makedirs(animpath)
-            os.makedirs(renderpath)
-            print animpath
-            print renderpath
+            createShot(projpath, spotname, shotname)
+            # animpath = os.path.join(spotpath, shotname, 'anim', 'publish')
+            # renderpath = os.path.join(spotpath, shotname, 'render')
+            # print animpath
+            # print renderpath
+            # os.makedirs(animpath)
+            # os.makedirs(renderpath)
+            # print animpath
+            # print renderpath
 
     else:
         print 'Spot: {0}, already exists! \n {1}'.format(spotname, spotpath)
 
-def createShot(projpath, shotname):
-    shotpath = os.path.join(projpath, 'scenes', shotname)
+def createShot(projpath, spotname, shotname):
+    shotpath = os.path.join(projpath, 'scenes', spotname, shotname)
     if not os.path.exists(shotpath):
         os.makedirs(shotpath)
         print shotpath

@@ -171,6 +171,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.restorestate()
 
     def open_linksUI(self):
+        debug = False
         import gondo_link as glink
         reload(glink)
         with open(self.userstate, 'r') as f:
@@ -178,11 +179,17 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         shots = []
         shotdict = self.getShots()
         for spot in shotdict:
-            for shot in shotdict[spot]:
-                shotname = spot + '/' + shot
-                shots.append(shotname)
+            if debug: print "open_linksUI == shotdict[spot]: {0}".format(spot)
+            shotpath = shotdict[spot]
+            shotname = shotpath.split('\\')[-1]
+            if debug: print "for shot in shotdict[spot] == shot: {0}".format(shotpath)
+            spot_shot = spot + '/' + shotname
+            if debug: print "shotname: {0}".format(shotname)
+            shots.append(spot_shot)
+
         comp_proj = self.ui.comboBox_gondo_compproject.currentText()
         comp_root = userstate["gondo_comproot"]
+        if debug: print "open_linksUI == Shots: {0}\n{1}\n{2}".format(sorted(shots), comp_root, comp_proj, self.status_path)
         glink_gui = glink.myGui(sorted(shots), comp_root, comp_proj, self.status_path)
         glink_gui.run()
 
@@ -417,9 +424,14 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         return ','.join(str_seq)
 
     def getDest(self, shot, layer):
+        debug = True
         with open(self.status_path, 'r') as r:
             status = json.load(r)
-        shotroot = status['complinks'][shot]
+
+        pp = pprint.PrettyPrinter(indent=4)
+        if debug: print "getDest == shot: {0}\nlayer: {1}".format(shot.lower(), layer)
+        if debug: pp.pprint(status)
+        shotroot = status['complinks'][shot.lower()]
         return os.path.join(shotroot, layer)
 
     def addversion_selected(self):
@@ -605,9 +617,17 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         shotroot = self.getShots()[shot]
         animdir = os.path.join(shotroot, 'anim')
         rendir = os.path.join(shotroot, 'render')
+        animfiles = []
+        renfiles = []
+        try:
+            animfiles = [f for f in os.listdir(animdir) if os.path.isfile(os.path.join(animdir, f))]
+        except WindowsError as we:
+            print 'No Anim folder found\n', we
+        try:
+            renfiles = [f for f in os.listdir(rendir) if os.path.isfile(os.path.join(rendir, f))]
+        except WindowsError as we:
+            print "No Render folder found!\n", we
 
-        animfiles = [f for f in os.listdir(animdir) if os.path.isfile(os.path.join(animdir, f))]
-        renfiles = [f for f in os.listdir(rendir) if os.path.isfile(os.path.join(rendir, f))]
         for subname in self.get_subnames(animfiles):
 
             shotsubnames[subname] = animdir
@@ -620,7 +640,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def getversions(self, subnames, *args):
         # return version, path tuples
-        debug = False
+        debug = True
         publish = ''
         for key in args:
             if key == 'p':
@@ -635,9 +655,11 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             try:
                 subname_path = os.path.join(subnames[subname], publish)
                 if debug: print subname_path
-
-                files = [f for f in os.listdir(subname_path) if os.path.isfile(os.path.join(subname_path, f))]
-
+                files = []
+                try:
+                    files = [f for f in os.listdir(subname_path) if os.path.isfile(os.path.join(subname_path, f))]
+                except WindowsError as we:
+                    pass
                 if debug: print 'Files:', files
                 for f in files:
                     path = os.path.join(subname_path, f)
