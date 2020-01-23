@@ -424,7 +424,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         return ','.join(str_seq)
 
     def getDest(self, shot, layer):
-        debug = True
+        debug = False
         with open(self.status_path, 'r') as r:
             status = json.load(r)
 
@@ -640,7 +640,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def getversions(self, subnames, *args):
         # return version, path tuples
-        debug = True
+        debug = False
         publish = ''
         for key in args:
             if key == 'p':
@@ -825,7 +825,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         if pop: self.pop_Versions(self.ui.treeWidget_assets)
 
     def makelive_shot(self):
-        debug = True
+        debug = False
         pop = False
         for item in self.ui.treeWidget_animVersions.selectedItems():
 
@@ -921,7 +921,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         return result
 
     def open_latest(self, tree, *args):
-        debug = True
+        debug = False
 
         try:
             asset = tree.currentItem()
