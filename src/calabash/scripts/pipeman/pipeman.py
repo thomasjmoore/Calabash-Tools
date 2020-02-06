@@ -13,6 +13,7 @@ from collections import defaultdict
 from functools import partial
 from __builtin__ import any as any
 import pprint
+import subprocess
 
 
 #Convert Ui file from Designer to a python module
@@ -143,8 +144,11 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.addToCopy.triggered.connect(self.addversion_selected)
         self.copyMissing = QtWidgets.QAction('Show missing frames', self)
         self.copyMissing.triggered.connect(self.showMissingframes)
+        self.openLocation = QtWidgets.QAction('Open Location', self)
+        self.openLocation.triggered.connect(self.openLocation_selected)
         self.popMenu_gversions.addAction(self.addToCopy)
         self.popMenu_gversions.addAction(self.copyMissing)
+        self.popMenu_gversions.addAction(self.openLocation)
 
         self.ui.listWidget_gondo_copylist.customContextMenuRequested.connect(self.on_context_copylist)
         self.popMenu_copylist = QtWidgets.QMenu(self)
@@ -383,7 +387,6 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                     vers_item.setForeground(1, QBrush(QColor("red")))
                 self.ui.treeWidget_gondo_versions.addTopLevelItem(vers_item)
             self.ui.treeWidget_gondo_versions.setSortingEnabled(True)
-            #elf.ui.treeWidget_gondo_versions.sortItems(0)
 
     def seqRange(self, path):
         seq = os.listdir(path)
@@ -433,6 +436,15 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         if debug: pp.pprint(status)
         shotroot = status['complinks'][shot.lower()]
         return os.path.join(shotroot, layer)
+
+    def openLocation_selected(self):
+        debug = True
+        selected_version = self.ui.treeWidget_gondo_versions.currentItem().text(0)
+        selected_shot = self.ui.listWidget_gondo_shots.currentItem().text()
+        selected_layer = self.ui.listWidget_gondo_layers.currentItem().text()
+        src = self.getRenDirs()[selected_shot][selected_layer][selected_version]
+        if debug: print 'Opening: ' + r'explorer "{0}"'.format(src.replace('/','\\'))
+        subprocess.Popen(r'explorer "{0}"'.format(src.replace('/','\\')))
 
     def addversion_selected(self):
         debug = False
