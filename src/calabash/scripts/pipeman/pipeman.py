@@ -106,6 +106,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.header_anim_comments.setStretchLastSection(False)
         self.header_anim_comments.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
 
+
         self.ui.treeWidget_shots.itemClicked.connect(partial(self.pop_Versions, self.ui.treeWidget_shots))
         self.ui.treeWidget_assets.itemClicked.connect(partial(self.pop_Versions, self.ui.treeWidget_assets))
         self.ui.treeWidget_animVersions.itemClicked.connect(partial(self.showcomment, self.ui.treeWidget_animVersions))
@@ -712,6 +713,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             else:
                 shot_item = QtWidgets.QTreeWidgetItem(self.ui.treeWidget_shots)
                 shot_item.setText(0, shotname)
+        self.ui.treeWidget_shots.sortItems(0, QtCore.Qt.AscendingOrder)
         if debug: print pprint.pprint(spot_dict)
 
     def pop_assets(self):
@@ -740,6 +742,7 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         for item in asset_dict:
             self.ui.treeWidget_assets.addTopLevelItem(asset_dict[item])
             asset_dict[item].setExpanded(True)
+        self.ui.treeWidget_assets.sortItems(0, QtCore.Qt.AscendingOrder)
 
     def pop_Versions(self, tree, *args):
         debug = False
