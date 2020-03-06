@@ -310,10 +310,13 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     def getCompprojects(self):
         if self.comproot:
             compprojects = []
-            for project in os.listdir(self.comproot):
-                if not re.match('\.', project):
-                    compprojects.append(project)
-            return compprojects
+            try:
+                for project in os.listdir(self.comproot):
+                    if not re.match('\.', project):
+                        compprojects.append(project)
+                return compprojects
+            except Exception as er:
+                return compprojects
         else:
             return []
 
