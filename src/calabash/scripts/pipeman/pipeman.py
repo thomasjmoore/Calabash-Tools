@@ -14,7 +14,7 @@ from functools import partial
 from __builtin__ import any as any
 import pprint
 import subprocess
-
+from itertools import groupby, count
 
 #Convert Ui file from Designer to a python module
 # run this in script editor
@@ -423,12 +423,20 @@ class myGui(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             pass
 
     def listMissingframes(self, path):
+        # get string list of frame numbers
         seq = [x.split('.')[-2] for x in os.listdir(path)]
+        # convert string list to int list
         int_seq = [int(x) for x in seq]
+        # create a complete sequential int list
         full_int_seq = [x for x in range(int_seq[0], int_seq[-1] + 1)]
-        int_seq = set(int_seq)
-        str_seq = [str(x) for x in list(int_seq ^ set(full_int_seq))]
-        return ','.join(str_seq)
+        # compare current seq to complete seq to find missing frames
+        missing_seq = [x for x in list(set(int_seq) ^ set(full_int_seq))]
+        # copy pasta from Stack Overflow, consolidates sequential list to list of ranges
+        print missing_seq
+        groups = groupby(missing_seq, key=lambda item, c=count():item-next(c))
+        tmp = [list(g) for k, g in groups]
+        new_range = [str(x[0]) if len(x) == 1 else "{0}-{1}".format(x[0],x[-1]) for x in tmp]
+        return ','.join(new_range)
 
     def getDest(self, shot, layer):
         debug = False
