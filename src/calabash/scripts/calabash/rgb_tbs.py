@@ -2,23 +2,18 @@ from pymel import core as pm
 import maya.cmds as cmds
 # TBS for the modern era
 
-
-
 def tbs():
     particles = check_selection()
     if not particles: return
 
     for p in particles:
+        print p, p.nodeType()
         # check to see if particles are already TBS
         if pm.objExists("{}.isBig".format(p)):
             pm.displayWarning("{} is already TBS".format(p))
             continue
 
         transform = p.getParent()
-
-        cmds.vray("addAttributesFromGroup", p, "vray_particle_export_attributes", 1)
-        pm.setAttr(p + ".vrayPPExportRGB", 1)
-
 
         if not pm.objExists("{}.radiusPP".format(p)):
             pm.addAttr(p, ln="radiusPP", dt="doubleArray")
@@ -89,34 +84,58 @@ def tbs():
                          rbd=True)
         pm.setAttr(p + ".particleRenderType", 3)
         pm.setAttr(p + ".pointSize", 1)
-        # Get particle shader and turn off specular
+        
+        cmds.vray("addAttributesFromGroup", p, "vray_particle_export_attributes", 1)
+        pm.setAttr(p + ".vrayPPExportRGB", 1)
+        pm.setAttr(p + ".vrayPPExportOpacity", 1)
+        pm.setAttr(p + ".opacityScaleInput", 2)
+        pm.setAttr(p + ".opacityScale[0].opacityScale_Interp", 2)
+        pm.setAttr(p + ".opacityScale[0].opacityScale_Position", 0.6)
+        pm.setAttr(p + ".opacityScale[1].opacityScale_FloatValue", 0.0)
+        pm.setAttr(p + ".opacityScale[1].opacityScale_Position", 1.0)
+        pm.setAttr(p + ".opacityScale[1].opacityScale_Interp", 2)
+
         pm.hyperShade(smn=True)
         mat = None
-        for shader in pm.ls(sl=1):
-            # print pm.nodeType(shader)
-            if pm.nodeType(shader) == "blinn":
-                mat = pm.PyNode(shader)
+        for node in pm.ls(sl=1):
 
-        mat.setAttr("specularColor", (0, 0, 0))
+            if node.type() == 'blinn':
+                SG = pm.listConnections(node, d=True, t='shadingEngine')[0]
+                pSamp = pm.listConnections(node, d=True, t='particleSamplerInfo')[0]
+                pm.delete(node)
+                ss = pm.shadingNode('surfaceShader', asShader=True)
+                pm.rename(ss, 'TBS_shader')
+                pm.connectAttr(ss.outColor, SG.surfaceShader)
+                pm.connectAttr(pSamp.rgbPP, ss.outColor)
+                pm.connectAttr(pSamp.opacityPP, ss.outMatteOpacity.outMatteOpacityR)
+                pm.connectAttr(pSamp.opacityPP, ss.outMatteOpacity.outMatteOpacityG)
+                pm.connectAttr(pSamp.opacityPP, ss.outMatteOpacity.outMatteOpacityB)
+                
+                
+            elif node.type() == 'particleCloud':
+                print 'Deleting volume shader: ', node
+                pm.delete(node)
+
+        
 
 def check_selection():
     # Check to make sure at least one nParticle system is selected
     sel = pm.ls(sl=True)
 
     if not sel:
-        pm.displayWarning("Select a nParticle system to make TBS")
+        pm.displayWarning("Nothing selected, Select a nParticle system to make TBS")
         return
     particles = []
 
     for s in sel:
         shapes = s.listRelatives(shapes=True)
-
+        
         for shape in shapes:
+            print shape.nodeType()
             if shape.nodeType() == "nParticle":
                 particles.append(shape)
-
     if not particles:
-        pm.displayWarning("Select a nParticle system to make TBS")
+        pm.displayWarning("Selection is not an nParticle, Select a nParticle system to make TBS")
         return
 
     return particles
